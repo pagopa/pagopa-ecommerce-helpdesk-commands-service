@@ -1,5 +1,9 @@
 # PagoPA Help desk Commands Service
 
+## Overview
+`pagopa-ecommerce-helpdesk-commands-service` is a Kotlin-based microservice designed to support manual operations, such as refunds, for transactions related to the pagoPA ecommerce platform. 
+This service leverages Kotlin's native compilation to achieve optimal performance and efficiency.
+
 ## Technology Stack
 
 - Kotlin
