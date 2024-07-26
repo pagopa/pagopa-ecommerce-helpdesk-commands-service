@@ -17,7 +17,7 @@ paths:
     post:
       tags:
         - ecommerce
-      operationId: refundOperationId
+      operationId: refundOperation
       summary: Api's for performing money refunds operations over failed transactions
       description: 'POST with body payload - no resources created'
       requestBody:
@@ -108,27 +108,37 @@ components:
       maximum: 600
       exclusiveMaximum: true
       example: 200
+    RefundTransactionRequest:
+      type: object
+      properties:
+        transactionId:
+          type: number
+          description: The id of the transaction
+          default: 0
+        paymentMethodId:
+          type: number
+          description: The id of the payment method
+          default: 0
+        pspId:
+          type: number
+          description: The id of the psp
+          default: 0
+        operationId:
+          type: number
+          description: The id of the operation
+          default: 0
+        correlationId:
+          type: number
+          description: The id of the correlation
+          default: 0
+        amount:
+          type: number
+          description: The amount to refund
+          default: 0
   requestBodies:
     RefundTransactionRequest:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/EcommerceSearchTransactionRequest'
-          examples:
-            search by rpt id:
-              value:
-                type: RPT_ID
-                rptId: "77777777777111111111111111111"
-            search by payment token:
-              value:
-                type: PAYMENT_TOKEN
-                paymentToken: "paymentToken"
-            search by transaction id:
-              value:
-                type: TRANSACTION_ID
-                transactionId: "transactionId"
-            search by user email:
-              value:
-                type: USER_EMAIL
-                userEmail: "test@test.it"
+            $ref: '#/components/schemas/RefundTransactionRequest'
