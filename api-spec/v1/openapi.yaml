@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 2.0.0
+  version: 1.0.0
   title: Pagopa helpdeskCommands services for assistance api
   description: This microservice that expose helpdeskCommands services for assistance api.
 servers:
@@ -13,7 +13,7 @@ tags:
       description: Technical specifications
 
 paths:
-  /helpdeskCommands/refund:
+  /commands/refund:
     post:
       tags:
         - ecommerce
@@ -49,6 +49,11 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
 components:
   schemas:
+    AmountEuroCents:
+      description: Amount for payments, in euro cents
+      type: integer
+      minimum: 0
+      maximum: 99999999
     RefundTransactionResponse:
       type: object
       properties:
@@ -112,29 +117,25 @@ components:
       type: object
       properties:
         transactionId:
-          type: number
+          type: string
           description: The id of the transaction
-          default: 0
+          minLength: 32
+          maxLength: 32
         paymentMethodId:
           type: number
           description: The id of the payment method
-          default: 0
         pspId:
           type: number
           description: The id of the psp
-          default: 0
         operationId:
           type: number
           description: The id of the operation
-          default: 0
         correlationId:
-          type: number
-          description: The id of the correlation
-          default: 0
+          type: string
+          format: uuid
+          description: correlation id for a transaction executed with NPG
         amount:
-          type: number
-          description: The amount to refund
-          default: 0
+          $ref: '#/components/schemas/AmountEuroCents'
   requestBodies:
     RefundTransactionRequest:
       required: true
