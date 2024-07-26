@@ -1,18 +1,23 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+group = "it.pagopa.helpdeskcommands"
+
+version = "0.0.1"
+
+description = "pagopa-helpdeskcommands-service"
+
+
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.spring") version "1.9.24"
+    id("org.openapi.generator") version "6.3.0"
     id("org.springframework.boot") version "3.3.2"
     id("io.spring.dependency-management") version "1.1.6"
     id("org.graalvm.buildtools.native") version "0.10.2"
     id("com.diffplug.spotless") version "6.18.0"
     id("com.dipien.semantic-version") version "2.0.0" apply false
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.spring") version "1.9.24"
     jacoco
 }
-
-group = "it.pagopa.helpdeskcommands"
-version = "0.0.1"
-
-description = "pagopa-helpdeskcommands-service"
 
 springBoot {
     mainClass.set("it.pagopa.helpdeskcommands.HelpDeskCommandsApplicationKt")
@@ -35,7 +40,8 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-
+    implementation("org.openapitools:openapi-generator-gradle-plugin:6.5.0")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.6")
     // mongodb
     //implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 
@@ -88,6 +94,35 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         trimTrailingWhitespace()
         endWithNewline()
     }
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("helpdeskcommands-v1") {
+    generatorName.set("spring")
+    inputSpec.set("$rootDir/api-spec/v1/openapi.yaml")
+    outputDir.set("$buildDir/generated")
+    apiPackage.set("it.pagopa.generated.helpdeskcommands.api")
+    modelPackage.set("it.pagopa.generated.helpdeskcommands.model")
+    generateApiTests.set(false)
+    generateApiDocumentation.set(false)
+    generateApiTests.set(false)
+    generateModelTests.set(false)
+    library.set("spring-boot")
+    modelNameSuffix.set("Dto")
+    configOptions.set(
+        mapOf(
+            "swaggerAnnotations" to "false",
+            "openApiNullable" to "true",
+            "interfaceOnly" to "true",
+            "hideGenerationTimestamp" to "true",
+            "skipDefaultInterface" to "true",
+            "useSwaggerUI" to "false",
+            "reactive" to "true",
+            "useSpringBoot3" to "true",
+            "oas3" to "true",
+            "generateSupportingFiles" to "true",
+            "enumPropertyNaming" to "UPPERCASE"
+        )
+    )
 }
 
 tasks.test {
