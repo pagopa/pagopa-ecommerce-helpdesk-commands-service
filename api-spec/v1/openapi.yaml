@@ -132,7 +132,6 @@ components:
           description: The id of the operation
         correlationId:
           type: string
-          format: uuid
           description: correlation id for a transaction executed with NPG
         amount:
           $ref: '#/components/schemas/AmountEuroCents'
