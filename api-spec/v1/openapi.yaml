@@ -7,7 +7,7 @@ servers:
   - url: https://${host}
 tags:
   - name: helpdeskCommands
-    description: Api's for performing money refunds operations over failed transactions # this will be evolving over time
+    description: Api's for performing money refund operations over failed transactions # this will be evolving over time
     externalDocs:
       url: https://pagopa.atlassian.net/wiki/spaces/I/pages/492339720/pagoPA+eCommerce+Design+Review #TODO this needs to be updated
       description: Technical specifications
