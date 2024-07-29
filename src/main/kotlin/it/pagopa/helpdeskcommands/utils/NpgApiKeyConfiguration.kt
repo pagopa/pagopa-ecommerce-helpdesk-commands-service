@@ -3,11 +3,25 @@ package it.pagopa.helpdeskcommands.utils
 import arrow.core.Either
 import arrow.core.left
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
+import java.util.*
 
 class NpgApiKeyConfiguration(
     private val defaultApiKey: String?,
     private val methodsApiKeyMapping: Map<PaymentMethod, NpgPspApiKeysConfig>
 ) {
+
+    init {
+        require(defaultApiKey != null) {
+            throw NpgApiKeyConfigurationException(
+                "Invalid configuration detected! Default api key mapping cannot be null"
+            )
+        }
+        require(methodsApiKeyMapping.isNotEmpty()) {
+            throw NpgApiKeyConfigurationException(
+                "Invalid configuration detected! Payment methods api key mapping cannot be null or empty"
+            )
+        }
+    }
 
     data class Builder(var defaultApiKey: String? = null) {
         var methodsApiKeyMapping: MutableMap<PaymentMethod, NpgPspApiKeysConfig> = mutableMapOf()
@@ -19,8 +33,7 @@ class NpgApiKeyConfiguration(
         ) = apply {
             if (methodsApiKeyMapping.containsKey(paymentMethod)) {
                 throw NpgApiKeyConfigurationException(
-                    "Api key mapping already registered",
-                    paymentMethod
+                    "Api key mapping already registered for payment method: [$paymentMethod]"
                 )
             }
             methodsApiKeyMapping.put(paymentMethod, npgPspApiKeysConfig)
@@ -69,7 +82,7 @@ class NpgApiKeyConfiguration(
             result =
                 npgPspApiKeysConfig.get(pspId).mapLeft {
                     NpgApiKeyConfigurationException(
-                        "Cannot retrieve api key for payment method: [$paymentMethod]. Cause: $it"
+                        "Cannot retrieve api key for payment method: [$paymentMethod]. Cause: ${it.message}"
                     )
                 }
         }

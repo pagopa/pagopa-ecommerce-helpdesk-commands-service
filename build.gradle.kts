@@ -44,8 +44,6 @@ dependencies {
 
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 
-tasks.test { useJUnitPlatform() }
-
 kotlin { jvmToolchain(21) }
 
 // Dependency locking - lock all dependencies
