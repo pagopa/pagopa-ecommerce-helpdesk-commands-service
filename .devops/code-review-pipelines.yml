@@ -20,7 +20,7 @@ stages:
               path: $(GRADLE_USER_HOME)
             displayName: Configure gradle caching
 
-          - task: SonarCloudPrepare@1
+          - task: SonarCloudPrepare@2
             displayName: 'Prepare SonarCloud analysis configuration'
             inputs:
               SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
