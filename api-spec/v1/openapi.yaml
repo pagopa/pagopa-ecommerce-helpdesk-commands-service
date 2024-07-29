@@ -105,7 +105,6 @@ components:
       example: 200
     RefundTransactionRequest:
       type: object
-
       properties:
         transactionId:
           type: string
