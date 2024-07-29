@@ -105,31 +105,34 @@ components:
       example: 200
     RefundTransactionRequest:
       type: object
+
       properties:
         transactionId:
-          required: true
           type: string
           description: The id of the transaction
           minLength: 32
           maxLength: 32
         paymentMethodName:
-          required: true
           type: string
           description: The name of the payment method
         pspId:
-          required: true
           type: string
           description: The id of the psp
         operationId:
-          required: true
           type: string
           description: The id of the operation
         correlationId:
-          required: true
           type: string
           description: correlation id for a transaction executed with NPG
         amount:
           $ref: '#/components/schemas/AmountEuroCents'
+      required:
+        - transactionId
+        - paymentMethodName
+        - pspId
+        - operationId
+        - correlationId
+        - amount
   requestBodies:
     RefundTransactionRequest:
       required: true
