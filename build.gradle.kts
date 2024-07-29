@@ -23,6 +23,7 @@ springBoot {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
+val ecsLoggingVersion = "1.5.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -30,6 +31,9 @@ dependencies {
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+  // ECS logback encoder
+  implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
   // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
