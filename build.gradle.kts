@@ -10,6 +10,7 @@ plugins {
   id("org.graalvm.buildtools.native") version "0.10.2"
   id("com.diffplug.spotless") version "6.18.0"
   id("com.dipien.semantic-version") version "2.0.0" apply false
+  id("org.sonarqube") version "4.2.0.3129"
   jacoco
 }
 
