@@ -39,9 +39,9 @@ dependencies {
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+  implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   // implementation("jakarta.xml.bind:jakarta.xml.bind-api")
-
 
   // mongodb
   // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
@@ -54,8 +54,6 @@ dependencies {
 }
 
 kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
-
-tasks.test { useJUnitPlatform() }
 
 kotlin { jvmToolchain(21) }
 
