@@ -54,7 +54,7 @@ stages:
               ./gradlew --stop
             displayName: Gradlew stop
 
-          - task: PublishCodeCoverageResults@1
+          - task: PublishCodeCoverageResults@2
             inputs:
               codeCoverageTool: 'JaCoCo'
               summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
