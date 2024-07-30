@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.NpgPspApiKeysConfig
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,7 +21,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgCardsApiKeys")
     @Bean
     fun npgCardsApiKeys(
         @Value("\${npg.authorization.cards.keys}") apiKeys: String,
@@ -42,7 +40,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgPaypalApiKeys")
     @Bean
     fun npgPaypalApiKeys(
         @Value("\${npg.authorization.paypal.keys}") apiKeys: String,
@@ -62,7 +59,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgBancomatPayApiKeys")
     @Bean
     fun npgBancomatPayApiKeys(
         @Value("\${npg.authorization.bancomatpay.keys}") apiKeys: String,
@@ -82,7 +78,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgMyBankApiKeys")
     @Bean
     fun npgMyBankApiKeys(
         @Value("\${npg.authorization.mybank.keys}") apiKeys: String,
@@ -102,7 +97,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgApplePayApiKeys")
     @Bean
     fun npgApplePayApiKeys(
         @Value("\${npg.authorization.applepay.keys}") apiKeys: String,
@@ -122,7 +116,6 @@ class NpgPspsApiKeyConfigBuilder {
      *
      * @return the parsed map
      */
-    @Qualifier("npgSatispayApiKeys")
     @Bean
     fun npgSatispayApiKeys(
         @Value("\${npg.authorization.satispay.keys}") apiKeys: String,

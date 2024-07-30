@@ -42,7 +42,8 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  // implementation("jakarta.xml.bind:jakarta.xml.bind-api")
+  implementation("javax.annotation:javax.annotation-api:1.3.2")
+  implementation("com.google.code.findbugs:jsr305:3.0.2")
 
   // mongodb
   // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
@@ -117,8 +118,36 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
   )
 }
 
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
+  generatorName.set("java")
+  inputSpec.set("$rootDir/npg-api/npg-api.yaml")
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.pagopa.generated.npg.api")
+  modelPackage.set("it.pagopa.generated.npg.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  modelNameSuffix.set("Dto")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
+    )
+  )
+}
+
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1")
+  dependsOn("helpdeskcommands-v1", "npg-api")
   // kotlinOptions.jvmTarget = "21"
 }
 
