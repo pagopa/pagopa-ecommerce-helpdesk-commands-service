@@ -30,6 +30,7 @@ springBoot {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
+
 val ecsLoggingVersion = "1.5.0"
 
 dependencies {
@@ -45,7 +46,7 @@ dependencies {
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   // implementation("jakarta.xml.bind:jakarta.xml.bind-api")
 
-    // ECS logback encoder
+  // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
