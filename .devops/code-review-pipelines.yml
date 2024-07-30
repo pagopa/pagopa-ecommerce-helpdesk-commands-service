@@ -1,0 +1,62 @@
+variables:
+  BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
+  GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: BuildEndUnitTest
+    jobs:
+      - job: make_buildEndUnitTest
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'gradle | "$(Agent.OS)" | **/build.gradle.kts' # Swap build.gradle.kts for build.gradle when using Groovy
+              restoreKeys: |
+                gradle | "$(Agent.OS)"
+                gradle
+              path: $(GRADLE_USER_HOME)
+            displayName: Configure gradle caching
+
+          - task: SonarCloudPrepare@2
+            displayName: 'Prepare SonarCloud analysis configuration'
+            inputs:
+              SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
+              organization: '$(SONARCLOUD_ORG)'
+              scannerMode: Other
+              extraProperties: |
+                sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
+                sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
+                sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*
+                sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
+                sonar.junit.reportPaths=./build/test-results/test
+
+          - task: Gradle@3
+            inputs:
+              gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
+              tasks: 'build -PbuildCommons' # string. Required. Tasks. Default: build.
+              publishJUnitResults: true
+              testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
+              codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
+              codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
+              javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
+              jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
+              sonarQubeRunAnalysis: true
+
+          - task: SonarCloudPublish@2
+            displayName: 'Publish SonarCloud results on build summary'
+            inputs:
+              pollingTimeoutSec: '300'
+          - script: |
+              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
+              ./gradlew --stop
+            displayName: Gradlew stop
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+              summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
+              reportDirectory: 'build/reports/jacoco/test/html'
+            displayName: 'Publish Code Coverage on Azure Devops'
