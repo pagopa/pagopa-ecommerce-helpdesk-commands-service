@@ -2,7 +2,6 @@ package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
-import java.math.BigDecimal
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -17,12 +16,7 @@ class CommandsController() : CommandsApi {
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
-        val mockResponse =
-            RefundTransactionResponseDto()
-                .refundOperationId(BigDecimal(1231231322))
-                .detail("All ok")
-                .result("Done")
-                .status(200)
+        val mockResponse = RefundTransactionResponseDto().refundOperationId("1231231322")
         return Mono.just(ResponseEntity.ok(mockResponse))
     }
 }
