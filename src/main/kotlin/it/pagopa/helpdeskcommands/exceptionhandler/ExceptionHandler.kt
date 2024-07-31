@@ -1,4 +1,4 @@
-package it.pagopa.ecommerce.helpdesk.exceptionhandler
+package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
