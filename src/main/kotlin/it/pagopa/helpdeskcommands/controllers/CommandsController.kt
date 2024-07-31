@@ -20,7 +20,7 @@ class CommandsController() : CommandsApi {
         val mockResponse = RefundTransactionResponseDto().refundOperationId("1231231322")
         return refundTransactionRequestDto?.flatMap {
             logger.info(
-                "Refound transaction for userId: {}, transactionId: {}",
+                "Refund transaction for userId: {}, transactionId: {}",
                 xUserId,
                 it.transactionId
             )
