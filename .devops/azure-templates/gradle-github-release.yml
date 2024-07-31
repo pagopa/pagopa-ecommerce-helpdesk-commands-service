@@ -1,0 +1,153 @@
+# Node Github Relase steps
+# Mark a release on the project repository, with version bump and tag,
+# and publish a release on Github
+
+parameters:
+
+  # Versioning parameters
+  - name: 'semver'
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+      - none
+
+  # Versioning parameters
+  - name: 'semver_chart'
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+      - none
+
+  # This is the branch in which we will push the release tag.
+  # It'll be master, but it can be overridden
+  # Basically, this variable is used to enforce the fact that we use the very same branch in different steps
+  - name: 'release_branch'
+    type: string
+    default: main
+
+  # Github parameters
+  - name: 'gitUsername'
+    type: string
+  - name: 'gitEmail'
+    type: string
+  - name: 'gitHubConnection'
+    type: string
+
+steps:
+  # setup git author
+  - script: |
+      git config --global user.email "${{ parameters.gitEmail }}" && git config --global user.name "${{ parameters.gitUsername }}"
+    displayName: 'Git setup'
+
+  # Without this step, changes would be applied to a detached head
+  - script: |
+      git checkout ${{ parameters.release_branch }}
+    displayName: 'Checkout release branch'
+  - task: JavaToolInstaller@0
+    displayName: 'Installing JDK'
+    inputs:
+      versionSpec: "17"
+      jdkArchitectureOption: x64
+      jdkSourceOption: 'PreInstalled'
+  # bump version
+  - ${{ if ne(parameters['semver'], 'none') }}:
+      - task: Gradle@3
+        displayName: 'Bump version'
+        name: bump_version
+        inputs:
+          tasks: 'help'
+          options: 'incrementVersion --versionIncrementType=${{ parameters.semver }}'
+          jdkVersionOption: '1.17'
+      - task: Bash@3
+        name: next_version_app
+        displayName: 'Set release variables'
+        inputs:
+          targetType: "inline"
+          script: |
+            version=$(./gradlew printVersion -Psnapshot=false  -q | head -n1 | cut -d' ' -f2)
+            echo "##vso[task.setvariable variable=value;isOutput=true]$version"
+            git add build.gradle.kts
+          failOnStderr: true
+      - task: Bash@3
+        displayName: Update Version Values Helm
+        name: update_version_helm
+        inputs:
+          targetType: 'inline'
+          script: |
+            for i in helm/values-*.yaml; do
+              [ -f "$i" ] || break
+              yq -i ".microservice-chart.image.tag = \"$(next_version_app.value)\"" "$i"
+              git add "$i"
+            done
+      - task: Bash@3
+        name: update_app_version
+        displayName: 'Setup helm microservice chart'
+        inputs:
+          targetType: "inline"
+          script: |
+            CHART_FILE="helm/Chart.yaml"
+            if [[ -f "$CHART_FILE" ]]; then
+              yq -i ".appVersion = \"$(next_version_app.value)\"" "$CHART_FILE"
+              git add "$CHART_FILE"
+            fi   
+
+  - task: Bash@3
+    name: setup_semver_utility
+    displayName: 'Setup semver utility'
+    inputs:
+      targetType: "inline"
+      script: |
+        yarn global add semver
+  - task: Bash@3
+    name: update_chart_version
+    displayName: 'Setup helm microservice chart'
+    inputs:
+      targetType: "inline"
+      script: |
+        RELEASE_CHART_SEMVER=${{parameters.semver_chart}}
+        CHART_FILE="helm/Chart.yaml"
+        CURRENT_CHART_VERSION=$(yq -r '.version' $CHART_FILE)
+        if [[ -f "$CHART_FILE" ]]; then
+          yq -i ".version = \"$(semver $CURRENT_CHART_VERSION -i $RELEASE_CHART_SEMVER )\"" "$CHART_FILE"
+          git add "$CHART_FILE"
+        fi
+  - task: Bash@3
+    name: next_version_chart
+    displayName: 'Set release chart variables'
+    inputs:
+      targetType: "inline"
+      script: |
+        CHART_FILE="helm/Chart.yaml"
+        version=$(yq -r '.version' $CHART_FILE)
+        echo "##vso[task.setvariable variable=value;isOutput=true]$version"
+      failOnStderr: true
+  # push new version
+  - script: |
+      git commit -m "Bump version [skip ci]"
+      git push origin ${{ parameters.release_branch }}
+    displayName: 'Push to the release branch'
+
+  - script: |
+      HEAD_SHA=$(git rev-parse HEAD)
+      TAG="$(next_version_chart.value)"
+      TITLE="Release $(next_version_chart.value)"
+      echo "##vso[task.setvariable variable=title]$TITLE"
+      echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
+      echo "##vso[task.setvariable variable=tag]$TAG"
+    displayName: 'Set release variables'
+
+  # create new release
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: ${{ parameters.gitHubConnection }}
+      repositoryName: $(Build.Repository.Name)
+      action: create
+      target: $(sha)
+      tagSource: manual
+      tag: $(tag)
+      title: $(title)
+      addChangelog: true
