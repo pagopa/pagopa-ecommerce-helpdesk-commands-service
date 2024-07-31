@@ -13,12 +13,12 @@ class CommandsController() : CommandsApi {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun refundOperation(
-        xUserId: String?,
-        refundTransactionRequestDto: Mono<RefundTransactionRequestDto>?,
+        xUserId: String,
+        refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         val mockResponse = RefundTransactionResponseDto().refundOperationId("1231231322")
-        return refundTransactionRequestDto?.flatMap {
+        return refundTransactionRequestDto.flatMap {
             logger.info(
                 "Refund transaction for userId: {}, transactionId: {}",
                 xUserId,
@@ -26,6 +26,5 @@ class CommandsController() : CommandsApi {
             )
             Mono.just(ResponseEntity.ok(mockResponse))
         }
-            ?: Mono.just(ResponseEntity.notFound().build())
     }
 }
