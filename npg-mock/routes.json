@@ -1,6 +1,3 @@
 {
-    "*/psp/api/v1/build/cardData*": "/cardData",
-    "*/psp/api/v1/build/confirm_payment": "/confirmPayment",
-    "*/psp/api/v1/operations/*/refunds": "/refunds",
-    "*/psp/api/v1/build/state*": "/stateOK"
+    "*/psp/api/v1/operations/*/refunds": "/refunds"
 }
