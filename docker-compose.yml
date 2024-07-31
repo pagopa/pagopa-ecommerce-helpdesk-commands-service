@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  pagopa-ecommerce-helpdesk-commands-service:
+    container_name: pagopa-ecommerce-helpdesk-commands-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    networks:
+      - pagopa-ecommerce-net
+  pagopa-npg-mock:
+    build:
+      context: .
+      dockerfile: npg-mock/Dockerfile.npg-mock
+    container_name: pagopa-NPG-mock
+    volumes:
+      - type: bind
+        source: ./npg-mock
+        target: /config
+        read_only: true
+    ports:
+      - "${NPG_PORT}:3000"
+    networks:
+      - pagopa-ecommerce-net
+
+networks:
+  pagopa-ecommerce-net:
+    name: pagopa-ecommerce-net
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
+
+

@@ -1,0 +1,275 @@
+{
+  "buildApm": {
+    "state": "REDIRECTED_TO_EXTERNAL_DOMAIN",
+    "url": "https://localhost.it",
+    "securityToken": "securityToken",
+    "sessionId": "sessionId",
+    "sriHash": "sriHash"
+  },
+  "buildCards": {
+    "state": "READY_FOR_PAYMENT",
+    "sessionId": "sessionId",
+    "securityToken": "securityToken",
+    "fields": [
+      {
+        "type": "TEXT",
+        "id": "CARD_NUMBER",
+        "src": "http://example/?id=CARD_NUMBER&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "EXPIRATION_DATE",
+        "src": "http://example/?id=EXPIRATION_DATE&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "SECURITY_CODE",
+        "src": "http://example/?id=SECURITY_CODE&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "CARDHOLDER_NAME",
+        "src": "http://example/?id=CARDHOLDER_NAME&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      }
+    ]
+  },
+  "cardData": {
+    "bin": "42424242",
+    "lastFourDigits": "4242",
+    "expiringDate": "11/38",
+    "circuit": "VISA"
+  },
+  "confirmPayment": {
+    "state": "PAYMENT_COMPLETE",
+    "url": "http://example.test"
+  },
+  "refunds": {
+    "operationId": "operationId",
+    "operationTime": "2022-09-01T01:20:00.001Z"
+  },
+  "stateOK": {
+    "state": "PAYMENT_COMPLETE",
+    "operation": {
+      "orderId": "E1707399315679dQNX",
+      "operationId": "800638924408940399",
+      "channel": null,
+      "channelDetail": "SERVER_TO_SERVER",
+      "operationType": "AUTHORIZATION",
+      "operationResult": "EXECUTED",
+      "operationTime": "2024-02-08 14:36:35.926",
+      "paymentMethod": "CARD",
+      "paymentCircuit": "MC",
+      "paymentInstrumentInfo": "***1597",
+      "paymentEndToEndId": "800638924408940399",
+      "cancelledOperationId": null,
+      "operationAmount": "12100",
+      "operationCurrency": "EUR",
+      "customerInfo": {
+        "cardHolderName": "Gianluca Ciuffa ",
+        "cardHolderEmail": null,
+        "billingAddress": null,
+        "shippingAddress": null,
+        "mobilePhoneCountryCode": null,
+        "mobilePhone": null,
+        "homePhone": null,
+        "workPhone": null,
+        "cardHolderAcctInfo": null,
+        "merchantRiskIndicator": null
+      },
+      "warnings": [],
+      "paymentLinkId": null,
+      "omnichannelId": null,
+      "additionalData": {
+        "paymentAccountReference": null,
+        "maskedPan": "512739******1597",
+        "authorizationCode": "725256",
+        "cardCountry": "380",
+        "cardId": "d42ee7278bce2d7d03dbde70a5e0d58db0b1887bdabb7d65abd55d42d954a13a",
+        "cardType": "MASTERCARD",
+        "cardId4": "m9Z5C3AgqOubsXve6P9XdACbYOKV5Kduyp/pykrtzvQ=",
+        "cardExpiryDate": "203012",
+        "rrn": "403900808791",
+        "schemaTID": null
+      }
+    }
+  },
+  "orderAuthorized": {
+    "operations": [
+      {
+        "additionalData": {
+          "maskedPan": "525500******0014",
+          "authorizationCode": "978717",
+          "cardId": "117ed908ffccf546a7a3e2b4e42e36528fbaf232e9c8c0581d619d8af9031c94",
+          "cardType": "NONE",
+          "authorizationStatus": "000",
+          "cardId4": "UjYPHlkvUMN7BIZ1PR0ZRlmdwnkF3wrKGJsNWQ44VSU=",
+          "cardExpiryDate": "203012",
+          "rrn": "241309005609"
+        },
+        "cancelledOperationId": "",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "operationAmount": "12150",
+        "operationCurrency": "EUR",
+        "operationId": "773217006343441309",
+        "operationResult": "EXECUTED",
+        "operationTime": "2024-05-09 12:34:56.490",
+        "operationType": "AUTHORIZATION",
+        "orderId": "E1715250857822A99g",
+        "paymentCircuit": "MC",
+        "paymentEndToEndId": "773217006343441309",
+        "paymentInstrumentInfo": "***0014",
+        "paymentMethod": "CARD",
+        "warnings": []
+      }
+    ],
+    "orderStatus": {
+      "authorizedAmount": "0",
+      "capturedAmount": "0",
+      "lastOperationTime": "2024-05-09T12:36:53.971+02:00",
+      "lastOperationType": "AUTHORIZATION",
+      "order": {
+        "amount": "12150",
+        "currency": "EUR",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "orderId": "E1715250857822A99g",
+        "termsAndConditionsIds": [],
+        "transactionSummary": []
+      }
+    }
+  },
+  "orderWithRefund": {
+    "operations": [
+      {
+        "additionalData": {
+          "maskedPan": "525500******0014",
+          "authorizationCode": "978717",
+          "cardId": "117ed908ffccf546a7a3e2b4e42e36528fbaf232e9c8c0581d619d8af9031c94",
+          "cardType": "NONE",
+          "authorizationStatus": "000",
+          "cardId4": "UjYPHlkvUMN7BIZ1PR0ZRlmdwnkF3wrKGJsNWQ44VSU=",
+          "cardExpiryDate": "203012",
+          "rrn": "241309005609"
+        },
+        "cancelledOperationId": "",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "operationAmount": "12150",
+        "operationCurrency": "EUR",
+        "operationId": "773217006343441309",
+        "operationResult": "EXECUTED",
+        "operationTime": "2024-05-09 12:34:56.490",
+        "operationType": "AUTHORIZATION",
+        "orderId": "E1715250857822A99g",
+        "paymentCircuit": "MC",
+        "paymentEndToEndId": "773217006343441309",
+        "paymentInstrumentInfo": "***0014",
+        "paymentMethod": "CARD",
+        "warnings": []
+      },
+      {
+        "additionalData": {
+          "maskedPan": "525500******0014",
+          "authorizationCode": "978717",
+          "cardId": "117ed908ffccf546a7a3e2b4e42e36528fbaf232e9c8c0581d619d8af9031c94",
+          "cardType": "NONE",
+          "authorizationStatus": "000",
+          "cardId4": "UjYPHlkvUMN7BIZ1PR0ZRlmdwnkF3wrKGJsNWQ44VSU=",
+          "cardExpiryDate": "203012",
+          "rrn": "241309005609"
+        },
+        "cancelledOperationId": "",
+        "channel": "BACKOFFICE",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "operationAmount": "12150",
+        "operationCurrency": "EUR",
+        "operationId": "1779d43c-33ae-4a61-b1db-79c0149307ea",
+        "operationResult": "VOIDED",
+        "operationTime": "2024-05-09 12:36:53.971",
+        "operationType": "REFUND",
+        "orderId": "E1715250857822A99g",
+        "paymentCircuit": "MC",
+        "paymentEndToEndId": "773217006343441309",
+        "paymentInstrumentInfo": "***0014",
+        "paymentMethod": "CARD",
+        "warnings": []
+      }
+    ],
+    "orderStatus": {
+      "authorizedAmount": "0",
+      "capturedAmount": "0",
+      "lastOperationTime": "2024-05-09T12:36:53.971+02:00",
+      "lastOperationType": "REFUND",
+      "order": {
+        "amount": "12150",
+        "currency": "EUR",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "orderId": "E1715250857822A99g",
+        "termsAndConditionsIds": [],
+        "transactionSummary": []
+      }
+    }
+  },
+  "orderAuthorizedWithoutOperationId": {
+    "operations": [
+      {
+        "additionalData": {
+          "maskedPan": "525500******0014",
+          "authorizationCode": "978717",
+          "cardId": "117ed908ffccf546a7a3e2b4e42e36528fbaf232e9c8c0581d619d8af9031c94",
+          "cardType": "NONE",
+          "authorizationStatus": "000",
+          "cardId4": "UjYPHlkvUMN7BIZ1PR0ZRlmdwnkF3wrKGJsNWQ44VSU=",
+          "cardExpiryDate": "203012",
+          "rrn": "241309005609"
+        },
+        "cancelledOperationId": "",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "operationAmount": "12150",
+        "operationCurrency": "EUR",
+        "operationResult": "EXECUTED",
+        "operationTime": "2024-05-09 12:34:56.490",
+        "operationType": "AUTHORIZATION",
+        "orderId": "E1715250857822A99g",
+        "paymentCircuit": "MC",
+        "paymentEndToEndId": "773217006343441309",
+        "paymentInstrumentInfo": "***0014",
+        "paymentMethod": "CARD",
+        "warnings": []
+      }
+    ],
+    "orderStatus": {
+      "authorizedAmount": "0",
+      "capturedAmount": "0",
+      "lastOperationTime": "2024-05-09T12:36:53.971+02:00",
+      "lastOperationType": "AUTHORIZATION",
+      "order": {
+        "amount": "12150",
+        "currency": "EUR",
+        "customerInfo": {
+          "cardHolderName": "M T "
+        },
+        "orderId": "E1715250857822A99g",
+        "termsAndConditionsIds": [],
+        "transactionSummary": []
+      }
+    }
+  },
+  "stateKO": {
+    "state": "GDI_VERIFICATION"
+  }
+}
