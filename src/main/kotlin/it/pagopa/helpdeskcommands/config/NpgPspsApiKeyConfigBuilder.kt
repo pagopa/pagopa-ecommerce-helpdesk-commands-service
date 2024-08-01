@@ -142,10 +142,8 @@ class NpgPspsApiKeyConfigBuilder {
         npgMyBankApiKeys: NpgPspApiKeysConfig,
         npgApplePayApiKeys: NpgPspApiKeysConfig,
         npgSatispayApiKeys: NpgPspApiKeysConfig,
-        @Value("\${npg.client.apiKey}") defaultApiKey: String
     ) =
         NpgApiKeyConfiguration.Builder()
-            .setDefaultApiKey(defaultApiKey)
             .withMethodPspMapping(PaymentMethod.CARDS, npgCardsApiKeys)
             .withMethodPspMapping(PaymentMethod.PAYPAL, npgPaypalApiKeys)
             .withMethodPspMapping(PaymentMethod.MYBANK, npgMyBankApiKeys)
