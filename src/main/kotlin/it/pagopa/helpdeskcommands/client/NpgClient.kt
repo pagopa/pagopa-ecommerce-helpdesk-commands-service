@@ -1,10 +1,16 @@
 package it.pagopa.helpdeskcommands.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
+import io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR
 import it.pagopa.generated.npg.api.PaymentServicesApi
+import it.pagopa.generated.npg.model.ClientErrorDto
 import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
+import it.pagopa.generated.npg.model.ServerErrorDto
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.utils.PaymentConstants
+import java.io.IOException
 import java.math.BigDecimal
 import java.util.*
 import org.slf4j.LoggerFactory
@@ -17,7 +23,10 @@ import reactor.core.publisher.Mono
 
 /** NPG API client service class */
 @Component
-class NpgClient(@Autowired private val npgWebClient: PaymentServicesApi) {
+class NpgClient(
+    @Autowired private val npgWebClient: PaymentServicesApi,
+    private val objectMapper: ObjectMapper
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     /**
@@ -63,7 +72,29 @@ class NpgClient(@Autowired private val npgWebClient: PaymentServicesApi) {
 
     private fun exceptionToNpgResponseException(err: Throwable): NpgClientException {
         if (err is WebClientResponseException) {
-            return mapNpgException(err.statusCode)
+            try {
+                val responseErrors =
+                    when (err.statusCode.value()) {
+                        INTERNAL_SERVER_ERROR.code() ->
+                            objectMapper
+                                .readValue(err.responseBodyAsByteArray, ServerErrorDto::class.java)
+                                .errors
+                        BAD_REQUEST.code() ->
+                            objectMapper
+                                .readValue(err.responseBodyAsByteArray, ClientErrorDto::class.java)
+                                .errors
+                        else -> emptyList()
+                    }?.mapNotNull { it.code }
+                        ?: emptyList()
+                logger.error("Npg error codes: {}", responseErrors)
+                return mapNpgException(err.statusCode)
+            } catch (ex: IOException) {
+                return NpgClientException(
+                    description =
+                        "Invalid error response from NPG with status code ${err.statusCode}",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                )
+            }
         }
         return NpgClientException(
             "Unexpected error while invoke method for refund",

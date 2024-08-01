@@ -31,6 +31,8 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
 
+val mockWebServerVersion = "4.12.0"
+
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -52,6 +54,9 @@ dependencies {
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
+  testImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")
+  testImplementation("com.squareup.okhttp3:okhttp:$mockWebServerVersion")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
