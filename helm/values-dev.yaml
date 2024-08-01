@@ -1,0 +1,109 @@
+microservice-chart:
+  namespace: "ecommerce"
+  nameOverride: ""
+  fullnameOverride: "pagopa-ecommerce-helpdesk-commands-service"
+  image:
+    repository: pagopadcommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
+    tag: "0.0.0"
+    pullPolicy: Always
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 8080
+    initialDelaySeconds: 120
+    failureThreshold: 6
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: 8080
+    initialDelaySeconds: 120
+    failureThreshold: 6
+    periodSeconds: 10
+  deployment:
+    create: true
+  service:
+    create: true
+    type: ClusterIP
+    ports:
+      - 8080
+  ingress:
+    create: true
+    host: "weudev.ecommerce.internal.dev.platform.pagopa.it"
+    path: /pagopa-ecommerce-helpdesk-commands-service/(.*)
+    servicePort: 8080
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+  podAnnotations: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "150m"
+    limits:
+      memory: "256Mi"
+      cpu: "150m"
+  autoscaling:
+    enable: false
+    minReplica: 1
+    maxReplica: 1
+    pollingInterval: 10 # seconds
+    cooldownPeriod: 50 # seconds
+    triggers:
+      - type: cpu
+        metadata:
+          # Required
+          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          value: "75"
+  envConfig:
+    DEFAULT_LOGGING_LEVEL: "info"
+    APP_LOGGING_LEVEL: "info"
+    WEB_LOGGING_LEVEL: "info"
+    ECS_SERVICE_NAME: "pagopa-ecommerce-helpdesk-commands-service"
+    ECS_SERVICE_ENVIRONMENT: "dev"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-ecommerce-helpdesk-service,deployment.environment=dev"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_LOGS_EXPORTER: none
+    OTEL_TRACES_SAMPLER: "always_on"
+    NPG_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
+    NPG_READ_TIMEOUT: "10000"
+    NPG_CONNECTION_TIMEOUT: "10000"
+    NPG_CARDS_PSP_LIST: "BCITITMM,CIPBITMM,BIC36019,UNCRITMM,BPPIITRRXXX,PPAYITR1XXX,BNLIITRR,PASCITMM,WOLLNLB1,IFSPIT21"
+    NPG_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX"
+    NPG_MYBANK_PSP_LIST: "BCITITMM,UNCRITMM"
+    NPG_BANCOMATPAY_PSP_LIST: "BCITITMM"
+    NPG_SATISPAY_PSP_LIST: "SATYLUL1"
+    NPG_APPLEPAY_PSP_LIST: "SIGPITM1XXX"
+    NPG_AUTHORIZATION_REQUEST_TIMEOUT_SECONDS: "60"
+  envSecret:
+    OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
+    NPG_CARDS_PSP_KEYS: npg-cards-psp-keys
+    NPG_PAYPAL_PSP_KEYS: npg-paypal-psp-keys
+    NPG_BANCOMATPAY_PSP_KEYS: npg-bancomatpay-psp-keys
+    NPG_MYBANK_PSP_KEYS: npg-mybank-psp-keys
+    NPG_SATISPAY_PSP_KEYS: npg-satispay-psp-keys
+    NPG_APPLEPAY_PSP_KEYS: npg-apple-pay-psp-keys
+  keyvault:
+    name: "pagopa-d-ecommerce-kv"
+    tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
+  nodeSelector: {}
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node_type
+                operator: In
+                values:
+                  - user
+  canaryDelivery:
+    deployment:
+      image:
+        tag: ""
