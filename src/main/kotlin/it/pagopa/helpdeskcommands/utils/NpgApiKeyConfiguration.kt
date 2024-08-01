@@ -3,7 +3,6 @@ package it.pagopa.helpdeskcommands.utils
 import arrow.core.Either
 import arrow.core.left
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
-import java.util.*
 
 class NpgApiKeyConfiguration(
     private val methodsApiKeyMapping: Map<PaymentMethod, NpgPspApiKeysConfig>
