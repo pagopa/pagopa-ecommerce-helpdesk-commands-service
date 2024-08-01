@@ -50,7 +50,6 @@ class CommandsServiceTest {
 
     private val npgApiKeyConfiguration =
         NpgApiKeyConfiguration.Builder()
-            .setDefaultApiKey("defaultApiKey")
             .withMethodPspMapping(
                 PaymentMethod.CARDS,
                 NpgPspApiKeysConfig(mapOf(PSP_ID to PSP_KEY))

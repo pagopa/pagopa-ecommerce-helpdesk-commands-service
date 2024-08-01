@@ -7,12 +7,10 @@ import org.junit.jupiter.api.assertThrows
 
 class NpgApiKeyConfigurationTest {
 
-    val DEFAULT_API_KEY = "default-api-key"
     val PSP_ID = "pspId1"
 
     val npgApiKeyConfiguration =
         NpgApiKeyConfiguration.Builder()
-            .setDefaultApiKey(DEFAULT_API_KEY)
             .withMethodPspMapping(
                 PaymentMethod.PAYPAL,
                 NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
@@ -26,11 +24,9 @@ class NpgApiKeyConfigurationTest {
     @Test
     fun shouldRetrieveApiKeySuccessfully() {
         // test
-        val defaultApiKey = npgApiKeyConfiguration.getDefaultApiKey()
         val paypalApiKey = npgApiKeyConfiguration.get(PaymentMethod.PAYPAL, PSP_ID)
         val cardsApiKey = npgApiKeyConfiguration[PaymentMethod.CARDS, PSP_ID]
         // assertions
-        assertEquals(DEFAULT_API_KEY, defaultApiKey)
         assertEquals("pspId1-paypal-api-key", paypalApiKey.getOrNull())
         assertEquals("pspId1-cards-api-key", cardsApiKey.getOrNull())
     }
@@ -41,7 +37,6 @@ class NpgApiKeyConfigurationTest {
         val exception =
             assertThrows<NpgApiKeyConfigurationException> {
                 NpgApiKeyConfiguration.Builder()
-                    .setDefaultApiKey(DEFAULT_API_KEY)
                     .withMethodPspMapping(
                         PaymentMethod.PAYPAL,
                         NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
@@ -76,7 +71,7 @@ class NpgApiKeyConfigurationTest {
         // test
         val exception =
             assertThrows<NpgApiKeyConfigurationException> {
-                NpgApiKeyConfiguration.Builder().setDefaultApiKey(DEFAULT_API_KEY).build()
+                NpgApiKeyConfiguration.Builder().build()
             }
         // assertions
         assertEquals(
