@@ -11,11 +11,6 @@ class NpgApiKeyConfiguration(
 ) {
 
     init {
-        require(defaultApiKey != null) {
-            throw NpgApiKeyConfigurationException(
-                "Invalid configuration detected! Default api key mapping cannot be null"
-            )
-        }
         require(methodsApiKeyMapping.isNotEmpty()) {
             throw NpgApiKeyConfigurationException(
                 "Invalid configuration detected! Payment methods api key mapping cannot be null or empty"
