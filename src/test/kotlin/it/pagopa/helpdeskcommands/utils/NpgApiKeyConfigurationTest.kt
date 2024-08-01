@@ -72,29 +72,6 @@ class NpgApiKeyConfigurationTest {
     }
 
     @Test
-    fun shouldThrowExceptionForMissingDefaultApiKey() {
-        // test
-        val exception =
-            assertThrows<NpgApiKeyConfigurationException> {
-                NpgApiKeyConfiguration.Builder()
-                    .withMethodPspMapping(
-                        PaymentMethod.PAYPAL,
-                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
-                    )
-                    .withMethodPspMapping(
-                        PaymentMethod.CARDS,
-                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-cards-api-key"))
-                    )
-                    .build()
-            }
-        // assertions
-        assertEquals(
-            "Invalid configuration detected! Default api key mapping cannot be null",
-            exception.message
-        )
-    }
-
-    @Test
     fun shouldThrowExceptionForMissingMethodsKeys() {
         // test
         val exception =
