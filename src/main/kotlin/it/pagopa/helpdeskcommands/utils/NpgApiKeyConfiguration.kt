@@ -17,7 +17,7 @@ class NpgApiKeyConfiguration(
     }
 
     data class Builder(
-        var methodsApiKeyMapping: MutableMap<PaymentMethod, NpgPspApiKeysConfig> = mutableMapOf()
+        val methodsApiKeyMapping: MutableMap<PaymentMethod, NpgPspApiKeysConfig> = mutableMapOf()
     ) {
 
         fun withMethodPspMapping(
