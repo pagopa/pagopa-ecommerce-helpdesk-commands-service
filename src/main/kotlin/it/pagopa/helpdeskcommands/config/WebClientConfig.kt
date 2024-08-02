@@ -4,7 +4,11 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.npg.api.PaymentServicesApi
+import it.pagopa.generated.npg.model.ClientErrorDto
+import it.pagopa.generated.npg.model.RefundResponseDto
+import it.pagopa.generated.npg.model.ServerErrorDto
 import java.util.concurrent.TimeUnit
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,6 +20,11 @@ import reactor.netty.http.client.HttpClient
 class WebClientConfig {
 
     @Bean
+    @RegisterReflectionForBinding(
+        RefundResponseDto::class,
+        ServerErrorDto::class,
+        ClientErrorDto::class
+    )
     fun npgWebClient(
         @Value("\${npg.uri}") baseUrl: String,
         @Value("\${npg.readTimeout}") readTimeout: Int,
