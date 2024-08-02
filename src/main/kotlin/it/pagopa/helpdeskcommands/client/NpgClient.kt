@@ -97,7 +97,7 @@ class NpgClient(
             }
         }
         return NpgClientException(
-            "Unexpected error while invoke method for refund: [${err.message}]",
+            "Unexpected error while invoke method for refund: ${err.message}",
             HttpStatus.INTERNAL_SERVER_ERROR
         )
     }
