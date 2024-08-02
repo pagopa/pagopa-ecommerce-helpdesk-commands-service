@@ -10,13 +10,5 @@
           "description":"The capture has already been fully refunded - xxxxx"
         }
     ]
-  },
-  "transactionNotFound": {
-    "errors": [
-      {
-        "code":"GW0042",
-        "description":"Transaction not found"
-      }
-    ]
   }
 }

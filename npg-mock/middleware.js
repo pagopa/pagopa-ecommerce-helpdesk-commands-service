@@ -21,9 +21,7 @@ module.exports = function (req, res, next) {
     .jsonp(db.get("refundError"));
   } else if (requestPath.includes("transactionNotFound")) {
     //handle not found transaction
-    res
-    .status(400)
-    .jsonp(db.get("transactionNotFound"));
+    res.sendStatus(404);
   }
   else {
       // Continue to default JSON Server router
