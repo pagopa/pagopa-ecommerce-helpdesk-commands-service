@@ -22,7 +22,7 @@ module.exports = function (req, res, next) {
   } else if (requestPath.includes("transactionNotFound")) {
     //handle not found transaction
     res
-    .status(404)
+    .status(400)
     .jsonp(db.get("transactionNotFound"));
   }
   else {

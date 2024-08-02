@@ -14,8 +14,8 @@
   "transactionNotFound": {
     "errors": [
       {
-        "code":"PS0020",
-        "description":"Operation not found"
+        "code":"GW0042",
+        "description":"Transaction not found"
       }
     ]
   }
