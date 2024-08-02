@@ -44,8 +44,6 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  implementation("javax.annotation:javax.annotation-api:1.3.2")
-  implementation("com.google.code.findbugs:jsr305:3.0.2")
 
   // mongodb
   // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
@@ -116,6 +114,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
       "enumPropertyNaming" to "UPPERCASE"
@@ -145,6 +144,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "false"
     )
