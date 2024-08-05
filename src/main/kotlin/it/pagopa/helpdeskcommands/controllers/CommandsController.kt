@@ -21,7 +21,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
-        return refundTransactionRequestDto.flatMap { request ->
+        return refundTransactionRequestDto.flatMap {
             logger.info(
                 "Refund transaction for userId: {}, transactionId: {}",
                 xUserId,
@@ -29,12 +29,12 @@ class CommandsController(@Autowired private val commandsService: CommandsService
             )
             commandsService
                 .requestNpgRefund(
-                    operationId = request.operationId,
-                    transactionId = request.transactionId,
-                    correlationId = request.correlationId,
-                    paymentMethod = PaymentMethod.fromServiceName(request.paymentMethodName),
-                    pspId = request.pspId,
-                    amount = request.amount.toBigDecimal()
+                    operationId = it.operationId,
+                    transactionId = it.transactionId,
+                    correlationId = it.correlationId,
+                    paymentMethod = PaymentMethod.fromServiceName(it.paymentMethodName),
+                    pspId = it.pspId,
+                    amount = it.amount.toBigDecimal()
                 )
                 .map {
                     ResponseEntity.ok(
