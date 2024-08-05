@@ -24,7 +24,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         return refundTransactionRequestDto.flatMap {
             val ipAddress = exchange?.request?.remoteAddress?.address?.hostAddress
             logger.info(
-                "Refund transaction for userId: {}, transactionId: {} from IP: {}",
+                "Refund transaction for userId: [{}], transactionId: [{}] from IP: [{}]",
                 xUserId,
                 it.transactionId,
                 ipAddress
