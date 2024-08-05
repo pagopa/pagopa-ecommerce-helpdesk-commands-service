@@ -1,6 +1,14 @@
 {
   "refunds": {
-    "operationId": "operationId",
+    "operationId": "3470744",
     "operationTime": "2022-09-01T01:20:00.001Z"
+  },
+  "refundError": {
+    "errors": [
+        {
+          "code":"PS0033",
+          "description":"The capture has already been fully refunded - xxxxx"
+        }
+    ]
   }
 }

@@ -15,11 +15,9 @@ These are all environment variables needed by the application:
 
 | Variable name            | Description                                                                                                                                 | type    | default |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|---------|---------|
-| NPG_PORT                 | NPG service port                                                                                                                            | string  |         |
 | NPG_URI                  | NPG service URI                                                                                                                             | string  |         |
 | NPG_READ_TIMEOUT         | NPG service HTTP read timeout                                                                                                               | integer |         |
 | NPG_CONNECTION_TIMEOUT   | NPG service HTTP connection timeout                                                                                                         | integer |         |
-| NPG_API_KEY              | NPG service api-key                                                                                                                         | string  |         |
 | NPG_CARDS_PSP_KEYS       | Secret structure that holds psp - api keys association for authorization request                                                            | string  |         |
 | NPG_CARDS_PSP_LIST       | List of all psp ids that are expected to be found into the NPG_CARDS_PSP_KEYS configuration (used for configuration cross validation        | string  |         |
 | NPG_PAYPAL_PSP_KEYS      | Secret structure that holds psp - api keys association for authorization request used for APM PAYPAL payment method                         | string  |         |

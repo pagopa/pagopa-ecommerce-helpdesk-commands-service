@@ -1,3 +1,5 @@
 {
-    "*/psp/api/v1/operations/*/refunds": "/refunds"
+    "*/psp/api/v1/operations/ecf06892c9e04ae39626dfdfda631b94/refunds": "/refunds",
+    "*/psp/api/v1/operations/bb51a29cf32b46a387938a7e0446a6ec/refunds": "/refundError",
+    "*/psp/api/v1/operations/*/refunds": "/transactionNotFound"
 }

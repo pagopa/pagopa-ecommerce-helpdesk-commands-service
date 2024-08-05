@@ -31,6 +31,7 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
 
+val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
 
 dependencies {
@@ -44,7 +45,6 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  // implementation("jakarta.xml.bind:jakarta.xml.bind-api")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
@@ -56,6 +56,9 @@ dependencies {
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
+  testImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")
+  testImplementation("com.squareup.okhttp3:okhttp:$mockWebServerVersion")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -115,6 +118,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
       "enumPropertyNaming" to "UPPERCASE"
@@ -122,8 +126,37 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
   )
 }
 
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
+  generatorName.set("java")
+  inputSpec.set("$rootDir/npg-api/npg-api.yaml")
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.pagopa.generated.npg.api")
+  modelPackage.set("it.pagopa.generated.npg.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  modelNameSuffix.set("Dto")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
+    )
+  )
+}
+
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1")
+  dependsOn("helpdeskcommands-v1", "npg-api")
   // kotlinOptions.jvmTarget = "21"
 }
 
