@@ -1,20 +1,22 @@
 {
 	"info": {
-		"_postman_id": "42fc5b60-7adb-44b9-8d47-372be4aa9e08",
+		"_postman_id": "b5671418-b101-4ce2-9670-f817a06f0994",
 		"name": "Ecommerce helpDesk-Commands-service LOCAL",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "9864793"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36814090"
 	},
 	"item": [
 		{
-			"name": "eCommerce helpDesk-Commands Refund Operation - error 400 Operation Already Refunded",
+			"name": "eCommerce helpDesk-Commands Refund Operation - Operation Already Refunded",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded - Status code is 400\", function () {",
-							"    pm.response.to.have.status(400);",
+							"    pm.response.to.have.status(500);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.detail).to.be.eq(\"Bad request\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -33,6 +35,11 @@
 					{
 						"key": "deployment",
 						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "x-user-id",
+						"value": "{{X_USER_ID}}",
 						"type": "text"
 					}
 				],
@@ -53,21 +60,22 @@
 					"path": [
 						"commands",
 						"refund"
-					],
-					"query": []
+					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "eCommerce helpDesk-Commands Refund Operation - error 404 Operation not found",
+			"name": "eCommerce helpDesk-Commands Refund Operation - Operation not found",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist - Status code is 404\", function () {",
-							"    pm.response.to.have.status(404);",
+							"    pm.response.to.have.status(502);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.detail).to.be.eq(\"NPG server error: 404 NOT_FOUND\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -86,6 +94,11 @@
 					{
 						"key": "deployment",
 						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "x-user-id",
+						"value": "{{X_USER_ID}}",
 						"type": "text"
 					}
 				],
@@ -106,8 +119,7 @@
 					"path": [
 						"commands",
 						"refund"
-					],
-					"query": []
+					]
 				}
 			},
 			"response": []
@@ -142,6 +154,11 @@
 						"key": "deployment",
 						"value": "{{DEPLOYMENT}}",
 						"type": "text"
+					},
+					{
+						"key": "x-user-id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -161,13 +178,10 @@
 					"path": [
 						"commands",
 						"refund"
-					],
-					"query": []
+					]
 				}
 			},
 			"response": []
 		}
 	]
 }
-
-

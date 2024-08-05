@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "12e6853e-0bde-4b82-be9b-5268defb4840",
+		"_postman_id": "d8844161-7b7a-498a-bc6d-c692f9e30a6c",
 		"name": "Ecommerce helpDesk-Commands-service UAT",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23963988"
+		"_exporter_id": "36814090"
 	},
 	"item": [
 		{
@@ -58,8 +58,7 @@
 						"v1",
 						"commands",
 						"refund"
-					],
-					"query": []
+					]
 				}
 			},
 			"response": []
