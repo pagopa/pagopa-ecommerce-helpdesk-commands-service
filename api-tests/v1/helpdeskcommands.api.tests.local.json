@@ -7,6 +7,61 @@
 	},
 	"item": [
 		{
+			"name": "eCommerce helpDesk-Commands Refund Operation - error Operation Already Refunded",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation - Status code is 200 with valid json response\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('refundOperationId').to.be.a('string');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/commands/refund",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"commands",
+						"refund"
+					],
+					"query": []
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "eCommerce helpDesk-Commands Refund Operation",
 			"event": [
 				{
