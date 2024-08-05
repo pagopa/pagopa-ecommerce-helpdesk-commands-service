@@ -31,6 +31,8 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
 
+val ecsLoggingVersion = "1.5.0"
+
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -43,6 +45,9 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   // implementation("jakarta.xml.bind:jakarta.xml.bind-api")
+
+  // ECS logback encoder
+  implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
   // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
