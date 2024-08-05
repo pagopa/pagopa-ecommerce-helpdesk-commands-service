@@ -142,10 +142,9 @@ stages:
         steps:
           - template: azure-templates/api-tests.yml
             parameters:
-              ENV_FILE: "api-tests/env/helpDesk_dev.env.json"
-              API_TEST_FILE: "api-tests/v1/eCommerce-helpdesk.api.tests.dev.json"
+              ENV_FILE: "api-tests/env/helpdeskcommands_dev.env.json"
+              API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.dev.json"
               TEST_FILE_PREFIX: "dev"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_DEV)
-              USER_EMAIL: $(HELPDESK_TESTING_EMAIL_DEV)
-              USER_FISCAL_CODE: $(HELPDESK_TESTING_FISCALCODE_DEV)
+              OPERATION_ID: $(HELPDESK_TESTING_OPERATION_ID_DEV)
   # --- END API TEST for DEV DEPLOY --- #
