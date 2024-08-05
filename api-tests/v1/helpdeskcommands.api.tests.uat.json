@@ -48,11 +48,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{HOSTNAME}}/commands/refund",
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund",
 					"host": [
 						"{{HOSTNAME}}"
 					],
 					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
 						"commands",
 						"refund"
 					],
