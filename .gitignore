@@ -120,6 +120,8 @@ replay_pid*
 
 # Log file
 
+# Env file
+.env
 # BlueJ files
 
 # Mobile Tools for Java (J2ME)

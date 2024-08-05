@@ -17,10 +17,16 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun refundOperation(
+        xUserId: String,
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap { request ->
+            logger.info(
+                "Refund transaction for userId: {}, transactionId: {}",
+                xUserId,
+                it.transactionId
+            )
             commandsService
                 .requestNpgRefund(
                     operationId = request.operationId,
