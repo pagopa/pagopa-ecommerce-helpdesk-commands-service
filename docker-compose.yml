@@ -23,7 +23,7 @@ services:
         target: /config
         read_only: true
     ports:
-      - "${NPG_PORT}:3000"
+      - "3000:3000"
     networks:
       - pagopa-ecommerce-net
 

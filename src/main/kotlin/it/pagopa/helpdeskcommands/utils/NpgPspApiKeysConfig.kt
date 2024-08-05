@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyMissingPspRequestedException
-import java.util.*
 
 class NpgPspApiKeysConfig(private val configuration: Map<String, String> = mutableMapOf()) {
     /**

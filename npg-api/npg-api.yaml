@@ -1,0 +1,129 @@
+openapi: 3.0.2
+info:
+  title: Nexi Build APIs
+  version: '0.7'
+servers:
+  - url: https://{gateway_test}/api/v1
+    description: TEST
+  - url: https://{gateway_prod}/api/v1
+    description: PROD
+security:
+  - OAuth2: [ ]
+paths:
+  /psp/api/v1/operations/{operationId}/refunds:
+    post:
+      tags:
+        - Payment Services
+      summary: Create an order and initiates a payment through build functionality.
+      description: This service is targeted to ecommerce platforms requiring to implement the refund of a payment given the operationId
+      parameters:
+        - name: operationId
+          required: true
+          in: path
+          schema:
+            type: string
+          description: ID of the operation
+        - name: Correlation-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
+        - name: Idempotency-key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Idempotence key
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      responses:
+        '200':
+          description: In case of success, the service returns a dto containing the information about the operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientError'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Operation not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+components:
+  schemas:
+    ClientError:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/Errors'
+    Errors:
+      type: array
+      items:
+        $ref: '#/components/schemas/Errors_inner'
+    ServerError:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/Errors'
+    Errors_inner:
+      type: object
+      properties:
+        code:
+          type: string
+          example: GW0001
+        description:
+          type: string
+          example: Invalid merchant URL
+    RefundRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          example: '100'
+          description: Amount of the refund in eurocent
+        currency:
+          type: string
+          example: EUR
+          description: Currency of the amount
+        description:
+          type: string
+          example: Goods have been shipped
+          description: Reason for refunding
+    RefundResponse:
+      type: object
+      properties:
+        operationId:
+          type: string
+          example: '3470744'
+          description: ID operation
+        operationTime:
+          type: string
+          example: '2022-09-01T01:20:00.001Z'
+          description: Datetime of the operation
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
