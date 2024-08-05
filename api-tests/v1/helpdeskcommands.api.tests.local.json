@@ -38,7 +38,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
+					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID_ALREADY_SERVED}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
 					"options": {
 						"raw": {
 							"language": "json"
