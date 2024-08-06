@@ -9,19 +9,13 @@ parameters:
   - name: "API_SUBSCRIPTION_KEY"
     type: string
     default: ' '
-  - name: "USER_EMAIL"
-    type: string
-    default: ' '
-  - name: "USER_FISCAL_CODE"
-    type: string
-    default: ' '
 
 steps:
   - script: |
       yarn global add newman
     displayName: 'Newman installation'
   - script: |
-      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var API_SUBSCRIPTION_KEY=${{ parameters.API_SUBSCRIPTION_KEY }} --env-var USER_EMAIL=${{ parameters.USER_EMAIL }} --env-var USER_FISCAL_CODE=${{ parameters.USER_FISCAL_CODE }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
+      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var API_SUBSCRIPTION_KEY=${{ parameters.API_SUBSCRIPTION_KEY }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
     displayName: 'Run api test'
   - task: PublishTestResults@2
     condition: succeededOrFailed()

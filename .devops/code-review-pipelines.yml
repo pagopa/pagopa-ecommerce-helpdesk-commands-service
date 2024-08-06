@@ -60,3 +60,25 @@ stages:
               summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
               reportDirectory: 'build/reports/jacoco/test/html'
             displayName: 'Publish Code Coverage on Azure Devops'
+
+  - stage: IntegrationTest
+    jobs:
+      - job: make_integration_test
+        steps:
+            - script: cp .env.example .env
+              displayName: 'Setup env'
+            - script: docker compose up -d
+              displayName: 'Run app with docker-compose'
+            - script: |
+                timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
+              displayName: 'Health check'
+            - script: yarn global add newman
+              displayName: 'newman installation'
+            - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/NPG-api-TEST.xml
+              displayName: 'Run NPG api test with mock'
+              continueOnError: false
+            - task: PublishTestResults@2
+              inputs:
+                testResultsFormat: 'JUnit'
+                testResultsFiles: '**/*-TEST.xml'
+                searchFolder: '$(System.DefaultWorkingDirectory)'
