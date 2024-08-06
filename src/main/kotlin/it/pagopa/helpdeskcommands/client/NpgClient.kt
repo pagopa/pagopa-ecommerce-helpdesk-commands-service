@@ -62,8 +62,9 @@ class NpgClient(
             )
             .doOnError(WebClientResponseException::class.java) {
                 logger.error(
-                    "Error communicating with NPG-refund for correlationId $correlationId - " +
-                        "response: ${it.responseBodyAsString}",
+                    "Error communicating with NPG-refund for correlationId [{}] - response: [{}]",
+                    correlationId,
+                    it.responseBodyAsString,
                     it
                 )
             }
@@ -86,7 +87,7 @@ class NpgClient(
                         else -> emptyList()
                     }?.mapNotNull { it.code }
                         ?: emptyList()
-                logger.error("Npg error codes: {}", responseErrors)
+                logger.error("Npg error codes: [{}]", responseErrors)
                 return mapNpgException(err.statusCode)
             } catch (ex: IOException) {
                 return NpgClientException(

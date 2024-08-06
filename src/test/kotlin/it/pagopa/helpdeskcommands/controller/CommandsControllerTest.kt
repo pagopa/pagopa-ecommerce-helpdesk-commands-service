@@ -41,6 +41,7 @@ class CommandsControllerTest {
     fun testRefundPaymentMethod() {
         val operationId = UUID.randomUUID().toString()
         val userId = UUID.randomUUID().toString()
+        val sourceIP = "127.0.0.1"
         val refundResponseDto = RefundResponseDto().operationId(operationId)
         val refundTransactionResponseDto =
             RefundTransactionResponseDto().refundOperationId(operationId)
@@ -51,6 +52,7 @@ class CommandsControllerTest {
             .uri("/commands/refund")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId)
+            .header("X-Forwarded-For", sourceIP)
             .bodyValue(HelpDeskCommandsTestUtils.CREATE_REFUND_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()
