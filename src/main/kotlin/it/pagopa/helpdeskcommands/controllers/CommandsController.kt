@@ -18,7 +18,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
 
     override fun refundOperation(
         xUserId: String,
-        xForwardedFor: String?,
+        xForwardedFor: String,
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
