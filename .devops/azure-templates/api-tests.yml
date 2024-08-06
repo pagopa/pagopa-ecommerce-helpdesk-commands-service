@@ -9,16 +9,13 @@ parameters:
   - name: "API_SUBSCRIPTION_KEY"
     type: string
     default: ' '
-  - name: "OPERATION_ID"
-    type: string
-    default: ' '
 
 steps:
   - script: |
       yarn global add newman
     displayName: 'Newman installation'
   - script: |
-      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var API_SUBSCRIPTION_KEY=${{ parameters.API_SUBSCRIPTION_KEY }} --env-var OPERATION_ID=${{ parameters.OPERATION_ID }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
+      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var API_SUBSCRIPTION_KEY=${{ parameters.API_SUBSCRIPTION_KEY }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
     displayName: 'Run api test'
   - task: PublishTestResults@2
     condition: succeededOrFailed()

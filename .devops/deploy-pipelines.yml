@@ -146,5 +146,4 @@ stages:
               API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.dev.json"
               TEST_FILE_PREFIX: "dev"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_DEV)
-              OPERATION_ID: $(HELPDESK_TESTING_OPERATION_ID_DEV)
   # --- END API TEST for DEV DEPLOY --- #
