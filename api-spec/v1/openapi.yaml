@@ -27,6 +27,12 @@ paths:
           description: User ID (populated by APIM policy)
           schema:
             type: string
+        - in: header
+          name: X-Forwarded-For
+          required: true
+          description: Client Source IP Address
+          schema:
+            type: string
       requestBody:
         $ref: "#/components/requestBodies/RefundTransactionRequest"
       responses:

@@ -18,17 +18,16 @@ class CommandsController(@Autowired private val commandsService: CommandsService
 
     override fun refundOperation(
         xUserId: String,
+        xForwardedFor: String?,
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap {
-            val ipAddress = exchange?.request?.remoteAddress?.address?.hostAddress;
-
             logger.info(
                 "Refund transaction for userId: [{}], transactionId: [{}] from IP: [{}]",
                 xUserId,
                 it.transactionId,
-                ipAddress
+                xForwardedFor
             )
             commandsService
                 .requestNpgRefund(
