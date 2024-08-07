@@ -13,7 +13,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded - Status code is 400\", function () {",
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
 							"    pm.response.to.have.status(500);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.detail).to.be.eq(\"Bad request\");",
@@ -38,14 +38,19 @@
 						"type": "text"
 					},
 					{
-						"key": "x-user-id",
+						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID_ALREADY_SERVED}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_ALREADY_SERVED}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -72,7 +77,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist - Status code is 404\", function () {",
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
 							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.detail).to.be.eq(\"NPG server error: 404 NOT_FOUND\");",
@@ -97,14 +102,19 @@
 						"type": "text"
 					},
 					{
-						"key": "x-user-id",
+						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID_NOT_FOUND}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_NOT_FOUND}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -156,14 +166,19 @@
 						"type": "text"
 					},
 					{
-						"key": "x-user-id",
+						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"transactionId\":\"{{TRANSACTION_ID}}\",\"paymentMethodName\":\"{{PAYMENT_METHOD_NAME}}\",\"correlationId\":\"{{CORRELATION_ID}}\",\"operationId\":\"{{OPERATION_ID}}\",\"pspId\":\"{{PSP_ID}}\",\"amount\":{{AMOUNT}}}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
