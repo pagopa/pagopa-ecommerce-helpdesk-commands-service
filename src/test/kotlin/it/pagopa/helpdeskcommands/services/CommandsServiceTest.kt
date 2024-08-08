@@ -9,6 +9,7 @@ import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.NpgPspApiKeysConfig
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
+import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
 import java.util.*
 import java.util.stream.Stream
@@ -34,6 +35,7 @@ class CommandsServiceTest {
 
     final val PSP_ID = "pspId1"
     final val PSP_KEY = "pspId1-paypal-api-key"
+    final val TRANSACTION_ID_STRING = "93cce28d3b7c4cb9975e6d856ecee89f"
 
     private val npgWebClient: PaymentServicesApi =
         WebClientConfig()
@@ -91,7 +93,7 @@ class CommandsServiceTest {
     @Test
     fun requestRefund_200_npg() {
         val operationId = "operationID"
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
         val amount = BigDecimal.valueOf(1000)
         // Precondition
@@ -126,7 +128,7 @@ class CommandsServiceTest {
                 eq(PSP_KEY),
                 eq(UUID.fromString(correlationId)),
                 eq(operationId),
-                eq(transactionId),
+                eq(transactionId.uuid),
                 eq(amount),
                 any()
             )
@@ -139,7 +141,7 @@ class CommandsServiceTest {
         expectedException: Class<out Throwable>
     ) {
         val operationId = "operationID"
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
         val amount = BigDecimal.valueOf(1000)
         // Precondition
@@ -173,7 +175,7 @@ class CommandsServiceTest {
                 eq(PSP_KEY),
                 eq(UUID.fromString(correlationId)),
                 eq(operationId),
-                eq(transactionId),
+                eq(transactionId.uuid),
                 eq(amount),
                 any()
             )
@@ -186,7 +188,7 @@ class CommandsServiceTest {
         expectedException: Class<out Throwable>
     ) {
         val operationId = "operationID"
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
         val amount = BigDecimal.valueOf(1000)
         // Precondition
@@ -210,7 +212,7 @@ class CommandsServiceTest {
                 eq(PSP_KEY),
                 eq(UUID.fromString(correlationId)),
                 eq(operationId),
-                eq(transactionId),
+                eq(transactionId.uuid),
                 eq(amount),
                 any()
             )
@@ -222,7 +224,7 @@ class CommandsServiceTest {
         val refundService =
             CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
         val operationId = "operationID"
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
         val amount = BigDecimal.valueOf(1000)
         // Precondition
@@ -254,7 +256,7 @@ class CommandsServiceTest {
                 eq(PSP_KEY),
                 eq(UUID.fromString(correlationId)),
                 eq(operationId),
-                eq(transactionId),
+                eq(transactionId.uuid),
                 eq(amount),
                 any()
             )
@@ -266,7 +268,7 @@ class CommandsServiceTest {
         val refundService =
             CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
         val operationId = "operationID"
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
         val amount = BigDecimal.valueOf(1000)
         val pspId = "unknown"

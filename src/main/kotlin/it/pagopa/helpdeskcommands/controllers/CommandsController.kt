@@ -5,6 +5,7 @@ import it.pagopa.generated.helpdeskcommands.model.RefundTransactionRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionResponseDto
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
+import it.pagopa.helpdeskcommands.utils.TransactionId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -32,7 +33,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
             commandsService
                 .requestNpgRefund(
                     operationId = it.operationId,
-                    transactionId = it.transactionId,
+                    transactionId = TransactionId(it.transactionId),
                     correlationId = it.correlationId,
                     paymentMethod = PaymentMethod.fromServiceName(it.paymentMethodName),
                     pspId = it.pspId,
