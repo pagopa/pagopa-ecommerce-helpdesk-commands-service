@@ -176,7 +176,7 @@ stages:
           - template: azure-templates/chart-current-version.yml
 
   - stage: Release
-      dependsOn: Build_release_candidate
+    dependsOn: Build_release_candidate
     jobs:
       - job: make_release
         displayName: Make github release
@@ -285,22 +285,6 @@ stages:
               API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
               TEST_FILE_PREFIX: "green-uat"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
-              USER_EMAIL: $(HELPDESK_TESTING_EMAIL_UAT)
-              USER_FISCAL_CODE: $(HELPDESK_TESTING_FISCALCODE_UAT)
-  - stage: "Green_API_UAT_test_V2"
-    displayName: 'Running API test on green app V2'
-    dependsOn: Deploy_UAT_Green
-    jobs:
-      - job: newman_api_test
-        steps:
-          - template: azure-templates/api-tests.yml
-            parameters:
-              ENV_FILE: "api-tests/env/helpdeskcommands_uat.env.json"
-              API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
-              TEST_FILE_PREFIX: "green-uat"
-              API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
-              USER_EMAIL: $(HELPDESK_TESTING_EMAIL_UAT)
-              USER_FISCAL_CODE: $(HELPDESK_TESTING_FISCALCODE_UAT)
   # --- END API TEST for GREEN UAT DEPLOY --- #
 
   # --- START Deploy PROD --- #
@@ -331,13 +315,13 @@ stages:
   # --- START Deploy PROD --- #
   - stage: "Build_PROD_Green"
     displayName: 'PROD green Build'
-    dependsOn: [PROD_Green_WaitForApproval,Release]
+    dependsOn: [Prod_WaitForApproval,Release]
     variables:
       prod_version: $[ stageDependencies.Release.make_release.outputs['chart_current_version.appVersion'] ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(dependencies.PROD_Green_WaitForApproval.result, 'Succeeded'),
+        eq(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
         in(dependencies.Release.result, 'Succeeded', 'Skipped')
       )
     jobs:
