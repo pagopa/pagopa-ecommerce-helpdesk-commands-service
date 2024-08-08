@@ -176,7 +176,7 @@ stages:
           - template: azure-templates/chart-current-version.yml
 
   - stage: Release
-      dependsOn: Build_release_candidate
+    dependsOn: Build_release_candidate
     jobs:
       - job: make_release
         displayName: Make github release
