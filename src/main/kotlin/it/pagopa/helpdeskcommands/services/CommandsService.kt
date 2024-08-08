@@ -5,6 +5,7 @@ import it.pagopa.helpdeskcommands.client.NpgClient
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
+import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
 import java.util.*
 import org.slf4j.Logger
@@ -23,7 +24,7 @@ class CommandsService(
 
     fun requestNpgRefund(
         operationId: String,
-        transactionId: String,
+        transactionId: TransactionId,
         amount: BigDecimal,
         pspId: String,
         correlationId: String,
@@ -46,7 +47,7 @@ class CommandsService(
                     .refundPayment(
                         correlationId = UUID.fromString(correlationId),
                         operationId = operationId,
-                        idempotenceKey = transactionId,
+                        idempotenceKey = transactionId.uuid,
                         grandTotal = amount,
                         apikey = apiKey,
                         description =

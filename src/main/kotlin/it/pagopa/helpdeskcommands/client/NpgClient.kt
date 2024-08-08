@@ -44,9 +44,9 @@ class NpgClient(
     fun refundPayment(
         apikey: String,
         correlationId: UUID,
-        operationId: String?,
-        idempotenceKey: String,
-        grandTotal: BigDecimal?,
+        operationId: String,
+        idempotenceKey: UUID,
+        grandTotal: BigDecimal,
         description: String?
     ): Mono<RefundResponseDto> {
         return npgWebClient
@@ -54,7 +54,7 @@ class NpgClient(
                 operationId,
                 correlationId,
                 apikey,
-                idempotenceKey,
+                idempotenceKey.toString(),
                 RefundRequestDto()
                     .amount(grandTotal.toString())
                     .currency(PaymentConstants.EUR_CURRENCY)
