@@ -285,18 +285,6 @@ stages:
               API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
               TEST_FILE_PREFIX: "green-uat"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
-  - stage: "Green_API_UAT_test_V2"
-    displayName: 'Running API test on green app V2'
-    dependsOn: Deploy_UAT_Green
-    jobs:
-      - job: newman_api_test
-        steps:
-          - template: azure-templates/api-tests.yml
-            parameters:
-              ENV_FILE: "api-tests/env/helpdeskcommands_uat.env.json"
-              API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
-              TEST_FILE_PREFIX: "green-uat"
-              API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
   # --- END API TEST for GREEN UAT DEPLOY --- #
 
   # --- START Deploy PROD --- #
