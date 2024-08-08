@@ -285,8 +285,6 @@ stages:
               API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
               TEST_FILE_PREFIX: "green-uat"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
-              USER_EMAIL: $(HELPDESK_TESTING_EMAIL_UAT)
-              USER_FISCAL_CODE: $(HELPDESK_TESTING_FISCALCODE_UAT)
   - stage: "Green_API_UAT_test_V2"
     displayName: 'Running API test on green app V2'
     dependsOn: Deploy_UAT_Green
@@ -299,8 +297,6 @@ stages:
               API_TEST_FILE: "api-tests/v1/helpdeskcommands.api.tests.uat.json"
               TEST_FILE_PREFIX: "green-uat"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
-              USER_EMAIL: $(HELPDESK_TESTING_EMAIL_UAT)
-              USER_FISCAL_CODE: $(HELPDESK_TESTING_FISCALCODE_UAT)
   # --- END API TEST for GREEN UAT DEPLOY --- #
 
   # --- START Deploy PROD --- #
