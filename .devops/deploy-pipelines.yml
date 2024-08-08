@@ -282,7 +282,7 @@ stages:
           - template: azure-templates/api-tests.yml
             parameters:
               ENV_FILE: "api-tests/env/helpdeskcommands_uat.env.json"
-              API_TEST_FILE: "api-tests/v1/eCommerce-helpdesk.api.tests.uat.json"
+              API_TEST_FILE: "api-tests/v2/eCommerce-helpdesk.api.tests.uat.json"
               TEST_FILE_PREFIX: "green-uat"
               API_SUBSCRIPTION_KEY: $(HELPDESK_TESTING_API_KEY_UAT)
               USER_EMAIL: $(HELPDESK_TESTING_EMAIL_UAT)
