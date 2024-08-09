@@ -5,6 +5,7 @@ import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.ClientErrorDto
+import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.generated.npg.model.ServerErrorDto
 import java.util.concurrent.TimeUnit
@@ -21,6 +22,7 @@ class WebClientConfig {
 
     @Bean
     @RegisterReflectionForBinding(
+        RefundRequestDto::class,
         RefundResponseDto::class,
         ServerErrorDto::class,
         ClientErrorDto::class
