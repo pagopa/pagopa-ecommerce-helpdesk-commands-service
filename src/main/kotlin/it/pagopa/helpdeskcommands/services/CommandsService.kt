@@ -36,7 +36,7 @@ class CommandsService(
                 logger.info(
                     "Performing NPG refund for transaction with id: [{}] and paymentMethod: [{}]. " +
                         "OperationId: [{}], amount: [{}], pspId: [{}], correlationId: [{}]",
-                    transactionId.uuid,
+                    transactionId.value,
                     paymentMethod,
                     operationId,
                     amount,
