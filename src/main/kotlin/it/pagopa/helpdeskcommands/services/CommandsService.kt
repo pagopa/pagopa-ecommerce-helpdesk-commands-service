@@ -36,7 +36,7 @@ class CommandsService(
                 logger.info(
                     "Performing NPG refund for transaction with id: [{}] and paymentMethod: [{}]. " +
                         "OperationId: [{}], amount: [{}], pspId: [{}], correlationId: [{}]",
-                    transactionId.value,
+                    transactionId.value(),
                     paymentMethod,
                     operationId,
                     amount,
@@ -56,7 +56,7 @@ class CommandsService(
                     .doOnError(NpgClientException::class.java) { exception: NpgClientException ->
                         logger.error(
                             "Exception performing NPG refund for transactionId: [{}] and operationId: [{}]",
-                            transactionId,
+                            transactionId.value(),
                             operationId,
                             exception
                         )
