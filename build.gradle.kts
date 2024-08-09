@@ -70,8 +70,8 @@ kotlin { jvmToolchain(21) }
 // dependencyLocking { lockAllConfigurations() }
 
 tasks.create("applySemanticVersionPlugin") {
-    dependsOn("prepareKotlinBuildScriptModel")
-    apply(plugin = "com.dipien.semantic-version")
+  dependsOn("prepareKotlinBuildScriptModel")
+  apply(plugin = "com.dipien.semantic-version")
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
