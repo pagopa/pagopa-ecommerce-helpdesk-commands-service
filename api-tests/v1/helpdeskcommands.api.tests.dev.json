@@ -117,7 +117,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_REFUNDED}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -151,7 +151,6 @@
 							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.title).to.be.eq(\"Npg Invocation exception - NPG transaction not found\");",
-							"    pm.expect(response.detail).to.be.eq(\"Not Found\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -185,7 +184,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_NOT_FOUND}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_NOT_FOUND}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

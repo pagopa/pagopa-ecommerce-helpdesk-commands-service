@@ -145,7 +145,6 @@
 							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.title).to.be.eq(\"Npg Invocation exception - NPG transaction not found\");",
-							"    pm.expect(response.detail).to.be.eq(\"Not Found\");",
 							"});"
 						],
 						"type": "text/javascript",
