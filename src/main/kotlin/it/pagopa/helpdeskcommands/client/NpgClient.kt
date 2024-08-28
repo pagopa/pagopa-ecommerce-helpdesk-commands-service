@@ -1,8 +1,7 @@
 package it.pagopa.helpdeskcommands.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
-import io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR
+import io.netty.handler.codec.http.HttpResponseStatus.*
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.ClientErrorDto
 import it.pagopa.generated.npg.model.RefundRequestDto
@@ -74,7 +73,7 @@ class NpgClient(
     private fun exceptionToNpgResponseException(err: Throwable): NpgClientException {
         if (err is WebClientResponseException) {
             try {
-                val responseErrors =
+                var responseErrors =
                     when (err.statusCode.value()) {
                         INTERNAL_SERVER_ERROR.code() ->
                             objectMapper
@@ -85,45 +84,61 @@ class NpgClient(
                                 .readValue(err.responseBodyAsByteArray, ClientErrorDto::class.java)
                                 .errors
                         else -> emptyList()
-                    }?.mapNotNull { it.code }
+                    }?.mapNotNull { "[${it.code}] ${it.description}" }
                         ?: emptyList()
+                if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
                 logger.error("Npg error codes: [{}]", responseErrors)
-                return mapNpgException(err.statusCode)
+                return mapNpgException(err.statusCode, responseErrors)
             } catch (ex: IOException) {
                 return NpgClientException(
                     description =
                         "Invalid error response from NPG with status code ${err.statusCode}",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors = emptyList()
                 )
             }
         }
         return NpgClientException(
             "Unexpected error while invoke method for refund: ${err.message}",
-            HttpStatus.INTERNAL_SERVER_ERROR
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            errors = emptyList()
         )
     }
 
-    private fun mapNpgException(statusCode: HttpStatusCode): NpgClientException =
+    private fun mapNpgException(
+        statusCode: HttpStatusCode,
+        errors: List<String>
+    ): NpgClientException =
         when (statusCode) {
             HttpStatus.BAD_REQUEST ->
                 NpgClientException(
                     description = "Bad request",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    errors
                 )
             HttpStatus.UNAUTHORIZED ->
                 NpgClientException(
                     description = "Misconfigured NPG api key",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    errors
                 )
             HttpStatus.INTERNAL_SERVER_ERROR ->
                 NpgClientException(
                     description = "NPG internal server error",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors
+                )
+            HttpStatus.NOT_FOUND ->
+                NpgClientException(
+                    description = "NPG transaction not found",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors
                 )
             else ->
                 NpgClientException(
                     description = "NPG server error: $statusCode",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors
                 )
         }
 }
