@@ -2,6 +2,7 @@ package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
+import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.Logger
@@ -49,7 +50,8 @@ class ExceptionHandler {
         ServerWebInputException::class,
         HttpMessageNotReadableException::class,
         WebExchangeBindException::class,
-        ConstraintViolationException::class
+        ConstraintViolationException::class,
+        IllegalArgumentException::class
     )
     fun handleRequestValidationException(
         e: Exception,
@@ -60,8 +62,23 @@ class ExceptionHandler {
             .body(
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .title("Bad request")
-                    .detail("Input request is not valid")
+                    .title("Input request is not valid")
+                    .detail(e.message)
+            )
+    }
+
+    /** NpgApiKeyConfigurationException exception handler */
+    @ExceptionHandler(NpgApiKeyConfigurationException::class)
+    fun handleNpgApikeyException(
+        e: NpgApiKeyConfigurationException
+    ): ResponseEntity<ProblemJsonDto> {
+        logger.error("Exception retrieving apikey", e)
+        return ResponseEntity.badRequest()
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("Exception retrieving apikey")
+                    .detail(e.message)
             )
     }
 

@@ -219,6 +219,51 @@ class CommandsServiceTest {
     }
 
     @Test
+    fun `should handle npg generic error`() {
+        val npgClient: NpgClient = mock()
+        val refundService =
+            CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
+        val operationId = "operationID"
+        val transactionId = TransactionId(TRANSACTION_ID_STRING)
+        val correlationId = UUID.randomUUID().toString()
+        val amount = BigDecimal.valueOf(1000)
+        // Precondition
+        given(npgClient.refundPayment(any(), any(), any(), any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    NpgClientException(
+                        "Invalid error response from NPG with status code 500",
+                        HttpStatus.BAD_GATEWAY,
+                        emptyList()
+                    )
+                )
+            )
+
+        // Test
+        StepVerifier.create(
+                refundService.requestNpgRefund(
+                    operationId = operationId,
+                    transactionId = transactionId,
+                    amount = amount,
+                    pspId = PSP_ID,
+                    correlationId = correlationId,
+                    paymentMethod = PaymentMethod.CARDS
+                )
+            )
+            .expectError(NpgClientException::class.java)
+            .verify()
+        verify(npgClient, times(1))
+            .refundPayment(
+                eq(PSP_KEY),
+                eq(UUID.fromString(correlationId)),
+                eq(operationId),
+                eq(transactionId.uuid),
+                eq(amount),
+                any()
+            )
+    }
+
+    @Test
     fun `should handle npg error without http response code info`() {
         val npgClient: NpgClient = mock()
         val refundService =
@@ -233,7 +278,8 @@ class CommandsServiceTest {
                 Mono.error(
                     NpgClientException(
                         "Invalid error response from NPG with status code 500",
-                        HttpStatus.BAD_GATEWAY
+                        HttpStatus.BAD_GATEWAY,
+                        emptyList()
                     )
                 )
             )

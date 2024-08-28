@@ -1,22 +1,22 @@
 {
 	"info": {
-		"_postman_id": "65973b44-43cf-4c09-babe-a16ea746aa3d",
+		"_postman_id": "96b5620f-5fb9-4c64-a5ca-031f493ae564",
 		"name": "Ecommerce helpDesk-Commands-service DEV",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "36814090"
 	},
 	"item": [
 		{
-			"name": "eCommerce helpDesk-Commands Refund Operation - Operation Already Refunded",
+			"name": "eCommerce helpDesk-Commands Refund Operation",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
-							"    pm.response.to.have.status(500);",
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation - Status code is 200 with valid json response\", function () {",
+							"    pm.response.to.have.status(200);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.detail).to.be.eq(\"Bad request\");",
+							"    pm.expect(response).to.have.property('refundOperationId').to.be.a('string');",
 							"});"
 						],
 						"type": "text/javascript",
@@ -50,7 +50,74 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_ALREADY_SERVED}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Refund Operation - Operation Already Refunded",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
+							"    pm.response.to.have.status(500);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Npg Invocation exception - Bad request\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -83,7 +150,7 @@
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
 							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.detail).to.be.eq(\"NPG server error: 404 NOT_FOUND\");",
+							"    pm.expect(response.title).to.be.eq(\"Npg Invocation exception - NPG transaction not found\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -117,7 +184,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_NOT_FOUND}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID_NOT_FOUND}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
