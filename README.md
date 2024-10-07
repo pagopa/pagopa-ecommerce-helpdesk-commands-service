@@ -33,6 +33,24 @@ These are all environment variables needed by the application:
 
 An example configuration of these environment variables is in the `.env.example` file.
 
+It is recommended to create a new .env file by copying the example one, using the following command (make sure you are in the .env.example folder):
+
+```shell
+cp .env.example .env
+```
+
+## Working with Windows
+
+If you are developing on Windows, it is recommended the use of WSL2 combined with IntelliJ IDEA.
+
+The IDE should be installed on Windows, with the repository cloned into a folder in WSL2. All the necessary tools will be installed in the Linux distro of your choice.
+
+You can find more info on how to set up the environment following the link below.
+
+https://www.jetbrains.com/help/idea/how-to-use-wsl-development-environment-in-product.html
+
+After setting up the WSL environment, you can test the application by building it through either Spring Boot or Docker.
+
 ## Spring Boot Native
 ### Requirements
 1. You must use GraalVM Java SDK to build native executable locally.
@@ -56,6 +74,33 @@ Also exist a gradle command to compile and run it directly:
 ```shell
 gradle :nativeRun
 ```
+
+If you want to run the project locally with Spring Boot, you should initialize npg-mock using the following commands (you need yarn installed on the WSL):
+
+```shell
+yarn add json-server@0.17.4 --exact
+```
+
+The following command should be used to start the mock server for local testing
+
+```shell
+yarn json-server ./npg-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
+```
+
+## Docker
+
+The project can be built and run using Docker and docker-compose. You should install Docker Desktop on Windows and go through its settings to set up the WSL integration.
+
+You can find more info at the following link: https://docs.docker.com/desktop/wsl/
+
+After setting up Docker, you can use the command:
+
+```shell
+docker-compose up
+```
+
+The docker-compose up command will build the image and start the containers.
+
 
 #### Tips
 The main issue with native image is related to Java Reflection.
