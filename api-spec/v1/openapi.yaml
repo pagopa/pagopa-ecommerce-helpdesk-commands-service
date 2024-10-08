@@ -34,7 +34,7 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: "#/components/requestBodies/RefundTransactionRequest"
+        $ref: '#/components/requestBodies/RefundTransactionRequest'
       responses:
         '200':
           description: Transactions refunded
@@ -64,8 +64,10 @@ paths:
     post:
       tags:
         - ecommerce
-      summary: Api's for redirect 200
-      description: 'POST without body bayload'
+      summary: Api's for refund redirect
+      description: 'POST refund redirect'
+      requestBody:
+        $ref: '#/components/requestBodies/RefundRedirectRequest'
       responses:
         '200':
           description: Redirect completed
@@ -73,6 +75,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefundRedirectResponse'
+        '400':
+          description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
 components:
   schemas:
     AmountEuroCents:
@@ -158,14 +178,33 @@ components:
         - operationId
         - correlationId
         - amount
+    RefundRedirectRequest:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: The id of the transaction
+          minLength: 32
+          maxLength: 32
+        touchpoint:
+          type: string
+          description: Name of touchpoint
+        pspId:
+          type: string
+          description: The id of the psp
+        pspTransactionId:
+          type: string
+          description: The id of the psp transaction
+        paymentMethodName:
+          type: string
+          description: The name of the payment method
     RefundRedirectResponse:
       type: object
       properties:
-        ok:
-          type: boolean
-          example: true
-      required:
-        - ok
+        refundOperationId:
+          type: string
+          description: The id of the refunded operation, if any
+          default: 0
   requestBodies:
     RefundTransactionRequest:
       required: true
@@ -173,3 +212,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RefundTransactionRequest'
+    RefundRedirectRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefundRedirectRequest'
