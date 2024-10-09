@@ -1,10 +1,7 @@
 package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
-import it.pagopa.generated.helpdeskcommands.model.RefundTransactionRequestDto
-import it.pagopa.generated.helpdeskcommands.model.RefundTransactionResponseDto
+import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
@@ -20,10 +17,22 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun commandsRefundRedirectPost(
-        refundRedirectRequestDto: Mono<RefundRedirectRequestDto>?,
+        refundRedirectRequestDto: Mono<RefundRedirectRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
-        TODO("Not yet implemented")
+        // mocked implementation
+        return refundRedirectRequestDto.flatMap { requestDto ->
+            logger.info(
+                "Received refund redirect request for transactionId: [{}]",
+                requestDto.transactionId
+            )
+            val responseDto =
+                RefundRedirectResponseDto().apply {
+                    idTransaction = requestDto.transactionId
+                    outcome = RefundOutcomeDto.OK
+                }
+            Mono.just(ResponseEntity.ok(responseDto))
+        }
     }
 
     override fun refundOperation(
