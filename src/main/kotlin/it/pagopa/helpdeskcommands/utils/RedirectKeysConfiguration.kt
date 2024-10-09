@@ -14,7 +14,7 @@ import java.util.stream.Collectors
  * ecommerce-commons Java class
  */
 class RedirectKeysConfiguration(
-    pspUrlMapping: Map<String?, String?>,
+    pspUrlMapping: Map<String, String>,
     paymentTypeCodeList: Set<String>
 ) {
     private val redirectBeApiCallUriMap: Map<String, URI>
@@ -24,7 +24,7 @@ class RedirectKeysConfiguration(
         // URI.create throws IllegalArgumentException that will prevent module load for
         // invalid PSP URI configuration
         pspUrlMapping.forEach { (pspId: String?, uri: String?) ->
-            redirectUriMap[pspId!!] = uri?.let { URI.create(it) }!!
+            redirectUriMap[pspId] = uri.let { URI.create(it) }!!
         }
         val missingKeys =
             paymentTypeCodeList
