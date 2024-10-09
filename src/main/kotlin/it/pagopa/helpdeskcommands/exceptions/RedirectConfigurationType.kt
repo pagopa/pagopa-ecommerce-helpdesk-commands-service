@@ -19,6 +19,8 @@ enum class RedirectConfigurationType(val configurationType: String) {
 
         fun fromConfigurationType(configurationType: String): RedirectConfigurationType =
             entries.find { configurationType == it.configurationType }
-                ?: throw IllegalArgumentException("Invalid configuration type: '$configurationType")
+                ?: throw IllegalArgumentException(
+                    "Invalid configuration type: '$configurationType'"
+                )
     }
 }
