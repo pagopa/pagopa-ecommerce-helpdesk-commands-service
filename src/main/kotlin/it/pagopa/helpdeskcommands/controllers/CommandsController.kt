@@ -1,6 +1,7 @@
 package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionResponseDto
@@ -19,10 +20,10 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun commandsRefundRedirectPost(
+        refundRedirectRequestDto: Mono<RefundRedirectRequestDto>?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
-        logger.info("Redirect request found")
-        return Mono.just(ResponseEntity.ok(RefundRedirectResponseDto().ok(true)))
+        TODO("Not yet implemented")
     }
 
     override fun refundOperation(

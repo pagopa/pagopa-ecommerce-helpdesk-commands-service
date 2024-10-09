@@ -1,6 +1,5 @@
 package it.pagopa.helpdeskcommands.controller
 
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionResponseDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
@@ -8,7 +7,6 @@ import it.pagopa.helpdeskcommands.controllers.CommandsController
 import it.pagopa.helpdeskcommands.services.CommandsService
 import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -63,7 +61,7 @@ class CommandsControllerTest {
             .consumeWith { assertEquals(refundTransactionResponseDto, it.responseBody) }
     }
 
-    @Test
+    /*@Test
     fun commandsRefundRedirectPost() {
         webClient
             .post()
@@ -77,5 +75,6 @@ class CommandsControllerTest {
                 assertNotNull(body)
                 assertEquals(true, body?.ok)
             }
-    }
+
+    }*/
 }

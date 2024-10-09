@@ -70,7 +70,7 @@ paths:
         $ref: '#/components/requestBodies/RefundRedirectRequest'
       responses:
         '200':
-          description: Redirect completed
+          description: Refund redirect completed
           content:
             application/json:
               schema:
@@ -200,11 +200,33 @@ components:
           description: The name of the payment method
     RefundRedirectResponse:
       type: object
+      description: Refund response body
       properties:
-        refundOperationId:
-          type: string
-          description: The id of the refunded operation, if any
-          default: 0
+        idTransaction:
+          $ref: '#/components/schemas/PagopaIdTransaction'
+        outcome:
+            $ref: '#/components/schemas/RefundOutcome'
+      required:
+        - idTransaction
+        - outcome
+    PagopaIdTransaction:
+      description: Uniquely identify a transaction
+      type: string
+      minLength: 32
+      maxLength: 32
+      example: 3fa85f6457174562b3fc2c963f66afa6
+    RefundOutcome:
+      description: |
+        Refund operation outcome:
+        it can be one of the following values:
+        * OK - `Refund operation processed successfully`
+        * KO - `There was an error performing refund`
+        * CANCELED - `The transaction was already refunded`
+      type: string
+      enum:
+        - OK
+        - KO
+        - CANCELED
   requestBodies:
     RefundTransactionRequest:
       required: true
