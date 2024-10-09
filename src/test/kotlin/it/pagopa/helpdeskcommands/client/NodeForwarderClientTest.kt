@@ -51,7 +51,7 @@ class NodeForwarderClientTest {
     }
 
     @Test
-    fun `Should proxy request successfully retrieving default port for https URL`() {
+    fun `should proxy request successfully retrieving default port for https URL`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
         val testRequest = TestRequest("test")
@@ -100,7 +100,7 @@ class NodeForwarderClientTest {
     }
 
     @Test
-    fun shouldProxyRequestSuccessfullyUsingCustomPort() {
+    fun `should proxy request successfully using custom port`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
         val testRequest = TestRequest("test")
@@ -149,7 +149,7 @@ class NodeForwarderClientTest {
     }
 
     @Test
-    fun shouldHandleErrorDeserializingResponse() {
+    fun `should handle error deserializing response`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
         val testRequest = TestRequest("test")
@@ -195,7 +195,7 @@ class NodeForwarderClientTest {
 
     @Test
     @Throws(Exception::class)
-    fun shouldSendRequestToForwarderWithAllRequiredHeaders() {
+    fun `should send request to forwarder with all required headers`() {
         // assertions
         val requestId = UUID.randomUUID().toString()
         val apiKey = "apiKey"
@@ -233,7 +233,7 @@ class NodeForwarderClientTest {
     }
 
     @Test
-    fun shouldHandleMissingXRequestIdResponseHeader() {
+    fun `should handle missing xRequestId response header`() {
         // assertions
         val requestId = UUID.randomUUID().toString()
         val client: NodeForwarderClient<TestRequest, TestResponse> =
@@ -259,7 +259,7 @@ class NodeForwarderClientTest {
     }
 
     @Test
-    fun shouldHandleErrorResponseFromForwarder() {
+    fun `should handle error response from forwarder`() {
         // assertions
         val requestId = UUID.randomUUID().toString()
         val client: NodeForwarderClient<TestRequest, TestResponse> =
