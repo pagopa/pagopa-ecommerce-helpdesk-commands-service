@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: npg-mock/Dockerfile.npg-mock
-    container_name: pagopa-NPG-mock
+    container_name: pagopa-NPG-mock-helpdesk-cmd
     volumes:
       - type: bind
         source: ./npg-mock
