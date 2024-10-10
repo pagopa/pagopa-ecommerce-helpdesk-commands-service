@@ -16,7 +16,7 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.4.0"
+version = "0.5.0"
 
 description = "pagopa-helpdeskcommands-service"
 
@@ -155,8 +155,41 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg
   )
 }
 
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
+  "node-forwarder-api-v1"
+) {
+  generatorName.set("java")
+  remoteInputSpec.set(
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
+  )
+  outputDir.set("$buildDir/generated")
+  library.set("webclient")
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
+    )
+  )
+  modelPackage.set("it.pagopa.generated.nodeforwarder.v1.dto")
+  apiPackage.set("it.pagopa.generated.nodeforwarder.v1.dto")
+  modelNameSuffix.set("Dto")
+}
+
 tasks.withType<KotlinCompile> {
   dependsOn("helpdeskcommands-v1", "npg-api")
+  dependsOn("helpdeskcommands-v1", "node-forwarder-api-v1")
   // kotlinOptions.jvmTarget = "21"
 }
 
