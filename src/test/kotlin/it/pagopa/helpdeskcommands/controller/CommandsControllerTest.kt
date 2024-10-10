@@ -1,5 +1,7 @@
 package it.pagopa.helpdeskcommands.controller
 
+import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionResponseDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
@@ -59,5 +61,25 @@ class CommandsControllerTest {
             .isOk
             .expectBody<RefundTransactionResponseDto>()
             .consumeWith { assertEquals(refundTransactionResponseDto, it.responseBody) }
+    }
+
+    @Test
+    fun commandsRefundRedirectPost() {
+
+        val refundRedirectResponseDto =
+            RefundRedirectResponseDto()
+                .idTransaction(HelpDeskCommandsTestUtils.TRANSACTION_ID)
+                .outcome(RefundOutcomeDto.OK)
+
+        webClient
+            .post()
+            .uri("/commands/refund/redirect")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(HelpDeskCommandsTestUtils.CREATE_REFUND_REDIRECT_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<RefundRedirectResponseDto>()
+            .consumeWith { assertEquals(refundRedirectResponseDto, it.responseBody) }
     }
 }
