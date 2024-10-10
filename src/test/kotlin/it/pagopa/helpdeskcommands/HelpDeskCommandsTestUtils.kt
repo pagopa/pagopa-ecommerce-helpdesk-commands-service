@@ -1,6 +1,7 @@
 package it.pagopa.helpdeskcommands
 
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionRequestDto
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import java.util.*
@@ -10,6 +11,9 @@ object HelpDeskCommandsTestUtils {
 
     val CARDS_PSP_ID = "CIPBITMM"
     val TRANSACTION_ID = "9549d38941184b5eb5dfab90aaf3a6d7"
+    val TOUCHPOINT = ""
+    val PAYAMENT_METHOD_NAME = "CARDS"
+    val PSP_TRANSACTION_ID = ""
 
     val CREATE_REFUND_TRANSACTION_REQUEST =
         RefundTransactionRequestDto()
@@ -19,6 +23,14 @@ object HelpDeskCommandsTestUtils {
             .operationId(UUID.randomUUID().toString())
             .correlationId(UUID.randomUUID().toString())
             .amount(200)
+
+    val CREATE_REFUND_REDIRECT_REQUEST =
+        RefundRedirectRequestDto()
+            .transactionId(TRANSACTION_ID)
+            .touchpoint(TOUCHPOINT)
+            .pspId(CARDS_PSP_ID)
+            .pspTransactionId(PSP_TRANSACTION_ID)
+            .paymentMethodName(PAYAMENT_METHOD_NAME)
 
     fun buildProblemJson(
         httpStatus: HttpStatus,

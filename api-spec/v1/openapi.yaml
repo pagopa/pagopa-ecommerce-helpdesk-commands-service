@@ -34,7 +34,7 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: "#/components/requestBodies/RefundTransactionRequest"
+        $ref: '#/components/requestBodies/RefundTransactionRequest'
       responses:
         '200':
           description: Transactions refunded
@@ -42,6 +42,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RefundTransactionResponse'
+        '400':
+          description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+  /commands/refund/redirect:
+    post:
+      tags:
+        - ecommerce
+      summary: Api's for refund redirect
+      description: 'POST refund redirect'
+      requestBody:
+        $ref: '#/components/requestBodies/RefundRedirectRequest'
+      responses:
+        '200':
+          description: Refund redirect completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRedirectResponse'
         '400':
           description: Formally invalid input
           content:
@@ -145,6 +178,55 @@ components:
         - operationId
         - correlationId
         - amount
+    RefundRedirectRequest:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: The id of the transaction
+          minLength: 32
+          maxLength: 32
+        touchpoint:
+          type: string
+          description: Name of touchpoint
+        pspId:
+          type: string
+          description: The id of the psp
+        pspTransactionId:
+          type: string
+          description: The id of the psp transaction
+        paymentMethodName:
+          type: string
+          description: The name of the payment method
+    RefundRedirectResponse:
+      type: object
+      description: Refund response body
+      properties:
+        idTransaction:
+          $ref: '#/components/schemas/PagopaIdTransaction'
+        outcome:
+            $ref: '#/components/schemas/RefundOutcome'
+      required:
+        - idTransaction
+        - outcome
+    PagopaIdTransaction:
+      description: Uniquely identify a transaction
+      type: string
+      minLength: 32
+      maxLength: 32
+      example: 3fa85f6457174562b3fc2c963f66afa6
+    RefundOutcome:
+      description: |
+        Refund operation outcome:
+        it can be one of the following values:
+        * OK - `Refund operation processed successfully`
+        * KO - `There was an error performing refund`
+        * CANCELED - `The transaction was already refunded`
+      type: string
+      enum:
+        - OK
+        - KO
+        - CANCELED
   requestBodies:
     RefundTransactionRequest:
       required: true
@@ -152,3 +234,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RefundTransactionRequest'
+    RefundRedirectRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefundRedirectRequest'
