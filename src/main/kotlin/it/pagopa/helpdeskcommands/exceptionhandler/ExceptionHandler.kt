@@ -3,6 +3,7 @@ package it.pagopa.helpdeskcommands.exceptionhandler
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
+import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.Logger
@@ -78,6 +79,21 @@ class ExceptionHandler {
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Exception retrieving apikey")
+                    .detail(e.message)
+            )
+    }
+
+    /** RedirectConfigurationException handler */
+    @ExceptionHandler(RedirectConfigurationException::class)
+    fun handleRedirectConfigurationException(
+        e: RedirectConfigurationException
+    ): ResponseEntity<ProblemJsonDto> {
+        logger.error("Exception retrieving redirect PSP configuration type", e)
+        return ResponseEntity.badRequest()
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("Exception retrieving configuration type")
                     .detail(e.message)
             )
     }

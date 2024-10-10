@@ -85,6 +85,7 @@ microservice-chart:
     NPG_SATISPAY_PSP_LIST: ""
     NPG_APPLEPAY_PSP_LIST: ""
     NPG_AUTHORIZATION_REQUEST_TIMEOUT_SECONDS: "60"
+    REDIRECT_PAYMENT_TYPE_CODES: "PPAYITR1XXX-RBPB,CHECKOUT-PPAYITR1XXX-RBPP,PPAYITR1XXX-RBPR"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     NPG_CARDS_PSP_KEYS: npg-cards-psp-keys
@@ -93,6 +94,7 @@ microservice-chart:
     NPG_MYBANK_PSP_KEYS: npg-mybank-psp-keys
     NPG_SATISPAY_PSP_KEYS: npg-satispay-psp-keys
     NPG_APPLEPAY_PSP_KEYS: npg-apple-pay-psp-keys
+    REDIRECT_URL_MAPPING: redirect-url-mapping
   keyvault:
     name: "pagopa-p-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
