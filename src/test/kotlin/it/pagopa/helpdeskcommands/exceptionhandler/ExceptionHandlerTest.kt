@@ -3,6 +3,7 @@ package it.pagopa.helpdeskcommands.exceptionhandler
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
+import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import jakarta.xml.bind.ValidationException
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -105,6 +106,24 @@ class ExceptionHandlerTest {
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Exception retrieving apikey",
                 description = "Cannot retrieve api key for payment method: [CARDS]"
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle RedirectConfigurationException`() {
+        val exception =
+            RedirectConfigurationException(
+                "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]"
+            )
+        val response = exceptionHandler.handleRedirectConfigurationException(exception)
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.BAD_REQUEST,
+                title = "Exception retrieving configuration type",
+                description = "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]"
             ),
             response.body
         )
