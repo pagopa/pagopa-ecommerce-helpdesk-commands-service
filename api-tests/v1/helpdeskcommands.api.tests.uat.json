@@ -206,6 +206,356 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Redirect Refund Operation - Status code is 200 with valid json response\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('idTransaction').to.be.a('PagopaIdTransaction');",
+							"    pm.expect(response).to.have.property('outcome').to.be.a('RefundOutcome');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation Already Refunded",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
+							"    pm.response.to.have.status(500);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Bad request\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
+							"    pm.response.to.have.status(502);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Redirect transaction not found\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Redirect Refund Operation - Status code is 200 with valid json response\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('idTransaction').to.be.a('PagopaIdTransaction');",
+							"    pm.expect(response).to.have.property('outcome').to.be.a('RefundOutcome');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation Already Refunded",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
+							"    pm.response.to.have.status(500);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Bad request\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
+							"    pm.response.to.have.status(502);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Redirect transaction not found\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
