@@ -24,11 +24,11 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
                 "Received refund redirect request for transactionId: [{}]",
-                requestDto.transactionId
+                requestDto.idTransaction
             )
             val responseDto =
                 RefundRedirectResponseDto().apply {
-                    idTransaction = requestDto.transactionId
+                    idTransaction = requestDto.idTransaction
                     outcome = RefundOutcomeDto.OK
                 }
             Mono.just(ResponseEntity.ok(responseDto))
