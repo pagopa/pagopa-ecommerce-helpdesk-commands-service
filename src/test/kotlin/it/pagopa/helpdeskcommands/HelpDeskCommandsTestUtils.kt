@@ -31,7 +31,7 @@ object HelpDeskCommandsTestUtils {
             .touchpoint(TOUCHPOINT)
             .pspId(CARDS_PSP_ID)
             .idPSPTransaction(PSP_TRANSACTION_ID)
-            .paymentMethodName(PAYAMENT_METHOD_NAME)
+            .paymentTypeCode(PAYAMENT_METHOD_NAME)
             .action(ACTION)
 
     fun buildProblemJson(

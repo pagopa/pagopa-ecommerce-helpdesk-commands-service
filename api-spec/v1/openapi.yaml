@@ -182,29 +182,29 @@ components:
       type: object
       properties:
         idTransaction:
-          type: string
-          description: The id of the transaction
-          minLength: 32
-          maxLength: 32
-        touchpoint:
-          type: string
-          description: Name of touchpoint
-        pspId:
-          type: string
-          description: The id of the psp
+          $ref: '#/components/schemas/PagopaIdTransaction'
         idPSPTransaction:
+          description: PSP transaction id
           type: string
-          description: The id of the psp transaction
-        paymentMethodName:
-          type: string
-          description: The name of the payment method
         action:
           description: Requested action (i.e. refund)
           type: string
+        touchpoint:
+          type: string
+          description: Name of touchpoint
+        paymentTypeCode:
+          type: string
+          description: The code of the payment method
+        pspId:
+          type: string
+          description: The id of the psp
       required:
         - idTransaction
         - idPSPTransaction
         - action
+        - touchpoint
+        - pspId
+        - paymentTypeCode
     RefundRedirectResponse:
       type: object
       description: Refund response body
