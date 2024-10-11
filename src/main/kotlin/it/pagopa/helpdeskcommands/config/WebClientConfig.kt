@@ -3,11 +3,14 @@ package it.pagopa.helpdeskcommands.config
 import io.netty.channel.ChannelOption
 import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.ClientErrorDto
 import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.generated.npg.model.ServerErrorDto
+import it.pagopa.helpdeskcommands.client.NodeForwarderClient
 import java.util.concurrent.TimeUnit
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Value
@@ -56,5 +59,15 @@ class WebClientConfig {
                 .build()
         val apiClient = it.pagopa.generated.npg.ApiClient(webClient).setBasePath(baseUrl)
         return PaymentServicesApi(apiClient)
+    }
+
+    @Bean
+    fun nodeForwarderRedirectApiClient(
+        @Value("\${node.forwarder.apiKey}") apiKey: String,
+        @Value("\${node.forwarder.url}") backendUrl: String,
+        @Value("\${node.forwarder.readTimeout}") readTimeout: Int,
+        @Value("\${node.forwarder.connectionTimeout}") connectionTimeout: Int
+    ): NodeForwarderClient<RefundRedirectRequestDto, RefundRedirectResponseDto> {
+        return NodeForwarderClient(apiKey, backendUrl, readTimeout, connectionTimeout)
     }
 }
