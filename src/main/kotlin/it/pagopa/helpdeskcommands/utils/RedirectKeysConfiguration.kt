@@ -60,7 +60,7 @@ class RedirectKeysConfiguration(
          * the key is not found, the method searches for paymentTypeCode-pspId, and if
          * not found, it searches for pspId.
          */
-        val searchResult = searchRedirectUrlForPsp(touchpoint, pspId, paymentTypeCode)
+        val searchResult = searchRedirectUrlForPsp(touchpoint, paymentTypeCode, pspId)
 
         return searchResult?.right()
             ?: Either.Left(
