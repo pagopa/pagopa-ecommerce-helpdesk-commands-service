@@ -126,6 +126,36 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
   )
 }
 
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("redirect-api-v1") {
+  generatorName.set("spring")
+  inputSpec.set("$rootDir/api-spec/client/openapi/redirect/redirect-api.yaml")
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.pagopa.generated.ecommerce.redirect.v1.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.redirect.v1.dto")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("spring-boot")
+  modelNameSuffix.set("Dto")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "true",
+      "enumPropertyNaming" to "UPPERCASE"
+    )
+  )
+}
+
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
@@ -188,8 +218,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
 }
 
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1", "npg-api")
-  dependsOn("helpdeskcommands-v1", "node-forwarder-api-v1")
+  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
   // kotlinOptions.jvmTarget = "21"
 }
 
