@@ -10,9 +10,9 @@ import org.springframework.http.HttpStatus
 object HelpDeskCommandsTestUtils {
 
     val CARDS_PSP_ID = "CIPBITMM"
+    val REDIRECT_PSP_ID = "REDIRECT"
     val TRANSACTION_ID = "9549d38941184b5eb5dfab90aaf3a6d7"
-    val TOUCHPOINT = ""
-    val PAYAMENT_METHOD_NAME = "CARDS"
+    val TOUCHPOINT = "5f521592f3d84ffa8d8f68651da91144"
     val PSP_TRANSACTION_ID = ""
     val ACTION = "refund"
 
@@ -29,9 +29,9 @@ object HelpDeskCommandsTestUtils {
         RefundRedirectRequestDto()
             .idTransaction(TRANSACTION_ID)
             .touchpoint(TOUCHPOINT)
-            .pspId(CARDS_PSP_ID)
+            .pspId(REDIRECT_PSP_ID)
             .idPSPTransaction(PSP_TRANSACTION_ID)
-            .paymentTypeCode(PAYAMENT_METHOD_NAME)
+            .paymentTypeCode(PaymentMethod.REDIRECT.serviceName)
             .action(ACTION)
 
     fun buildProblemJson(
