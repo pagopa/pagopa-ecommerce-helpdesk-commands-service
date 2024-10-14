@@ -26,14 +26,13 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
-  pagopa-redirect-mock:
+  pagopa-psp-mock:
     build:
       context: .
-      dockerfile: redirect-mock/Dockerfile.redirect-mock
-    container_name: pagopa-REDIRECT-mock-helpdesk-cmd
+      dockerfile: psp-mock/Dockerfile.psp-mock
     volumes:
       - type: bind
-        source: ./redirect-mock
+        source: ./psp-mock
         target: /config
         read_only: true
     ports:
