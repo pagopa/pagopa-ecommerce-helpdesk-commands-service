@@ -26,6 +26,20 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
+  pagopa-redirect-mock:
+    build:
+      context: .
+      dockerfile: redirect-mock/Dockerfile.redirect-mock
+    container_name: pagopa-REDIRECT-mock-helpdesk-cmd
+    volumes:
+      - type: bind
+        source: ./redirect-mock
+        target: /config
+        read_only: true
+    ports:
+      - "8096:3000"
+    networks:
+      - pagopa-ecommerce-net
 
 networks:
   pagopa-ecommerce-net:

@@ -1,0 +1,14 @@
+{
+  "refunds": {
+    "idTransaction": "ecf06892c9e04ae39626dfdfda631b94",
+    "outcome": "OK"
+  },
+  "refundError": {
+    "errors": [
+        {
+          "code":"PS0033",
+          "description":"The capture has already been fully refunded - xxxxx"
+        }
+    ]
+  }
+}
