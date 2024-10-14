@@ -1,8 +1,9 @@
 package it.pagopa.helpdeskcommands.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.helpdeskcommands.client.NodeForwarderClient
@@ -63,7 +64,7 @@ class CommandsServiceTest {
             .build()
 
     private val nodeForwarderRedirectApiClient:
-        NodeForwarderClient<RefundRedirectRequestDto, RefundRedirectResponseDto> =
+        NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto> =
         mock()
 
     private val redirectBeApiCallUriMap: Map<String, URI> =
@@ -410,8 +411,12 @@ class CommandsServiceTest {
         val pspId = "pspId"
         val redirectRefundResponse =
             RefundRedirectResponseDto().idTransaction(transactionId).outcome(RefundOutcomeDto.OK)
+        val redirectRefundResponseDto =
+            RedirectRefundResponseDto()
+                .idTransaction(transactionId)
+                .outcome(it.pagopa.generated.ecommerce.redirect.v1.dto.RefundOutcomeDto.OK)
         val expectedRequest =
-            RefundRedirectRequestDto()
+            RedirectRefundRequestDto()
                 .action("refund")
                 .idPSPTransaction(pspTransactionId)
                 .idTransaction(transactionId)
@@ -419,7 +424,7 @@ class CommandsServiceTest {
             .willReturn(
                 Mono.just(
                     NodeForwarderClient.NodeForwarderResponse(
-                        redirectRefundResponse,
+                        redirectRefundResponseDto,
                         Optional.empty()
                     )
                 )
@@ -441,7 +446,7 @@ class CommandsServiceTest {
                 expectedRequest,
                 redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
                 transactionId,
-                RefundRedirectResponseDto::class.java
+                RedirectRefundResponseDto::class.java
             )
     }
 
@@ -489,7 +494,7 @@ class CommandsServiceTest {
         val paymentTypeCode = "RPIC"
         val pspId = "pspId"
         val expectedRequest =
-            RefundRedirectRequestDto()
+            RedirectRefundRequestDto()
                 .action("refund")
                 .idPSPTransaction(pspTransactionId)
                 .idTransaction(transactionId)
@@ -530,7 +535,7 @@ class CommandsServiceTest {
                 expectedRequest,
                 redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
                 transactionId,
-                RefundRedirectResponseDto::class.java
+                RedirectRefundResponseDto::class.java
             )
     }
 }

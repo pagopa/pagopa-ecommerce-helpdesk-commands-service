@@ -3,8 +3,8 @@ package it.pagopa.helpdeskcommands.config
 import io.netty.channel.ChannelOption
 import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.ClientErrorDto
 import it.pagopa.generated.npg.model.RefundRequestDto
@@ -67,7 +67,7 @@ class WebClientConfig {
         @Value("\${node.forwarder.url}") backendUrl: String,
         @Value("\${node.forwarder.readTimeout}") readTimeout: Int,
         @Value("\${node.forwarder.connectionTimeout}") connectionTimeout: Int
-    ): NodeForwarderClient<RefundRedirectRequestDto, RefundRedirectResponseDto> {
+    ): NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto> {
         return NodeForwarderClient(apiKey, backendUrl, readTimeout, connectionTimeout)
     }
 }

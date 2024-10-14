@@ -1,6 +1,8 @@
 package it.pagopa.helpdeskcommands.services
 
-import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
+import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
 import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.client.NodeForwarderClient
@@ -30,7 +32,7 @@ class CommandsService(
     @Autowired private val redirectKeysConfiguration: RedirectKeysConfiguration,
     @Autowired
     private val nodeForwarderClient:
-        NodeForwarderClient<RefundRedirectRequestDto, RefundRedirectResponseDto>
+        NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto>
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -51,13 +53,13 @@ class CommandsService(
                     nodeForwarderClient
                         .proxyRequest(
                             request =
-                                RefundRedirectRequestDto()
+                                RedirectRefundRequestDto()
                                     .action("refund")
                                     .idPSPTransaction(pspTransactionId)
                                     .idTransaction(transactionId.value()),
                             proxyTo = uri,
                             requestId = transactionId.value(),
-                            responseClass = RefundRedirectResponseDto::class.java
+                            responseClass = RedirectRefundResponseDto::class.java
                         )
                         .onErrorMap(NodeForwarderClientException::class.java) { exception ->
                             val errorCause = exception.cause
@@ -96,7 +98,11 @@ class CommandsService(
                                     )
                                 )
                         }
-                        .map { it.body }
+                        .map {
+                            RefundRedirectResponseDto()
+                                .idTransaction(it.body.idTransaction)
+                                .outcome(RefundOutcomeDto.valueOf(it.body.outcome.name))
+                        }
                 }
             )
     }
