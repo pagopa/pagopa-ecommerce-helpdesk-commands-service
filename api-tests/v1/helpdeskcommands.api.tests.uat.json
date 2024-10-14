@@ -242,7 +242,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -300,7 +300,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -358,7 +358,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -417,7 +417,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -475,7 +475,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -533,7 +533,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYAMENT_METHOD_NAME}}\",\r\n    \"pspId\": {{CARDS_PSP_ID}}\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
