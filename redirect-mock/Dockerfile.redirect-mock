@@ -1,7 +1,0 @@
-FROM node:18.19.0-alpine
-
-WORKDIR /usr/src/app
-
-RUN yarn global add json-server@0.17.4 --exact
-
-CMD ["json-server", "/config/redirect-server.json", "--routes", "/config/routes.json", "--middlewares", "/config/middleware.js", "--host", "0.0.0.0"]
