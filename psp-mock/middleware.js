@@ -133,6 +133,17 @@ function redirectRefund(requestBody) {
     };
   }
 
+  if(idTransaction === 'bb51a29cf32b46a387938a7e0446a6ed') {
+    return {
+      errors: [
+        {
+          code:"PS0000",
+          description:"transaction id does not exist."
+        }
+      ]
+    }
+  }
+
   return {
     idTransaction: idTransaction,
     outcome: "OK"
