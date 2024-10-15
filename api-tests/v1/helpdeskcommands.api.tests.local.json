@@ -208,8 +208,8 @@
 							"pm.test(\"eCommerce helpDesk-Commands Redirect Refund Operation - Status code is 200 with valid json response\", function () {",
 							"    pm.response.to.have.status(200);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response).to.have.property('idTransaction').to.be.a('PagopaIdTransaction');",
-							"    pm.expect(response).to.have.property('outcome').to.be.a('RefundOutcome');",
+							"    pm.expect(response).to.have.property('idTransaction').to.equal('ecf06892c9e04ae39626dfdfda631b94');",
+							"    pm.expect(response).to.have.property('outcome').to.equal('OK');",
 							"});"
 						],
 						"type": "text/javascript",
@@ -255,16 +255,16 @@
 			"response": []
 		},
 		{
-			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation Already Refunded",
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - PSP Misconfiguration",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
-							"    pm.response.to.have.status(500);",
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but the redirect return URL cannot be found using the specified configuration\", function () {",
+							"    pm.response.to.have.status(400);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Bad request\");",
+							"    pm.expect(response.title).to.be.eq(\"Exception retrieving configuration type\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -288,7 +288,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_ALREADY_SERVED}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -310,16 +310,16 @@
 			"response": []
 		},
 		{
-			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Operation not found",
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - Transaction not found",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
-							"    pm.response.to.have.status(502);",
+							"    pm.response.to.have.status(500);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.title).to.be.eq(\"Redirect Invocation exception - Redirect transaction not found\");",
+							"    pm.expect(response.title).to.be.eq(\"Error processing the request\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -343,7 +343,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID_NOT_FOUND}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{REDIRECT_TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
