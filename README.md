@@ -81,7 +81,7 @@ Also exist a gradle command to compile and run it directly:
 gradle :nativeRun
 ```
 
-If you want to run the project locally with Spring Boot, you should initialize npg-mock using the following commands (you need yarn installed on the WSL):
+If you want to run the project locally with Spring Boot, you should initialize npg-mock and psp-mock using the following commands (you need yarn installed on the WSL):
 
 ```shell
 yarn add json-server@0.17.4 --exact
@@ -91,6 +91,7 @@ The following command should be used to start the mock server for local testing
 
 ```shell
 yarn json-server ./npg-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
+yarn json-server ./psp-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
 ```
 
 ## Docker

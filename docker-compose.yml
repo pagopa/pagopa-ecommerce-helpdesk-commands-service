@@ -26,6 +26,19 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
+  pagopa-psp-mock:
+    build:
+      context: .
+      dockerfile: psp-mock/Dockerfile.psp-mock
+    volumes:
+      - type: bind
+        source: ./psp-mock
+        target: /config
+        read_only: true
+    ports:
+      - "8096:3000"
+    networks:
+      - pagopa-ecommerce-net
 
 networks:
   pagopa-ecommerce-net:
