@@ -65,7 +65,8 @@ class CommandsControllerTest {
 
     @Test
     fun commandsRefundRedirectPost() {
-
+        val userId = UUID.randomUUID().toString()
+        val sourceIP = "127.0.0.1"
         val refundRedirectResponseDto =
             RefundRedirectResponseDto()
                 .idTransaction(HelpDeskCommandsTestUtils.TRANSACTION_ID)
@@ -76,6 +77,8 @@ class CommandsControllerTest {
             .post()
             .uri("/commands/refund/redirect")
             .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", userId)
+            .header("X-Forwarded-For", sourceIP)
             .bodyValue(HelpDeskCommandsTestUtils.CREATE_REFUND_REDIRECT_REQUEST)
             .exchange()
             .expectStatus()
