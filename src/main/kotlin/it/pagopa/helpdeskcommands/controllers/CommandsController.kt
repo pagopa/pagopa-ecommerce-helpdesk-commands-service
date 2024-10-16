@@ -20,18 +20,27 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         refundRedirectRequestDto: Mono<RefundRedirectRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
-        // mocked implementation
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
-                "Received refund redirect request for transactionId: [{}]",
-                requestDto.idTransaction
+                "Received refund redirect request for transactionId: [{}}, idPSPTransaction: [{}]",
+                requestDto.idTransaction,
+                requestDto.idPSPTransaction
             )
-            val responseDto =
-                RefundRedirectResponseDto().apply {
-                    idTransaction = requestDto.idTransaction
-                    outcome = RefundOutcomeDto.OK
+            commandsService
+                .requestRedirectRefund(
+                    transactionId = TransactionId(requestDto.idTransaction),
+                    touchpoint = requestDto.touchpoint,
+                    pspTransactionId = requestDto.idPSPTransaction,
+                    paymentTypeCode = requestDto.paymentTypeCode,
+                    pspId = requestDto.pspId
+                )
+                .map {
+                    ResponseEntity.ok(
+                        RefundRedirectResponseDto()
+                            .outcome(it.outcome)
+                            .idTransaction(it.idTransaction)
+                    )
                 }
-            Mono.just(ResponseEntity.ok(responseDto))
         }
     }
 

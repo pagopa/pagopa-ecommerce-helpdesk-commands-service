@@ -70,7 +70,8 @@ class CommandsControllerTest {
             RefundRedirectResponseDto()
                 .idTransaction(HelpDeskCommandsTestUtils.TRANSACTION_ID)
                 .outcome(RefundOutcomeDto.OK)
-
+        given { commandsService.requestRedirectRefund(any(), any(), any(), any(), any()) }
+            .willReturn(refundRedirectResponseDto.toMono())
         webClient
             .post()
             .uri("/commands/refund/redirect")

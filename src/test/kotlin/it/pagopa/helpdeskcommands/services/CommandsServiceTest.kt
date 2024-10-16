@@ -1,22 +1,25 @@
 package it.pagopa.helpdeskcommands.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
+import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
+import it.pagopa.generated.helpdeskcommands.model.RefundRedirectResponseDto
 import it.pagopa.generated.npg.api.PaymentServicesApi
+import it.pagopa.helpdeskcommands.client.NodeForwarderClient
 import it.pagopa.helpdeskcommands.client.NpgClient
 import it.pagopa.helpdeskcommands.config.WebClientConfig
-import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
-import it.pagopa.helpdeskcommands.exceptions.NpgClientException
-import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
-import it.pagopa.helpdeskcommands.utils.NpgPspApiKeysConfig
-import it.pagopa.helpdeskcommands.utils.PaymentMethod
-import it.pagopa.helpdeskcommands.utils.TransactionId
+import it.pagopa.helpdeskcommands.exceptions.*
+import it.pagopa.helpdeskcommands.utils.*
 import java.math.BigDecimal
+import java.net.URI
 import java.util.*
 import java.util.stream.Stream
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,8 +27,10 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -58,8 +63,26 @@ class CommandsServiceTest {
             )
             .build()
 
+    private val nodeForwarderRedirectApiClient:
+        NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto> =
+        mock()
+
+    private val redirectBeApiCallUriMap: Map<String, URI> =
+        mapOf("pspId-RPIC" to URI.create("http://redirect/RPIC"))
+    private val redirectBeAoiCallUriSet: Set<String> = setOf("pspId-RPIC")
+    private val redirectKeysConfiguration: RedirectKeysConfiguration =
+        RedirectKeysConfiguration(
+            mapOf("pspId-RPIC" to "http://redirect/RPIC"),
+            redirectBeAoiCallUriSet
+        )
+
     private val commandsService: CommandsService =
-        CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
+        CommandsService(
+            npgClient = npgClient,
+            npgApiKeyConfiguration = npgApiKeyConfiguration,
+            redirectKeysConfiguration = redirectKeysConfiguration,
+            nodeForwarderClient = nodeForwarderRedirectApiClient
+        )
 
     companion object {
         lateinit var mockWebServer: MockWebServer
@@ -87,6 +110,33 @@ class CommandsServiceTest {
                 Arguments.of(HttpStatus.NOT_FOUND, NpgClientException::class.java),
                 Arguments.of(HttpStatus.INTERNAL_SERVER_ERROR, NpgClientException::class.java),
                 Arguments.of(HttpStatus.GATEWAY_TIMEOUT, NpgClientException::class.java),
+            )
+
+        @JvmStatic
+        private fun touchpoints(): Stream<Arguments> =
+            Stream.of(Arguments.of("CHECKOUT"), Arguments.of("CHECKOUT_CART"), Arguments.of("IO"))
+
+        @JvmStatic
+        private fun `Redirect refund errors method source`(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(
+                    HttpStatus.BAD_REQUEST,
+                    RefundNotAllowedException::class.java,
+                    "CHECKOUT"
+                ),
+                Arguments.of(HttpStatus.UNAUTHORIZED, RefundNotAllowedException::class.java, "IO"),
+                Arguments.of(
+                    HttpStatus.NOT_FOUND,
+                    RefundNotAllowedException::class.java,
+                    "CHECKOUT_CART"
+                ),
+                Arguments.of(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    BadGatewayException::class.java,
+                    "CHECKOUT"
+                ),
+                Arguments.of(HttpStatus.GATEWAY_TIMEOUT, BadGatewayException::class.java, "IO"),
+                Arguments.of(null, BadGatewayException::class.java, "CHECKOUT_CART"),
             )
     }
 
@@ -222,7 +272,12 @@ class CommandsServiceTest {
     fun `should handle npg generic error`() {
         val npgClient: NpgClient = mock()
         val refundService =
-            CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
+            CommandsService(
+                npgClient = npgClient,
+                npgApiKeyConfiguration = npgApiKeyConfiguration,
+                redirectKeysConfiguration = redirectKeysConfiguration,
+                nodeForwarderClient = nodeForwarderRedirectApiClient
+            )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
@@ -267,7 +322,12 @@ class CommandsServiceTest {
     fun `should handle npg error without http response code info`() {
         val npgClient: NpgClient = mock()
         val refundService =
-            CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
+            CommandsService(
+                npgClient = npgClient,
+                npgApiKeyConfiguration = npgApiKeyConfiguration,
+                redirectKeysConfiguration = redirectKeysConfiguration,
+                nodeForwarderClient = nodeForwarderRedirectApiClient
+            )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
@@ -312,7 +372,12 @@ class CommandsServiceTest {
     fun `should not call NPG and return error for not configured PSP key`() {
         val npgClient: NpgClient = mock()
         val refundService =
-            CommandsService(npgClient = npgClient, npgApiKeyConfiguration = npgApiKeyConfiguration)
+            CommandsService(
+                npgClient = npgClient,
+                npgApiKeyConfiguration = npgApiKeyConfiguration,
+                redirectKeysConfiguration = redirectKeysConfiguration,
+                nodeForwarderClient = nodeForwarderRedirectApiClient
+            )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
         val correlationId = UUID.randomUUID().toString()
@@ -334,5 +399,143 @@ class CommandsServiceTest {
             .expectError(NpgApiKeyConfigurationException::class.java)
             .verify()
         verify(npgClient, times(0)).refundPayment(any(), any(), any(), any(), any(), any())
+    }
+
+    @ParameterizedTest()
+    @MethodSource("touchpoints")
+    fun `Should perform redirect refund successfully`(touchpoint: String) {
+        // pre-requisites
+        val transactionId = TRANSACTION_ID_STRING
+        val pspTransactionId = "pspTransactionId"
+        val paymentTypeCode = "RPIC"
+        val pspId = "pspId"
+        val redirectRefundResponse =
+            RefundRedirectResponseDto().idTransaction(transactionId).outcome(RefundOutcomeDto.OK)
+        val redirectRefundResponseDto =
+            RedirectRefundResponseDto()
+                .idTransaction(transactionId)
+                .outcome(it.pagopa.generated.ecommerce.redirect.v1.dto.RefundOutcomeDto.OK)
+        val expectedRequest =
+            RedirectRefundRequestDto()
+                .action("refund")
+                .idPSPTransaction(pspTransactionId)
+                .idTransaction(transactionId)
+        given(nodeForwarderRedirectApiClient.proxyRequest(any(), any(), any(), any()))
+            .willReturn(
+                Mono.just(
+                    NodeForwarderClient.NodeForwarderResponse(
+                        redirectRefundResponseDto,
+                        Optional.empty()
+                    )
+                )
+            )
+        // test
+        StepVerifier.create(
+                commandsService.requestRedirectRefund(
+                    transactionId = TransactionId(transactionId),
+                    touchpoint = touchpoint,
+                    pspTransactionId = pspTransactionId,
+                    paymentTypeCode = paymentTypeCode,
+                    pspId = pspId
+                )
+            )
+            .expectNext(redirectRefundResponse)
+            .verifyComplete()
+        verify(nodeForwarderRedirectApiClient, times(1))
+            .proxyRequest(
+                expectedRequest,
+                redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
+                transactionId,
+                RedirectRefundResponseDto::class.java
+            )
+    }
+
+    @ParameterizedTest()
+    @MethodSource("touchpoints")
+    fun `Should return error performing redirect refund for missing backend URL`(
+        touchpoint: String
+    ) {
+        // pre-requisites
+        val transactionId = TRANSACTION_ID_STRING
+        val pspTransactionId = "pspTransactionId"
+        val paymentTypeCode = "MISSING"
+        // test
+        StepVerifier.create(
+                commandsService.requestRedirectRefund(
+                    transactionId = TransactionId(transactionId),
+                    touchpoint = touchpoint,
+                    pspTransactionId = pspTransactionId,
+                    paymentTypeCode = paymentTypeCode,
+                    pspId = "pspId"
+                )
+            )
+            .expectErrorMatches {
+                assertTrue(it is RedirectConfigurationException)
+                assertEquals(
+                    "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Missing key for redirect return url with following search parameters: touchpoint: [${touchpoint}] pspId: [pspId] paymentTypeCode: [MISSING]",
+                    it.message
+                )
+                true
+            }
+            .verify()
+        verify(nodeForwarderRedirectApiClient, times(0)).proxyRequest(any(), any(), any(), any())
+    }
+
+    @ParameterizedTest
+    @MethodSource("Redirect refund errors method source")
+    fun `Should handle returned error performing redirect refund call`(
+        httpErrorCode: HttpStatus?,
+        expectedErrorClass: Class<Exception>,
+        touchpoint: String
+    ) {
+        // pre-requisites
+        val transactionId = TRANSACTION_ID_STRING
+        val pspTransactionId = "pspTransactionId"
+        val paymentTypeCode = "RPIC"
+        val pspId = "pspId"
+        val expectedRequest =
+            RedirectRefundRequestDto()
+                .action("refund")
+                .idPSPTransaction(pspTransactionId)
+                .idTransaction(transactionId)
+        given(nodeForwarderRedirectApiClient.proxyRequest(any(), any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    NodeForwarderClientException(
+                        "Error performing refund",
+                        if (httpErrorCode != null) {
+                            WebClientResponseException(
+                                "Error performing request",
+                                httpErrorCode.value(),
+                                "",
+                                HttpHeaders.EMPTY,
+                                null,
+                                null
+                            )
+                        } else {
+                            RuntimeException("Error performing request")
+                        }
+                    )
+                )
+            )
+        // test
+        StepVerifier.create(
+                commandsService.requestRedirectRefund(
+                    transactionId = TransactionId(transactionId),
+                    touchpoint = touchpoint,
+                    pspTransactionId = pspTransactionId,
+                    paymentTypeCode = paymentTypeCode,
+                    pspId = pspId
+                )
+            )
+            .expectError(expectedErrorClass)
+            .verify()
+        verify(nodeForwarderRedirectApiClient, times(1))
+            .proxyRequest(
+                expectedRequest,
+                redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
+                transactionId,
+                RedirectRefundResponseDto::class.java
+            )
     }
 }
