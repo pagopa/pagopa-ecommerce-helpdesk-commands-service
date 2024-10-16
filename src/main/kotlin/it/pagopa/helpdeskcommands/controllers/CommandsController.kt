@@ -22,8 +22,9 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
-                "Received refund redirect request for idPSPTransaction: [{}]",
-                requestDto.idTransaction
+                "Received refund redirect request for transactionId: [{}}, idPSPTransaction: [{}]",
+                requestDto.idTransaction,
+                requestDto.idPSPTransaction
             )
             commandsService
                 .requestRedirectRefund(
