@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-ecommerce-helpdesk-commands-service"
   image:
     repository: pagopapcommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
-    tag: "0.9.0"
+    tag: "0.10.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:

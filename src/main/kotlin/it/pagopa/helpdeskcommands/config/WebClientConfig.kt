@@ -28,7 +28,9 @@ class WebClientConfig {
         RefundRequestDto::class,
         RefundResponseDto::class,
         ServerErrorDto::class,
-        ClientErrorDto::class
+        ClientErrorDto::class,
+        RedirectRefundRequestDto::class,
+        RedirectRefundResponseDto::class
     )
     fun npgWebClient(
         @Value("\${npg.uri}") baseUrl: String,
