@@ -1,6 +1,9 @@
 package it.pagopa.helpdeskcommands.client
 
 import com.fasterxml.jackson.core.JsonProcessingException
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundOutcomeDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto
+import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
 import it.pagopa.helpdeskcommands.client.NodeForwarderClient.NodeForwarderResponse
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
@@ -22,13 +25,13 @@ import reactor.test.StepVerifier
 
 class NodeForwarderClientTest {
 
-    private data class TestRequest(val testRequestField: String)
+    // private data class TestRequest(val testRequestField: String)
 
-    private data class TestResponse(val testResponseField: String)
+    // private data class TestResponse(val testResponseField: String)
 
     private val proxyApi: ProxyApi = Mockito.mock(ProxyApi::class.java)
 
-    private val nodeForwarderClient: NodeForwarderClient<TestRequest, TestResponse> =
+    private val nodeForwarderClient: NodeForwarderClient<RefundRequestDto, RefundResponseDto> =
         NodeForwarderClient(proxyApi)
 
     @BeforeEach
@@ -54,14 +57,24 @@ class NodeForwarderClientTest {
     fun `should proxy request successfully retrieving default port for https URL`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("https://localhost/test/request")
         val expectedHostHeader = "localhost"
         val expectedPortHeader = 443
         val expectedPathRequest = "/test/request"
-        val expectedPayload = "{\"testRequestField\":\"test\"}"
-        val expectedResponse: NodeForwarderResponse<TestResponse> =
-            NodeForwarderResponse(TestResponse("123"), Optional.of(requestId))
+        val expectedPayload =
+            "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"idPSPTransaction\":\"5f521592f3d84ffa8d8f68651da91144\",\"action\":\"refund\"}"
+        val expectedResponse: NodeForwarderResponse<RefundResponseDto> =
+            NodeForwarderResponse(
+                RefundResponseDto()
+                    .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                    .outcome(RefundOutcomeDto.OK),
+                Optional.of(requestId)
+            )
         BDDMockito.given(
                 proxyApi.forwardWithHttpInfo(
                     ArgumentMatchers.any(),
@@ -75,7 +88,9 @@ class NodeForwarderClientTest {
                 Mono.just(
                     ResponseEntity.ok()
                         .header("X-Request-Id", requestId)
-                        .body("{\"testResponseField\":\"123\"}")
+                        .body(
+                            "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"outcome\":\"OK\"}"
+                        )
                 )
             )
         // test
@@ -84,7 +99,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    TestResponse::class.java
+                    RefundResponseDto::class.java
                 )
             )
             .expectNext(expectedResponse)
@@ -103,14 +118,24 @@ class NodeForwarderClientTest {
     fun `should proxy request successfully using custom port`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("http://localhost:123/test/request")
         val expectedHostHeader = "localhost"
         val expectedPortHeader = 123
         val expectedPathRequest = "/test/request"
-        val expectedPayload = "{\"testRequestField\":\"test\"}"
-        val expectedResponse: NodeForwarderResponse<TestResponse> =
-            NodeForwarderResponse(TestResponse("123"), Optional.of(requestId))
+        val expectedPayload =
+            "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"idPSPTransaction\":\"5f521592f3d84ffa8d8f68651da91144\",\"action\":\"refund\"}"
+        val expectedResponse: NodeForwarderResponse<RefundResponseDto> =
+            NodeForwarderResponse(
+                RefundResponseDto()
+                    .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                    .outcome(RefundOutcomeDto.OK),
+                Optional.of(requestId)
+            )
         BDDMockito.given(
                 proxyApi.forwardWithHttpInfo(
                     ArgumentMatchers.any(),
@@ -124,7 +149,9 @@ class NodeForwarderClientTest {
                 Mono.just(
                     ResponseEntity.ok()
                         .header("X-Request-Id", requestId)
-                        .body("{\"testResponseField\":\"123\"}")
+                        .body(
+                            "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"outcome\":\"OK\"}"
+                        )
                 )
             )
         // test
@@ -133,7 +160,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    TestResponse::class.java
+                    RefundResponseDto::class.java
                 )
             )
             .expectNext(expectedResponse)
@@ -152,7 +179,11 @@ class NodeForwarderClientTest {
     fun `should handle error deserializing response`() {
         // pre-requisites
         val requestId = UUID.randomUUID().toString()
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("http://localhost:123/test/request")
         val expectedHostHeader = "localhost"
         val expectedPortHeader = 123
@@ -167,14 +198,18 @@ class NodeForwarderClientTest {
                     ArgumentMatchers.any()
                 )
             )
-            .willReturn(Mono.just(ResponseEntity.ok().header("X-Request-Id", requestId).body("{}")))
+            .willReturn(
+                Mono.just(
+                    ResponseEntity.ok().header("X-Request-Id", requestId).body(expectedPayload)
+                )
+            )
         // test
         StepVerifier.create(
                 nodeForwarderClient.proxyRequest(
                     testRequest,
                     proxyTo,
                     requestId,
-                    TestResponse::class.java
+                    RefundResponseDto::class.java
                 )
             )
             .expectErrorMatches { ex: Throwable ->
@@ -189,7 +224,7 @@ class NodeForwarderClientTest {
                 expectedPortHeader,
                 expectedPathRequest,
                 requestId,
-                expectedPayload
+                "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"idPSPTransaction\":\"5f521592f3d84ffa8d8f68651da91144\",\"action\":\"refund\"}"
             )
     }
 
@@ -199,26 +234,37 @@ class NodeForwarderClientTest {
         // assertions
         val requestId = UUID.randomUUID().toString()
         val apiKey = "apiKey"
-        val client: NodeForwarderClient<TestRequest, TestResponse> =
+        val client: NodeForwarderClient<RefundRequestDto, RefundResponseDto> =
             NodeForwarderClient(
                 apiKey,
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
                 10000
             )
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("http://localhost:123/test/request")
         mockWebServer!!.enqueue(
             MockResponse()
                 .addHeader("X-Request-Id", requestId)
-                .setBody("{\"testResponseField\":\"123\"}")
+                .setBody(
+                    "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"outcome\":\"OK\"}"
+                )
                 .setResponseCode(200)
         )
-        val expectedResponse: NodeForwarderResponse<TestResponse> =
-            NodeForwarderResponse(TestResponse("123"), Optional.of(requestId))
+        val expectedResponse: NodeForwarderResponse<RefundResponseDto> =
+            NodeForwarderResponse(
+                RefundResponseDto()
+                    .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                    .outcome(RefundOutcomeDto.OK),
+                Optional.of(requestId)
+            )
         // test
         StepVerifier.create(
-                client.proxyRequest(testRequest, proxyTo, requestId, TestResponse::class.java)
+                client.proxyRequest(testRequest, proxyTo, requestId, RefundResponseDto::class.java)
             )
             .expectNext(expectedResponse)
             .verifyComplete()
@@ -236,23 +282,36 @@ class NodeForwarderClientTest {
     fun `should handle missing xRequestId response header`() {
         // assertions
         val requestId = UUID.randomUUID().toString()
-        val client: NodeForwarderClient<TestRequest, TestResponse> =
+        val client: NodeForwarderClient<RefundRequestDto, RefundResponseDto> =
             NodeForwarderClient(
                 "apiKey",
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
                 10000
             )
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("http://localhost:123/test/request")
         mockWebServer!!.enqueue(
-            MockResponse().setBody("{\"testResponseField\":\"123\"}").setResponseCode(200)
+            MockResponse()
+                .setBody(
+                    "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"outcome\":\"OK\"}"
+                )
+                .setResponseCode(200)
         )
-        val expectedResponse: NodeForwarderResponse<TestResponse> =
-            NodeForwarderResponse(TestResponse("123"), Optional.empty())
+        val expectedResponse: NodeForwarderResponse<RefundResponseDto> =
+            NodeForwarderResponse(
+                RefundResponseDto()
+                    .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                    .outcome(RefundOutcomeDto.OK),
+                Optional.empty()
+            )
         // test
         StepVerifier.create(
-                client.proxyRequest(testRequest, proxyTo, requestId, TestResponse::class.java)
+                client.proxyRequest(testRequest, proxyTo, requestId, RefundResponseDto::class.java)
             )
             .expectNext(expectedResponse)
             .verifyComplete()
@@ -262,19 +321,23 @@ class NodeForwarderClientTest {
     fun `should handle error response from forwarder`() {
         // assertions
         val requestId = UUID.randomUUID().toString()
-        val client: NodeForwarderClient<TestRequest, TestResponse> =
+        val client: NodeForwarderClient<RefundRequestDto, RefundResponseDto> =
             NodeForwarderClient(
                 "apiKey",
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
                 10000
             )
-        val testRequest = TestRequest("test")
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
         val proxyTo = URI.create("http://localhost:123/test/request")
         mockWebServer!!.enqueue(MockResponse().setBody("error").setResponseCode(400))
         // test
         StepVerifier.create(
-                client.proxyRequest(testRequest, proxyTo, requestId, TestResponse::class.java)
+                client.proxyRequest(testRequest, proxyTo, requestId, RefundResponseDto::class.java)
             )
             .expectError(NodeForwarderClientException::class.java)
             .verify()
