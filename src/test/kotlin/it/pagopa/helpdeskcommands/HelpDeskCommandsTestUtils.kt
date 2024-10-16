@@ -14,7 +14,7 @@ object HelpDeskCommandsTestUtils {
     val TRANSACTION_ID = "9549d38941184b5eb5dfab90aaf3a6d7"
     val TOUCHPOINT = "5f521592f3d84ffa8d8f68651da91144"
     val PSP_TRANSACTION_ID = ""
-    val ACTION = "refund"
+    // val ACTION = "refund"
 
     val CREATE_REFUND_TRANSACTION_REQUEST =
         RefundTransactionRequestDto()
@@ -32,7 +32,6 @@ object HelpDeskCommandsTestUtils {
             .pspId(REDIRECT_PSP_ID)
             .idPSPTransaction(PSP_TRANSACTION_ID)
             .paymentTypeCode(PaymentMethod.REDIRECT.serviceName)
-            .action(ACTION)
 
     fun buildProblemJson(
         httpStatus: HttpStatus,
