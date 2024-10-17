@@ -16,7 +16,7 @@ enum class PaymentMethod(val serviceName: String) {
     ALIPAY("ALIPAY"),
     PIS("PIS"),
     SATISPAY("SATISPAY_DIRECT"),
-    REDIRECT("RBPR");
+    RBPR("RBPR");
 
     companion object {
 
