@@ -186,9 +186,6 @@ components:
         idPSPTransaction:
           description: PSP transaction id
           type: string
-        action:
-          description: Requested action (i.e. refund)
-          type: string
         touchpoint:
           type: string
           description: Name of touchpoint
@@ -201,7 +198,6 @@ components:
       required:
         - idTransaction
         - idPSPTransaction
-        - action
         - touchpoint
         - pspId
         - paymentTypeCode
