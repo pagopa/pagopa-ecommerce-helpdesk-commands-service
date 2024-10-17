@@ -15,7 +15,8 @@ enum class PaymentMethod(val serviceName: String) {
     WECHAT("WECHAT"),
     ALIPAY("ALIPAY"),
     PIS("PIS"),
-    SATISPAY("SATISPAY_DIRECT");
+    SATISPAY("SATISPAY_DIRECT"),
+    RBPR("RBPR");
 
     companion object {
 
