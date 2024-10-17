@@ -74,8 +74,8 @@ stages:
               displayName: 'Health check'
             - script: yarn global add newman
               displayName: 'newman installation'
-            - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/NPG-PSP-api-TEST.xml
-              displayName: 'Run NPG and PSP api test with mock'
+            - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
+              displayName: 'Run refunds api test with mock'
               continueOnError: false
             - task: PublishTestResults@2
               inputs:
