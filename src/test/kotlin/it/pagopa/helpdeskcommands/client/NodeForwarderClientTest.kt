@@ -1,6 +1,5 @@
 package it.pagopa.helpdeskcommands.client
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundOutcomeDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto
@@ -24,10 +23,6 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 class NodeForwarderClientTest {
-
-    // private data class TestRequest(val testRequestField: String)
-
-    // private data class TestResponse(val testResponseField: String)
 
     private val proxyApi: ProxyApi = Mockito.mock(ProxyApi::class.java)
 
@@ -213,8 +208,16 @@ class NodeForwarderClientTest {
                 )
             )
             .expectErrorMatches { ex: Throwable ->
-                Assertions.assertEquals("Error deserializing body", ex.message)
-                Assertions.assertTrue(ex.cause is JsonProcessingException)
+                Assertions.assertNotNull(ex.message)
+                ex.message?.let {
+                    Assertions.assertTrue(
+                        it.contains(
+                            "Unexpected error while invoking proxyRequest: Unrecognized field \"testRequestField\""
+                        )
+                    )
+                }
+
+                Assertions.assertTrue(ex is NodeForwarderClientException)
                 true
             }
             .verify()
