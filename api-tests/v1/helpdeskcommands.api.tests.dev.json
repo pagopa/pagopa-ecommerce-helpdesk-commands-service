@@ -206,6 +206,64 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Redirect Refund Operation - PSP Misconfiguration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but the redirect return URL cannot be found using the specified configuration\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Exception retrieving configuration type\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
