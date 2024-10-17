@@ -135,6 +135,7 @@ function redirectRefund(requestBody) {
 
   if(idTransaction === 'bb51a29cf32b46a387938a7e0446a6ed') {
     return {
+      status: 404,
       errors: [
         {
           code:"PS0000",

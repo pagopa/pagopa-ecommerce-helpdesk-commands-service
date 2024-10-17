@@ -79,6 +79,16 @@ paths:
                 status: 500
                 detail: There was an error processing the request
                 idTransaction: 3fa85f6457174562b3fc2c963f66afa6
+        '502':
+          description: Bad gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                status: 502
+                detail: There was an error processing the request
+                idTransaction: 3fa85f6457174562b3fc2c963f66afa6
 components:
   schemas:
     ProblemJson:

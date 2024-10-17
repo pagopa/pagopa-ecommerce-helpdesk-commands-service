@@ -317,9 +317,9 @@
 					"script": {
 						"exec": [
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
-							"    pm.response.to.have.status(500);",
+							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.title).to.be.eq(\"Error processing the request\");",
+							"    pm.expect(response.title).to.be.eq(\"PSP invocation exception - Transaction not found\");",
 							"});"
 						],
 						"type": "text/javascript",
