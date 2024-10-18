@@ -117,20 +117,32 @@ class CommandsServiceTest {
         @JvmStatic
         private fun `Redirect refund errors method source`(): Stream<Arguments> =
             Stream.of(
-                Arguments.of(HttpStatus.BAD_REQUEST, BadGatewayException::class.java, "CHECKOUT"),
-                Arguments.of(HttpStatus.UNAUTHORIZED, BadGatewayException::class.java, "IO"),
+                Arguments.of(
+                    HttpStatus.BAD_REQUEST,
+                    NodeForwarderClientException::class.java,
+                    "CHECKOUT"
+                ),
+                Arguments.of(
+                    HttpStatus.UNAUTHORIZED,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
-                    BadGatewayException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT_CART"
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    BadGatewayException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT"
                 ),
-                Arguments.of(HttpStatus.GATEWAY_TIMEOUT, BadGatewayException::class.java, "IO"),
-                Arguments.of(null, java.lang.RuntimeException::class.java, "CHECKOUT_CART"),
+                Arguments.of(
+                    HttpStatus.GATEWAY_TIMEOUT,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
+                Arguments.of(null, RuntimeException::class.java, "CHECKOUT_CART"),
             )
     }
 
@@ -504,19 +516,6 @@ class CommandsServiceTest {
                     } else {
                         RuntimeException("Error performing request")
                     }
-                    /*if (httpErrorCode != null) {
-                        WebClientResponseException(
-                            "Error performing request",
-                            httpErrorCode.value(),
-                            "",
-                            HttpHeaders.EMPTY,
-                            null,
-                            null
-                        )
-                    } else {
-                        RuntimeException("Error performing request")
-                    }*/
-
                 )
             )
         // test

@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 class NodeForwarderClientException(
     val description: String,
     val httpStatusCode: HttpStatus,
-    val errors: List<String>
+    val errors: List<String>,
 ) : ApiError(description) {
     override fun toRestException() =
         RestApiException(
@@ -15,10 +15,3 @@ class NodeForwarderClientException(
             title = "Forwarder Invocation exception - $description"
         )
 }
-/**
- * Constructor
- *
- * @param reason the error reason
- * @param cause the throwable error cause, if any
- */
-// (reason: String?, cause: Throwable?) : RuntimeException(reason, cause)

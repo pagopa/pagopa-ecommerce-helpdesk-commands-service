@@ -1,5 +1,7 @@
 package it.pagopa.helpdeskcommands.client
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundOutcomeDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto
@@ -9,16 +11,21 @@ import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import java.io.IOException
 import java.net.URI
 import java.util.*
+import java.util.stream.Stream
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.BDDMockito
 import org.mockito.Mockito
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -346,7 +353,156 @@ class NodeForwarderClientTest {
             .verify()
     }
 
+    @Test
+    fun `should handle JsonProcessingException when serializing request`() {
+        val requestId = UUID.randomUUID().toString()
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
+        val proxyTo = URI.create("http://localhost:123/test/request")
+
+        // ObjectMapper mock
+        val objectMapperMock = Mockito.mock(ObjectMapper::class.java)
+        val nodeForwarderClientWithMockedMapper =
+            NodeForwarderClient<RefundRequestDto, RefundResponseDto>(proxyApi)
+
+        // refelction for change objectMapper with mock
+        val field = NodeForwarderClient::class.java.getDeclaredField("objectMapper")
+        field.isAccessible = true
+        field.set(nodeForwarderClientWithMockedMapper, objectMapperMock)
+
+        Mockito.`when`(objectMapperMock.writeValueAsString(testRequest))
+            .thenThrow(JsonProcessingException::class.java)
+
+        // Test
+        StepVerifier.create(
+                nodeForwarderClientWithMockedMapper.proxyRequest(
+                    testRequest,
+                    proxyTo,
+                    requestId,
+                    RefundResponseDto::class.java
+                )
+            )
+            .expectErrorMatches { ex ->
+                ex is NodeForwarderClientException &&
+                    ex.description.contains("Unexpected error while invoking proxyRequest")
+            }
+            .verify()
+
+        Mockito.verify(proxyApi, Mockito.times(0))
+            .forwardWithHttpInfo(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `should handle non-WebClientResponseException in exceptionToNodeForwarderClientException`() {
+        val requestId = UUID.randomUUID().toString()
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
+        val proxyTo = URI.create("http://localhost:123/test/request")
+
+        Mockito.`when`(proxyApi.forwardWithHttpInfo(any(), any(), any(), any(), any()))
+            .thenReturn(Mono.error(RuntimeException("Some error")))
+
+        // Test
+        StepVerifier.create(
+                nodeForwarderClient.proxyRequest(
+                    testRequest,
+                    proxyTo,
+                    requestId,
+                    RefundResponseDto::class.java
+                )
+            )
+            .expectErrorMatches { ex ->
+                ex is NodeForwarderClientException &&
+                    ex.description.contains(
+                        "Unexpected error while invoking proxyRequest: Some error"
+                    )
+            }
+            .verify()
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideErrorResponses")
+    fun `should map NodeForwarder exceptions correctly`(
+        statusCode: HttpStatus,
+        expectedDescription: String,
+        expectedHttpStatusCode: HttpStatus
+    ) {
+        val requestId = UUID.randomUUID().toString()
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
+        val proxyTo = URI.create("http://localhost:123/test/request")
+        val responseBody =
+            "{\"errors\":[{\"code\":\"ERROR_CODE\",\"description\":\"Error description\"}]}"
+
+        val exception =
+            WebClientResponseException.create(
+                statusCode.value(),
+                statusCode.reasonPhrase,
+                HttpHeaders.EMPTY,
+                responseBody.toByteArray(),
+                null
+            )
+        Mockito.`when`(proxyApi.forwardWithHttpInfo(any(), any(), any(), any(), any()))
+            .thenReturn(Mono.error(exception))
+
+        // Test
+        StepVerifier.create(
+                nodeForwarderClient.proxyRequest(
+                    testRequest,
+                    proxyTo,
+                    requestId,
+                    RefundResponseDto::class.java
+                )
+            )
+            .expectErrorMatches { ex ->
+                ex is NodeForwarderClientException &&
+                    ex.description == expectedDescription &&
+                    ex.httpStatusCode == expectedHttpStatusCode
+            }
+            .verify()
+    }
+
     companion object {
         private var mockWebServer: MockWebServer? = null
+
+        @JvmStatic
+        fun provideErrorResponses(): Stream<Arguments> {
+            return Stream.of(
+                Arguments.of(
+                    HttpStatus.BAD_REQUEST,
+                    "Bad request to Node Forwarder",
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                ),
+                Arguments.of(
+                    HttpStatus.UNAUTHORIZED,
+                    "Misconfigured Node Forwarder API key",
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                ),
+                Arguments.of(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Node Forwarder internal server error",
+                    HttpStatus.BAD_GATEWAY
+                ),
+                Arguments.of(
+                    HttpStatus.NOT_FOUND,
+                    "Node Forwarder resource not found",
+                    HttpStatus.BAD_GATEWAY
+                ),
+                Arguments.of(
+                    HttpStatus.FORBIDDEN,
+                    "Node Forwarder server error: 403 FORBIDDEN",
+                    HttpStatus.BAD_GATEWAY
+                )
+            )
+        }
     }
 }
