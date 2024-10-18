@@ -2,7 +2,6 @@ package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
-import it.pagopa.helpdeskcommands.exceptions.BadGatewayException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
@@ -80,19 +79,6 @@ class ExceptionHandler {
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Exception retrieving apikey")
-                    .detail(e.message)
-            )
-    }
-
-    /** BadGatewayException handler */
-    @ExceptionHandler(BadGatewayException::class)
-    fun handleBadGatewayException(e: BadGatewayException): ResponseEntity<ProblemJsonDto> {
-        logger.error("Bad Gateway Exception", e)
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-            .body(
-                ProblemJsonDto()
-                    .status(HttpStatus.BAD_GATEWAY.value())
-                    .title("PSP invocation exception - Transaction not found")
                     .detail(e.message)
             )
     }
