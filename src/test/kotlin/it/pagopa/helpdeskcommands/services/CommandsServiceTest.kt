@@ -27,10 +27,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -121,22 +119,30 @@ class CommandsServiceTest {
             Stream.of(
                 Arguments.of(
                     HttpStatus.BAD_REQUEST,
-                    RefundNotAllowedException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT"
                 ),
-                Arguments.of(HttpStatus.UNAUTHORIZED, RefundNotAllowedException::class.java, "IO"),
+                Arguments.of(
+                    HttpStatus.UNAUTHORIZED,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
-                    RefundNotAllowedException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT_CART"
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    BadGatewayException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT"
                 ),
-                Arguments.of(HttpStatus.GATEWAY_TIMEOUT, BadGatewayException::class.java, "IO"),
-                Arguments.of(null, BadGatewayException::class.java, "CHECKOUT_CART"),
+                Arguments.of(
+                    HttpStatus.GATEWAY_TIMEOUT,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
+                Arguments.of(null, RuntimeException::class.java, "CHECKOUT_CART"),
             )
     }
 
@@ -501,21 +507,15 @@ class CommandsServiceTest {
         given(nodeForwarderRedirectApiClient.proxyRequest(any(), any(), any(), any()))
             .willReturn(
                 Mono.error(
-                    NodeForwarderClientException(
-                        "Error performing refund",
-                        if (httpErrorCode != null) {
-                            WebClientResponseException(
-                                "Error performing request",
-                                httpErrorCode.value(),
-                                "",
-                                HttpHeaders.EMPTY,
-                                null,
-                                null
-                            )
-                        } else {
-                            RuntimeException("Error performing request")
-                        }
-                    )
+                    if (httpErrorCode != null) {
+                        NodeForwarderClientException(
+                            description = "Error performing refund",
+                            httpStatusCode = httpErrorCode,
+                            errors = emptyList()
+                        )
+                    } else {
+                        RuntimeException("Error performing request")
+                    }
                 )
             )
         // test

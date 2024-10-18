@@ -243,7 +243,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -308,7 +308,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -337,9 +337,9 @@
 					"script": {
 						"exec": [
 							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
-							"    pm.response.to.have.status(500);",
+							"    pm.response.to.have.status(502);",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.title).to.be.eq(\"Error processing the request\");",
+							"    pm.expect(response.title).to.be.eq(\"Forwarder Invocation exception - Node Forwarder resource not found\");",
 							"});"
 						],
 						"type": "text/javascript",
@@ -373,7 +373,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{REDIRECT_TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{REDIRECT_TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
