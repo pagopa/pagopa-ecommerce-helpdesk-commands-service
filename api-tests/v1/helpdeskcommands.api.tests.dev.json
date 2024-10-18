@@ -237,6 +237,16 @@
 						"key": "deployment",
 						"value": "{{DEPLOYMENT}}",
 						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
 					}
 				],
 				"body": {
