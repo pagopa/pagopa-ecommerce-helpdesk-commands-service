@@ -117,20 +117,32 @@ class CommandsServiceTest {
         @JvmStatic
         private fun `Redirect refund errors method source`(): Stream<Arguments> =
             Stream.of(
-                Arguments.of(HttpStatus.BAD_REQUEST, BadGatewayException::class.java, "CHECKOUT"),
-                Arguments.of(HttpStatus.UNAUTHORIZED, BadGatewayException::class.java, "IO"),
+                Arguments.of(
+                    HttpStatus.BAD_REQUEST,
+                    NodeForwarderClientException::class.java,
+                    "CHECKOUT"
+                ),
+                Arguments.of(
+                    HttpStatus.UNAUTHORIZED,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
-                    BadGatewayException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT_CART"
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    BadGatewayException::class.java,
+                    NodeForwarderClientException::class.java,
                     "CHECKOUT"
                 ),
-                Arguments.of(HttpStatus.GATEWAY_TIMEOUT, BadGatewayException::class.java, "IO"),
-                Arguments.of(null, java.lang.RuntimeException::class.java, "CHECKOUT_CART"),
+                Arguments.of(
+                    HttpStatus.GATEWAY_TIMEOUT,
+                    NodeForwarderClientException::class.java,
+                    "IO"
+                ),
+                Arguments.of(null, RuntimeException::class.java, "CHECKOUT_CART"),
             )
     }
 
@@ -526,108 +538,4 @@ class CommandsServiceTest {
                 RedirectRefundResponseDto::class.java
             )
     }
-
-    /*@Test
-    fun `Should return error when redirectKeysConfiguration returns an error`() {
-        // Pre-requisiti
-        val transactionId = TRANSACTION_ID_STRING
-        val pspTransactionId = "pspTransactionId"
-        val paymentTypeCode = "RPIC"
-        val pspId = PSP_ID
-        val touchpoint = "CHECKOUT"
-        val exceptionMessage = "Configuration error"
-
-        // Mocking
-        val redirectKeysConfigurationMock = mock<RedirectKeysConfiguration>()
-        given(
-                redirectKeysConfigurationMock.getRedirectUrlForPsp(
-                    eq(touchpoint),
-                    eq(pspId),
-                    eq(paymentTypeCode)
-                )
-            )
-            .willReturn(Either.Left(RedirectConfigurationException(exceptionMessage)))
-
-        val commandsServiceWithMockedConfig =
-            CommandsService(
-                npgClient = npgClient,
-                npgApiKeyConfiguration = npgApiKeyConfiguration,
-                redirectKeysConfiguration = redirectKeysConfigurationMock,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
-            )
-
-        // Test
-        StepVerifier.create(
-                commandsServiceWithMockedConfig.requestRedirectRefund(
-                    transactionId = TransactionId(transactionId),
-                    touchpoint = touchpoint,
-                    pspTransactionId = pspTransactionId,
-                    paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
-                )
-            )
-            .expectErrorMatches { ex ->
-                ex is RedirectConfigurationException && ex.message == exceptionMessage
-            }
-            .verify()
-
-        verify(nodeForwarderRedirectApiClient, times(0)).proxyRequest(any(), any(), any(), any())
-    }
-
-    @Test
-    fun `Should handle NodeForwarderClientException with WebClientResponseException cause and 4xx status code`() {
-        // Arrange
-        val transactionId = TRANSACTION_ID_STRING
-        val pspTransactionId = "pspTransactionId"
-        val paymentTypeCode = "RPIC"
-        val pspId = "pspId"
-        val touchpoint = "CHECKOUT"
-        val expectedRequest =
-            RedirectRefundRequestDto()
-                .action("refund")
-                .idPSPTransaction(pspTransactionId)
-                .idTransaction(transactionId)
-
-        val webClientResponseException =
-            WebClientResponseException.create(
-                400,
-                "Bad Request",
-                HttpHeaders.EMPTY,
-                ByteArray(0),
-                Charset.defaultCharset()
-            )
-        val nodeForwarderClientException =
-            NodeForwarderClientException(
-                description = "Error performing refund",
-                httpStatusCode = HttpStatus.BAD_REQUEST,
-                errors = emptyList(),
-            )
-
-        given(nodeForwarderRedirectApiClient.proxyRequest(any(), any(), any(), any()))
-            .willReturn(Mono.error(nodeForwarderClientException))
-
-        // Act & Assert
-        StepVerifier.create(
-                commandsService.requestRedirectRefund(
-                    transactionId = TransactionId(transactionId),
-                    touchpoint = touchpoint,
-                    pspTransactionId = pspTransactionId,
-                    paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
-                )
-            )
-            .expectErrorMatches { ex ->
-                ex is RefundNotAllowedException &&
-                    ex.message?.contains("HTTP error code: 502") == true
-            }
-            .verify()
-
-        verify(nodeForwarderRedirectApiClient, times(1))
-            .proxyRequest(
-                expectedRequest,
-                redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
-                transactionId,
-                RedirectRefundResponseDto::class.java
-            )
-    }*/
 }

@@ -395,48 +395,6 @@ class NodeForwarderClientTest {
             .forwardWithHttpInfo(any(), any(), any(), any(), any())
     }
 
-    /*@Test
-    fun `should handle IOException when deserializing error response in exceptionToNodeForwarderClientException`() {
-
-        val requestId = UUID.randomUUID().toString()
-        val testRequest =
-            RefundRequestDto()
-                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
-                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
-                .action("refund")
-        val proxyTo = URI.create("http://localhost:123/test/request")
-        val statusCode = HttpStatus.BAD_REQUEST
-        val responseBody = "invalid json"
-
-        val exception =
-            WebClientResponseException.create(
-                statusCode.value(),
-                statusCode.reasonPhrase,
-                HttpHeaders.EMPTY,
-                responseBody.toByteArray(),
-                null
-            )
-
-
-
-        // Test
-        StepVerifier.create(
-            nodeForwarderClientWithMockedMapper.proxyRequest(
-                testRequest,
-                proxyTo,
-                requestId,
-                RefundResponseDto::class.java
-            )
-        )
-            .expectErrorMatches { ex ->
-                ex is NodeForwarderClientException &&
-                        ex.description.contains(
-                            "Invalid error response from forwarder with status code"
-                        )
-            }
-            .verify()
-    }*/
-
     @Test
     fun `should handle non-WebClientResponseException in exceptionToNodeForwarderClientException`() {
         val requestId = UUID.randomUUID().toString()
@@ -493,7 +451,6 @@ class NodeForwarderClientTest {
                 responseBody.toByteArray(),
                 null
             )
-
         Mockito.`when`(proxyApi.forwardWithHttpInfo(any(), any(), any(), any(), any()))
             .thenReturn(Mono.error(exception))
 
@@ -544,7 +501,7 @@ class NodeForwarderClientTest {
                     HttpStatus.FORBIDDEN,
                     "Node Forwarder server error: 403 FORBIDDEN",
                     HttpStatus.BAD_GATEWAY
-                ),
+                )
             )
         }
     }

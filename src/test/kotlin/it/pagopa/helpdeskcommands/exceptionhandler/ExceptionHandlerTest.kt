@@ -147,9 +147,28 @@ class ExceptionHandlerTest {
     @Test
     fun `Should handle RefundNotAllowedException`() {
         val transactionId = TransactionId(TRANSACTION_ID)
-        val errorMessage = "Refund not permitted"
+        val errorMessage = "N/A"
         val cause = Throwable("Underlying cause")
         val exception = RefundNotAllowedException(transactionId, errorMessage, cause)
+        val response = exceptionHandler.handleGenericException(exception)
+
+        val expectedMessage = "An internal error occurred processing the request"
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+                title = "Error processing the request",
+                description = expectedMessage
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle RefundNotAllowedException widouth cause and errorMessage`() {
+        val transactionId = TransactionId(TRANSACTION_ID)
+        val exception = RefundNotAllowedException(transactionId)
         val response = exceptionHandler.handleGenericException(exception)
 
         val expectedMessage = "An internal error occurred processing the request"
