@@ -1,10 +1,9 @@
 package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
-import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
-import it.pagopa.helpdeskcommands.exceptions.NpgClientException
-import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
-import it.pagopa.helpdeskcommands.exceptions.RestApiException
+import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils.TRANSACTION_ID
+import it.pagopa.helpdeskcommands.exceptions.*
+import it.pagopa.helpdeskcommands.utils.TransactionId
 import jakarta.xml.bind.ValidationException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -143,5 +142,83 @@ class ExceptionHandlerTest {
             response.body
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle RefundNotAllowedException`() {
+        val transactionId = TransactionId(TRANSACTION_ID)
+        val errorMessage = "N/A"
+        val cause = Throwable("Underlying cause")
+        val exception = RefundNotAllowedException(transactionId, errorMessage, cause)
+        val response = exceptionHandler.handleGenericException(exception)
+
+        val expectedMessage = "An internal error occurred processing the request"
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+                title = "Error processing the request",
+                description = expectedMessage
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle RefundNotAllowedException widouth cause and errorMessage`() {
+        val transactionId = TransactionId(TRANSACTION_ID)
+        val exception = RefundNotAllowedException(transactionId)
+        val response = exceptionHandler.handleGenericException(exception)
+
+        val expectedMessage = "An internal error occurred processing the request"
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+                title = "Error processing the request",
+                description = expectedMessage
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle BadGatewayException`() {
+        val detail = "Service unavailable"
+        val exception = BadGatewayException(detail)
+        val response = exceptionHandler.handleGenericException(exception)
+
+        val expectedMessage = "An internal error occurred processing the request"
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+                title = "Error processing the request",
+                description = expectedMessage
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle NodeForwarderClientException`() {
+        val description = "Error communicating with node forwarder"
+        val httpStatusCode = HttpStatus.BAD_GATEWAY
+        val errors = listOf("Timeout occurred", "Invalid response")
+        val exception = NodeForwarderClientException(description, httpStatusCode, errors)
+        val response = exceptionHandler.handleException(exception)
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.BAD_GATEWAY,
+                title = "Forwarder Invocation exception - Error communicating with node forwarder",
+                description = "Timeout occurred. Invalid response"
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.BAD_GATEWAY, response.statusCode)
     }
 }
