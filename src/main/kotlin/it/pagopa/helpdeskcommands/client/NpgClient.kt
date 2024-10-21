@@ -1,13 +1,11 @@
 package it.pagopa.helpdeskcommands.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.netty.handler.codec.http.HttpResponseStatus.*
 import it.pagopa.generated.npg.api.PaymentServicesApi
-import it.pagopa.generated.npg.model.ClientErrorDto
 import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
-import it.pagopa.generated.npg.model.ServerErrorDto
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
+import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import it.pagopa.helpdeskcommands.utils.PaymentConstants
 import java.io.IOException
 import java.math.BigDecimal
@@ -73,19 +71,7 @@ class NpgClient(
     private fun exceptionToNpgResponseException(err: Throwable): NpgClientException {
         if (err is WebClientResponseException) {
             try {
-                var responseErrors =
-                    when (err.statusCode.value()) {
-                        INTERNAL_SERVER_ERROR.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ServerErrorDto::class.java)
-                                .errors
-                        BAD_REQUEST.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ClientErrorDto::class.java)
-                                .errors
-                        else -> emptyList()
-                    }?.mapNotNull { "[${it.code}] ${it.description}" }
-                        ?: emptyList()
+                var responseErrors = ErrorResponseUtils.parseResponseErrors(err, objectMapper)
                 if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
                 logger.error("Npg error codes: [{}]", responseErrors)
                 return mapNpgException(err.statusCode, responseErrors)

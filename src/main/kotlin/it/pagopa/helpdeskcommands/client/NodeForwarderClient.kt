@@ -5,16 +5,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.netty.channel.ChannelOption
-import io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
-import io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.nodeforwarder.v1.ApiClient
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
-import it.pagopa.generated.npg.model.ClientErrorDto
-import it.pagopa.generated.npg.model.ServerErrorDto
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
+import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import java.io.IOException
 import java.net.URI
 import java.util.*
@@ -182,19 +178,7 @@ class NodeForwarderClient<T, R> {
     ): NodeForwarderClientException {
         if (err is WebClientResponseException) {
             try {
-                var responseErrors =
-                    when (err.statusCode.value()) {
-                        INTERNAL_SERVER_ERROR.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ServerErrorDto::class.java)
-                                .errors
-                        BAD_REQUEST.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ClientErrorDto::class.java)
-                                .errors
-                        else -> emptyList()
-                    }?.mapNotNull { "[${it.code}] ${it.description}" }
-                        ?: emptyList()
+                var responseErrors = ErrorResponseUtils.parseResponseErrors(err, objectMapper)
                 if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
                 logger.error("Forwarder error codes: [{}]", responseErrors)
                 return mapNodeForwarderException(err.statusCode, responseErrors)

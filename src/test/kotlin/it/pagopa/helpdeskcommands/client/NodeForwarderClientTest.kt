@@ -426,6 +426,62 @@ class NodeForwarderClientTest {
             .verify()
     }
 
+    /*@Test
+    fun `should handle IOException when deserializing error response`() {
+        val requestId = UUID.randomUUID().toString()
+        val testRequest =
+            RefundRequestDto()
+                .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
+                .idPSPTransaction("5f521592f3d84ffa8d8f68651da91144")
+                .action("refund")
+        val proxyTo = URI.create("http://localhost:123/test/request")
+        // Mock WebClientResponseException
+        val responseBody =
+            "{\"errors\":[{\"code\":\"ERROR_CODE\",\"description\":\"Error description\"}]}"
+        val exception =
+            WebClientResponseException.create(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                HttpHeaders.EMPTY,
+                responseBody.toByteArray(),
+                null
+            )
+
+        // Use a spy instead of a mock
+        val objectMapperSpy = Mockito.spy(ObjectMapper())
+
+        // Stub the readValue method to throw IOException
+        Mockito.doThrow(IOException::class.java)
+            .`when`(objectMapperSpy)
+            .readValue(any(ByteArray::class.java), any(Class::class.java))
+
+        // Inject the spied ObjectMapper into NodeForwarderClient
+        val nodeForwarderClientWithMockedMapper =
+            NodeForwarderClient<RefundRequestDto, RefundResponseDto>(proxyApi)
+        val field = NodeForwarderClient::class.java.getDeclaredField("objectMapper")
+        field.isAccessible = true
+        field.set(nodeForwarderClientWithMockedMapper, objectMapperSpy)
+
+        // Mock proxyApi to return error
+        Mockito.`when`(proxyApi.forwardWithHttpInfo(any(), any(), any(), any(), any()))
+            .thenReturn(Mono.error(exception))
+
+        // Test
+        StepVerifier.create(
+                nodeForwarderClientWithMockedMapper.proxyRequest(
+                    testRequest,
+                    proxyTo,
+                    requestId,
+                    RefundResponseDto::class.java
+                )
+            )
+            .expectErrorMatches { ex ->
+                ex is NodeForwarderClientException &&
+                    ex.description.contains("Node Forwarder internal server error")
+            }
+            .verify()
+    }*/
+
     @ParameterizedTest
     @MethodSource("provideErrorResponses")
     fun `should map NodeForwarder exceptions correctly`(
