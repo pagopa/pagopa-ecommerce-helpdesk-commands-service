@@ -10,10 +10,14 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.nodeforwarder.v1.ApiClient
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
+import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
+import java.io.IOException
 import java.net.URI
 import java.util.*
 import java.util.concurrent.TimeUnit
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -124,7 +128,7 @@ class NodeForwarderClient<T, R> {
         try {
             requestPayload = objectMapper.writeValueAsString(request)
         } catch (e: JsonProcessingException) {
-            return Mono.error(NodeForwarderClientException("Error serializing request", e))
+            return Mono.error(exceptionToNodeForwarderClientException(e))
         }
         val hostName = proxyTo.host
         var port = proxyTo.port
@@ -141,9 +145,6 @@ class NodeForwarderClient<T, R> {
         )
         return proxyApiClient
             .forwardWithHttpInfo(hostName, port, path, requestId, requestPayload)
-            .onErrorMap { e ->
-                NodeForwarderClientException("Error communicating with Node forwarder", e)
-            }
             .flatMap { response ->
                 try {
                     Mono.just(
@@ -153,20 +154,92 @@ class NodeForwarderClient<T, R> {
                         )
                     )
                 } catch (e: JsonProcessingException) {
-                    Mono.error(NodeForwarderClientException("Error deserializing body", e))
+                    Mono.error(exceptionToNodeForwarderClientException(e))
                 }
             }
-            .doOnError { e ->
-                logger.error("Error communicating with Node forwarder", e)
-                if (e.cause is WebClientResponseException) {
-                    logger.error(
-                        "Error response code: [{}], body: [{}]",
-                        (e.cause as WebClientResponseException).statusCode,
-                        (e.cause as WebClientResponseException).responseBodyAsString
-                    )
-                }
+            .doOnError(WebClientResponseException::class.java) {
+                logger.error(
+                    "Error communicating with Node forwarder\nError response code: [{}], body: [{}]",
+                    it.statusCode,
+                    it.responseBodyAsString
+                )
             }
+            .onErrorMap { error -> exceptionToNodeForwarderClientException(error) }
     }
+
+    /**
+     * Map exceptions to NodeForwarderClientException with appropriate logging
+     *
+     * @param err the Throwable to map
+     * @return a NodeForwarderClientException with detailed error information
+     */
+    private fun exceptionToNodeForwarderClientException(
+        err: Throwable
+    ): NodeForwarderClientException {
+        if (err is WebClientResponseException) {
+            try {
+                var responseErrors = ErrorResponseUtils.parseResponseErrors(err, objectMapper)
+                if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
+                return mapNodeForwarderException(err.statusCode, responseErrors)
+            } catch (ex: IOException) {
+                return NodeForwarderClientException(
+                    description =
+                        "Invalid error response from forwarder with status code ${err.statusCode}",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors = emptyList()
+                )
+            }
+        }
+        return NodeForwarderClientException(
+            description = "Unexpected error while invoking proxyRequest: ${err.message}",
+            httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+            errors = emptyList()
+        )
+    }
+
+    /**
+     * Map HTTP status codes to NodeForwarderClientException with appropriate descriptions
+     *
+     * @param statusCode the HTTP status code returned by the Node Forwarder
+     * @param errors the list of error messages
+     * @return a NodeForwarderClientException with the mapped error details
+     */
+    private fun mapNodeForwarderException(
+        statusCode: HttpStatusCode,
+        errors: List<String>
+    ): NodeForwarderClientException =
+        when (statusCode) {
+            HttpStatus.BAD_REQUEST ->
+                NodeForwarderClientException(
+                    description = "Bad request to Node Forwarder",
+                    httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    errors = errors
+                )
+            HttpStatus.UNAUTHORIZED ->
+                NodeForwarderClientException(
+                    description = "Misconfigured Node Forwarder API key",
+                    httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    errors = errors
+                )
+            HttpStatus.INTERNAL_SERVER_ERROR ->
+                NodeForwarderClientException(
+                    description = "Node Forwarder internal server error",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors = errors
+                )
+            HttpStatus.NOT_FOUND ->
+                NodeForwarderClientException(
+                    description = "Node Forwarder resource not found",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors = errors
+                )
+            else ->
+                NodeForwarderClientException(
+                    description = "Node Forwarder server error: $statusCode",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    errors = errors
+                )
+        }
 
     companion object {
         /** Node forwarder api key header */
