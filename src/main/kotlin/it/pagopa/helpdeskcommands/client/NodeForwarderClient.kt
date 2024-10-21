@@ -180,7 +180,6 @@ class NodeForwarderClient<T, R> {
             try {
                 var responseErrors = ErrorResponseUtils.parseResponseErrors(err, objectMapper)
                 if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
-                logger.error("Forwarder error codes: [{}]", responseErrors)
                 return mapNodeForwarderException(err.statusCode, responseErrors)
             } catch (ex: IOException) {
                 return NodeForwarderClientException(

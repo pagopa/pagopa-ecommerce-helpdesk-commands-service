@@ -62,9 +62,15 @@ class CommandsService(
                                 .idTransaction(it.body.idTransaction)
                                 .outcome(RefundOutcomeDto.valueOf(it.body.outcome.name))
                         }
+                        .doOnNext { response ->
+                            logger.info(
+                                "Redirect refund processed correctly for transaction with id: [{}]",
+                                response.idTransaction
+                            )
+                        }
                         .doOnError(NodeForwarderClientException::class.java) { exception ->
                             logger.error(
-                                "Error performing Redirect refund operation for transaction with id: [{}]. psp id: [{}], pspTransactionId: [{}], paymentTypeCode: [{}]",
+                                "Error performing Redirect refund operation for transaction with id: [{}], psp id: [{}], pspTransactionId: [{}], paymentTypeCode: [{}]",
                                 transactionId.value(),
                                 pspId,
                                 pspTransactionId,
