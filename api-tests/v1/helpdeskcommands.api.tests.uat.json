@@ -251,7 +251,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"action\": \"{{ACTION}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
