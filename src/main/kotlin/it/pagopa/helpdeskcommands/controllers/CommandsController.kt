@@ -17,14 +17,19 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun commandsRefundRedirectPost(
+        xUserId: String,
+        xForwardedFor: String,
         refundRedirectRequestDto: Mono<RefundRedirectRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
-                "Received refund redirect request for transactionId: [{}}, idPSPTransaction: [{}]",
+                "Received refund redirect request for userId: [{}], transactionId: [{}}, idPSPTransaction: [{}], " +
+                    "from IP: [{}]",
+                xUserId,
                 requestDto.idTransaction,
-                requestDto.idPSPTransaction
+                requestDto.idPSPTransaction,
+                xForwardedFor
             )
             commandsService
                 .requestRedirectRefund(
