@@ -20,7 +20,7 @@ stages:
               path: $(GRADLE_USER_HOME)
             displayName: Configure gradle caching
 
-          - task: SonarCloudPrepare@2
+          - task: SonarCloudPrepare@3
             displayName: 'Prepare SonarCloud analysis configuration'
             inputs:
               SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
@@ -45,7 +45,7 @@ stages:
               jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
               sonarQubeRunAnalysis: true
 
-          - task: SonarCloudPublish@2
+          - task: SonarCloudPublish@3
             displayName: 'Publish SonarCloud results on build summary'
             inputs:
               pollingTimeoutSec: '300'
