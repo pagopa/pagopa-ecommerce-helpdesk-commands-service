@@ -34,8 +34,8 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
-    name: ""
+    annotations: { }
+    name: "ecommerce-workload-identity"
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
@@ -113,7 +113,5 @@ microservice-chart:
                 operator: In
                 values:
                   - user
-  canaryDelivery:
-    deployment:
-      image:
-        tag: ""
+  azure:
+    workloadIdentityClientId: "d5614882-90dd-47a1-aad1-cdf295201469"
