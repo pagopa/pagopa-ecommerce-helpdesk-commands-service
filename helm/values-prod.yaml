@@ -2,6 +2,20 @@ microservice-chart:
   namespace: "ecommerce"
   nameOverride: ""
   fullnameOverride: "pagopa-ecommerce-helpdesk-commands-service"
+  canaryDelivery:
+    create: false
+    ingress:
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
+    image:
+      repository: pagopapcommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
+      tag: "latest"
+    envConfig: { }
+    envSecret: { }
   image:
     repository: pagopapcommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
     tag: "0.14.2"

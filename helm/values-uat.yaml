@@ -14,9 +14,7 @@ microservice-chart:
     image:
       repository: pagopaucommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
       tag: "latest"
-    envConfig:
-      ECS_SERVICE_NAME: "pagopa-ecommerce-helpdesk-commands-service-blue"
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-ecommerce-helpdesk-commands-service-blue,deployment.environment=uat"
+    envConfig: { }
     envSecret: { }
   image:
     repository: pagopaucommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
