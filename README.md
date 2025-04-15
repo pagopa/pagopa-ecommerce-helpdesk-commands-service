@@ -36,6 +36,8 @@ These are all environment variables needed by the application:
 | NODE_FORWARDER_READ_TIMEOUT       | Node forwarder HTTP api call read timeout in milliseconds                                                                                                                       | integer |         |
 | NODE_FORWARDER_CONNECTION_TIMEOUT | Node forwarder HTTP api call connection timeout in milliseconds                                                                                                                 | integer |         |
 | NODE_FORWARDER_API_KEY            | Node forwarder api key                                                                                                                                                          | string  |         |
+| NPG_GOOGLE_PAY_PSP_KEYS           | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
+| NPG_GOOGLE_PAY_PSP_LIST           | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
 
 An example configuration of these environment variables is in the `.env.example` file.
 
