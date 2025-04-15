@@ -151,7 +151,7 @@ class NpgPspsApiKeyConfigBuilder {
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.APPLEPAY
+            paymentMethod = PaymentMethod.GOOGLEPAY
         )
 
     @Bean
