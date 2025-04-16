@@ -98,6 +98,7 @@ microservice-chart:
     NPG_BANCOMATPAY_PSP_LIST: "BCITITMM"
     NPG_SATISPAY_PSP_LIST: ""
     NPG_APPLEPAY_PSP_LIST: ""
+    NPG_GOOGLE_PAY_PSP_LIST: ""
     NPG_AUTHORIZATION_REQUEST_TIMEOUT_SECONDS: "60"
     NODE_FORWARDER_URL: "https://api.platform.pagopa.it/pagopa-node-forwarder/api/v1"
     NODE_FORWARDER_READ_TIMEOUT: "10000"
@@ -111,6 +112,7 @@ microservice-chart:
     NPG_MYBANK_PSP_KEYS: npg-mybank-psp-keys
     NPG_SATISPAY_PSP_KEYS: npg-satispay-psp-keys
     NPG_APPLEPAY_PSP_KEYS: npg-apple-pay-psp-keys
+    NPG_GOOGLE_PAY_PSP_KEYS: npg-google-pay-psp-keys
     NODE_FORWARDER_API_KEY: node-forwarder-api-key
     REDIRECT_URL_MAPPING: redirect-url-mapping
   keyvault:
