@@ -103,28 +103,6 @@ class CommandsController(@Autowired private val commandsService: CommandsService
     }
 
     /**
-     * POST /commands/transactions/{transactionId}/refund/redirect : Request a redirect refund for a
-     * transaction Sends a redirect refund request to the dedicated service for processing
-     *
-     * @param transactionId The unique identifier of the transaction (required)
-     * @param xUserId User ID (populated by APIM policy) (required)
-     * @param xForwardedFor Client Source IP Address (required)
-     * @return TransactionRefundRequested message successfully queued to the dedicated service
-     *   (status code 202) or Formally invalid input (status code 400) or Transaction not found
-     *   (status code 404) or Transaction not in a refundable state (status code 422) or Internal
-     *   server error (status code 500)
-     */
-    @Suppress("kotlin:S6508")
-    override fun requestTransactionRedirectRefund(
-        transactionId: String?,
-        xUserId: @NotNull String?,
-        xForwardedFor: @NotNull String?,
-        exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
-    }
-
-    /**
      * POST /commands/transactions/{transactionId}/resend-email : Request to resend the transaction
      * email notification Sends an email notification request to the dedicated service for
      * processing

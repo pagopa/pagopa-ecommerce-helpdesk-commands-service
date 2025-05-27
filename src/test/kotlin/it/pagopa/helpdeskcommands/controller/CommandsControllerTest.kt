@@ -107,20 +107,6 @@ class CommandsControllerTest {
     }
 
     @Test
-    fun `requestTransactionRedirectRefund returns 500 when not implemented`() {
-        val userId = UUID.randomUUID().toString()
-
-        webClient
-            .post()
-            .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund/redirect")
-            .header("x-user-id", userId)
-            .header("X-Forwarded-For", SOURCE_IP)
-            .exchange()
-            .expectStatus()
-            .is5xxServerError
-    }
-
-    @Test
     fun `resendTransactionEmail returns 500 when not implemented`() {
         val userId = UUID.randomUUID().toString()
 
