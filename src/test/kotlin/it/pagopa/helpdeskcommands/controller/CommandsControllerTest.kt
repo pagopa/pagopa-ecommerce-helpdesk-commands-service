@@ -39,6 +39,11 @@ class CommandsControllerTest {
         commandsController = CommandsController(commandsService)
     }
 
+    companion object {
+        private const val VALID_TRANSACTION_ID = "3fa85f6457174562b3fc2c963f66afa6"
+        private const val SOURCE_IP = "127.0.0.1"
+    }
+
     @Test
     fun testRefundPaymentMethod() {
         val operationId = UUID.randomUUID().toString()
@@ -85,5 +90,47 @@ class CommandsControllerTest {
             .isOk
             .expectBody<RefundRedirectResponseDto>()
             .consumeWith { assertEquals(refundRedirectResponseDto, it.responseBody) }
+    }
+
+    @Test
+    fun `requestTransactionRefund returns 500 when not implemented`() {
+        val userId = UUID.randomUUID().toString()
+
+        webClient
+            .post()
+            .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
+            .header("x-user-id", userId)
+            .header("X-Forwarded-For", SOURCE_IP)
+            .exchange()
+            .expectStatus()
+            .is5xxServerError
+    }
+
+    @Test
+    fun `requestTransactionRedirectRefund returns 500 when not implemented`() {
+        val userId = UUID.randomUUID().toString()
+
+        webClient
+            .post()
+            .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund/redirect")
+            .header("x-user-id", userId)
+            .header("X-Forwarded-For", SOURCE_IP)
+            .exchange()
+            .expectStatus()
+            .is5xxServerError
+    }
+
+    @Test
+    fun `resendTransactionEmail returns 500 when not implemented`() {
+        val userId = UUID.randomUUID().toString()
+
+        webClient
+            .post()
+            .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
+            .header("x-user-id", userId)
+            .header("X-Forwarded-For", SOURCE_IP)
+            .exchange()
+            .expectStatus()
+            .is5xxServerError
     }
 }

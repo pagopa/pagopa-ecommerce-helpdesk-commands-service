@@ -93,6 +93,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
      *   code 404) or Transaction not in a refundable state (status code 422) or Internal server
      *   error (status code 500)
      */
+    @Suppress("kotlin:S6508")
     override fun requestTransactionRefund(
         transactionId: String?,
         xUserId: @NotNull String?,
@@ -115,6 +116,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
      *   code 404) or Transaction not in a refundable state (status code 422) or Internal server
      *   error (status code 500)
      */
+    @Suppress("kotlin:S6508")
     override fun requestTransactionRedirectRefund(
         transactionId: String?,
         xUserId: @NotNull String?,
@@ -135,6 +137,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
      *   code 202) or Invalid transaction ID format (status code 400) or Transaction not found
      *   (status code 404) or Internal server error (status code 500)
      */
+    @Suppress("kotlin:S6508")
     override fun resendTransactionEmail(
         transactionId: String?,
         xUserId: @NotNull String?,
