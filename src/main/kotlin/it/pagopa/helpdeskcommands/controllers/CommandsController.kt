@@ -5,6 +5,7 @@ import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
+import jakarta.validation.constraints.NotNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -77,5 +78,68 @@ class CommandsController(@Autowired private val commandsService: CommandsService
                     )
                 }
         }
+    }
+
+    /**
+     * POST /commands/transactions/{transactionId}/refund : Api&#39;s for performing money refunds
+     * operations over failed transactions Sends a refund request to the event-dispatcher for
+     * processing
+     *
+     * @param transactionId The unique identifier of the transaction (required)
+     * @param xUserId User ID (populated by APIM policy) (required)
+     * @param xForwardedFor Client Source IP Address (required)
+     * @return TransactionRefundRequested message successfully queued to event-dispatcher (status
+     *   code 202) or Formally invalid input (status code 400) or Transaction not found (status
+     *   code 404) or Internal server error (status code 500)
+     */
+    override fun requestTransactionRefund(
+        transactionId: String?,
+        xUserId: @NotNull String?,
+        xForwardedFor: @NotNull String?,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<DispatcherRefundRequestResponseDto?>?>? {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * POST /commands/transactions/{transactionId}/refund/redirect : Api&#39;s for performing money
+     * redirect refund operations over failed transactions Sends a redirect refund request to the
+     * event-dispatcher for processing
+     *
+     * @param transactionId The unique identifier of the transaction (required)
+     * @param xUserId User ID (populated by APIM policy) (required)
+     * @param xForwardedFor Client Source IP Address (required)
+     * @return TransactionRefundRequested message successfully queued to event-dispatcher (status
+     *   code 202) or Formally invalid input (status code 400) or Transaction not found (status
+     *   code 404) or Internal server error (status code 500)
+     */
+    override fun requestTransactionRedirectRefund(
+        transactionId: String?,
+        xUserId: @NotNull String?,
+        xForwardedFor: @NotNull String?,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<DispatcherRefundRequestResponseDto?>?>? {
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * POST /commands/transactions/{transactionId}/resend-email : Request to resend the transaction email notification
+     * Sends an email notification request to the event-dispatcher for processing
+     *
+     * @param transactionId The unique identifier of the transaction (required)
+     * @param xUserId User ID (populated by APIM policy) (required)
+     * @param xForwardedFor Client Source IP Address (required)
+     * @return TransactionUserReceipt message successfully queued to event-dispatcher (status code 202)
+     * or Invalid transaction ID format (status code 400)
+     * or Transaction not found (status code 404)
+     * or Internal server error (status code 500)
+     */
+    override fun resendTransactionEmail(
+        transactionId: String?,
+        xUserId: @NotNull String?,
+        xForwardedFor: @NotNull String?,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<EmailResendResponseDto?>?>? {
+        TODO("Not yet implemented")
     }
 }

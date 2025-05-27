@@ -224,6 +224,8 @@ paths:
       parameters:
         - in: path
           name: transactionId
+          schema:
+            type: string
           required: true
           description: The unique identifier of the transaction
         - in: header
