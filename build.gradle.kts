@@ -1,10 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.spring") version "1.9.24"
-  id("java")
-  id("org.springframework.boot") version "3.3.2"
+  kotlin("jvm") version "1.9.25"
+  kotlin("plugin.spring") version "1.9.25"
+  id("org.springframework.boot") version "3.3.5"
   id("io.spring.dependency-management") version "1.1.6"
   id("org.openapi.generator") version "6.3.0"
   id("org.graalvm.buildtools.native") version "0.10.2"
@@ -29,10 +28,19 @@ springBoot {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-repositories { mavenCentral() }
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
 
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
+
+object Deps {
+  const val azureSpringCloudDepsVersion = "5.22.0"
+  const val mongoReactiveVersion = "3.5.0"
+  const val ecommerceCommonsVersion = "1.36.0"
+}
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -45,12 +53,23 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
+  implementation(
+    platform("com.azure.spring:spring-cloud-azure-dependencies:${Deps.azureSpringCloudDepsVersion}")
+  )
+
+  // azure storage queue
+  implementation("com.azure.spring:spring-cloud-azure-starter")
+  implementation("com.azure:azure-storage-queue")
+  implementation("com.azure:azure-core-serializer-json-jackson")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
-  // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation(
+    "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:${Deps.mongoReactiveVersion}"
+  )
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.projectreactor:reactor-test")
@@ -68,6 +87,14 @@ kotlin { jvmToolchain(21) }
 
 // Dependency locking - lock all dependencies
 // dependencyLocking { lockAllConfigurations() }
+
+dependencyManagement {
+  imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.5") }
+  imports { mavenBom("com.azure.spring:spring-cloud-azure-dependencies:5.13.0") }
+  // Kotlin BOM
+  imports { mavenBom("org.jetbrains.kotlin:kotlin-bom:1.7.22") }
+  imports { mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4") }
+}
 
 tasks.create("applySemanticVersionPlugin") {
   dependsOn("prepareKotlinBuildScriptModel")
