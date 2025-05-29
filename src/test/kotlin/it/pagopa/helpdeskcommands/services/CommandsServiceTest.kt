@@ -1,6 +1,12 @@
 package it.pagopa.helpdeskcommands.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import it.pagopa.ecommerce.commons.client.QueueAsyncClient
+import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
+import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
+import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
+import it.pagopa.ecommerce.commons.queues.QueueEvent
+import it.pagopa.ecommerce.commons.queues.TracingUtils
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
@@ -9,10 +15,18 @@ import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.helpdeskcommands.client.NodeForwarderClient
 import it.pagopa.helpdeskcommands.client.NpgClient
 import it.pagopa.helpdeskcommands.config.WebClientConfig
-import it.pagopa.helpdeskcommands.exceptions.*
-import it.pagopa.helpdeskcommands.utils.*
+import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
+import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
+import it.pagopa.helpdeskcommands.exceptions.NpgClientException
+import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
+import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
+import it.pagopa.helpdeskcommands.utils.NpgPspApiKeysConfig
+import it.pagopa.helpdeskcommands.utils.PaymentMethod
+import it.pagopa.helpdeskcommands.utils.RedirectKeysConfiguration
+import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
 import java.net.URI
+import java.time.Duration
 import java.util.*
 import java.util.stream.Stream
 import okhttp3.mockwebserver.MockResponse
@@ -21,11 +35,19 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.given
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
@@ -74,17 +96,30 @@ class CommandsServiceTest {
             redirectBeAoiCallUriSet
         )
 
-    private val commandsService: CommandsService =
-        CommandsService(
-            npgClient = npgClient,
-            npgApiKeyConfiguration = npgApiKeyConfiguration,
-            redirectKeysConfiguration = redirectKeysConfiguration,
-            nodeForwarderClient = nodeForwarderRedirectApiClient,
-            refundQueueClient = TODO(),
-            notificationQueueClient = TODO(),
-            transientQueueTTLSeconds = TODO(),
-            tracingUtils = TODO()
-        )
+    private val refundQueueClient: QueueAsyncClient = mock()
+    private val notificationQueueClient: QueueAsyncClient = mock()
+    private val transientQueueTTLSeconds: Long = 2700 // 45 minutes
+    private lateinit var commandsService: CommandsService
+
+    @BeforeEach
+    fun setupWithRealTracingUtils() {
+        reset(refundQueueClient, notificationQueueClient)
+
+        val realTracingUtils = TracingUtils(mock(), mock())
+        val spiedTracingUtils = spy(realTracingUtils)
+
+        commandsService =
+            CommandsService(
+                npgClient = npgClient,
+                npgApiKeyConfiguration = npgApiKeyConfiguration,
+                redirectKeysConfiguration = redirectKeysConfiguration,
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
+                refundQueueClient = Mono.just(refundQueueClient),
+                notificationQueueClient = Mono.just(notificationQueueClient),
+                transientQueueTTLSeconds = transientQueueTTLSeconds,
+                tracingUtils = spiedTracingUtils
+            )
+    }
 
     companion object {
         lateinit var mockWebServer: MockWebServer
@@ -287,10 +322,10 @@ class CommandsServiceTest {
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
                 nodeForwarderClient = nodeForwarderRedirectApiClient,
-                refundQueueClient = TODO(),
-                notificationQueueClient = TODO(),
-                transientQueueTTLSeconds = TODO(),
-                tracingUtils = TODO()
+                refundQueueClient = Mono.just(mock()),
+                notificationQueueClient = Mono.just(mock()),
+                transientQueueTTLSeconds = 2700,
+                tracingUtils = mock()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -341,10 +376,10 @@ class CommandsServiceTest {
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
                 nodeForwarderClient = nodeForwarderRedirectApiClient,
-                refundQueueClient = TODO(),
-                notificationQueueClient = TODO(),
-                transientQueueTTLSeconds = TODO(),
-                tracingUtils = TODO()
+                refundQueueClient = Mono.just(mock()),
+                notificationQueueClient = Mono.just(mock()),
+                transientQueueTTLSeconds = 2700,
+                tracingUtils = mock()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -395,10 +430,10 @@ class CommandsServiceTest {
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
                 nodeForwarderClient = nodeForwarderRedirectApiClient,
-                refundQueueClient = TODO(),
-                notificationQueueClient = TODO(),
-                transientQueueTTLSeconds = TODO(),
-                tracingUtils = TODO()
+                refundQueueClient = Mono.just(mock()),
+                notificationQueueClient = Mono.just(mock()),
+                transientQueueTTLSeconds = 2700,
+                tracingUtils = mock()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -553,5 +588,32 @@ class CommandsServiceTest {
                 transactionId,
                 RedirectRefundResponseDto::class.java
             )
+    }
+
+    @Test
+    fun `should handle queue error when sending refund event`() {
+        val transactionId = TRANSACTION_ID_STRING
+        val event =
+            TransactionRefundRequestedEvent(
+                transactionId,
+                TransactionRefundRequestedData(
+                    null,
+                    TransactionStatusDto.CLOSED,
+                    TransactionRefundRequestedData.RefundTrigger.MANUAL
+                )
+            )
+
+        given(
+                refundQueueClient.sendMessageWithResponse(
+                    any<QueueEvent<TransactionRefundRequestedEvent>>(),
+                    any<Duration>(),
+                    any<Duration>()
+                )
+            )
+            .willReturn(Mono.error(RuntimeException("Queue error")))
+
+        StepVerifier.create(commandsService.sendRefundRequestedEvent(event))
+            .expectError(RuntimeException::class.java)
+            .verify()
     }
 }
