@@ -79,7 +79,11 @@ class CommandsServiceTest {
             npgClient = npgClient,
             npgApiKeyConfiguration = npgApiKeyConfiguration,
             redirectKeysConfiguration = redirectKeysConfiguration,
-            nodeForwarderClient = nodeForwarderRedirectApiClient
+            nodeForwarderClient = nodeForwarderRedirectApiClient,
+            refundQueueClient = TODO(),
+            notificationQueueClient = TODO(),
+            transientQueueTTLSeconds = TODO(),
+            tracingUtils = TODO()
         )
 
     companion object {
@@ -282,7 +286,11 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
+                refundQueueClient = TODO(),
+                notificationQueueClient = TODO(),
+                transientQueueTTLSeconds = TODO(),
+                tracingUtils = TODO()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -332,7 +340,11 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
+                refundQueueClient = TODO(),
+                notificationQueueClient = TODO(),
+                transientQueueTTLSeconds = TODO(),
+                tracingUtils = TODO()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -382,7 +394,11 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
+                refundQueueClient = TODO(),
+                notificationQueueClient = TODO(),
+                transientQueueTTLSeconds = TODO(),
+                tracingUtils = TODO()
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
