@@ -20,7 +20,9 @@ version = "0.17.0"
 
 description = "pagopa-helpdeskcommands-service"
 
-sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+sourceSets {
+  main { java { srcDirs("${layout.buildDirectory.get().asFile.path}/generated/src/main/java") } }
+}
 
 springBoot {
   mainClass.set("it.pagopa.helpdeskcommands.HelpDeskCommandsApplicationKt")
@@ -99,7 +101,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("helpdeskcommands-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/v1/openapi.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.helpdeskcommands.api")
   modelPackage.set("it.pagopa.generated.helpdeskcommands.model")
   generateApiTests.set(false)
@@ -129,7 +131,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("redirect-api-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/client/openapi/redirect/redirect-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.ecommerce.redirect.v1.api")
   modelPackage.set("it.pagopa.generated.ecommerce.redirect.v1.dto")
   generateApiTests.set(false)
@@ -159,7 +161,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("red
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.npg.api")
   modelPackage.set("it.pagopa.generated.npg.model")
   generateApiTests.set(false)
@@ -192,7 +194,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   library.set("webclient")
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
