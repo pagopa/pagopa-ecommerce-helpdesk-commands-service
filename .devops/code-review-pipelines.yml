@@ -20,6 +20,14 @@ stages:
               path: $(GRADLE_USER_HOME)
             displayName: Configure gradle caching
 
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)"'
+              restoreKeys: |
+                maven
+              path: ~/.m2/repository
+            displayName: Cache Maven repository
+
           - task: SonarCloudPrepare@3
             displayName: 'Prepare SonarCloud analysis configuration'
             inputs:
@@ -32,6 +40,12 @@ stages:
                 sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
+
+          - script: |
+              # Verify Maven repository contents
+              echo "Contents of ~/.m2/repository after build:"
+              ls -lahR ~/.m2/repository
+              displayName: Verify Maven repository
 
           - task: Gradle@3
             inputs:

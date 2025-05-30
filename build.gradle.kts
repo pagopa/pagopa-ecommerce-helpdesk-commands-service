@@ -39,9 +39,6 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories {
   mavenCentral()
-  maven {
-    url = uri(file("${rootProject.projectDir}/.m2/repository"))
-  }
   mavenLocal()
 }
 
@@ -250,9 +247,6 @@ tasks.withType<KotlinCompile> {
   )
   // kotlinOptions.jvmTarget = "21"
 }
-
-tasks.named("nativeCompile") { dependsOn("install-commons") }
-tasks.named("compileKotlin") { dependsOn("install-commons") }
 
 tasks.test {
   useJUnitPlatform()
