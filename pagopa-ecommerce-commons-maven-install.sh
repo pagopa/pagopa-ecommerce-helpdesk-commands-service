@@ -37,7 +37,9 @@ fi
 echo "Using Java version:"
 $JAVA_HOME/bin/java -version
 
-JAVA_HOME=$JAVA_HOME ./mvnw install -DskipTests
+REPO_PATH="/home/vsts/work/1/s/.m2/repository"
+#REPO_PATH="/home/vsts/.m2/repository"
+JAVA_HOME=$JAVA_HOME ./mvnw install -DskipTests -Dmaven.repo.local=$REPO_PATH
 
 cd ../../
 rm -rf $checkoutFolder

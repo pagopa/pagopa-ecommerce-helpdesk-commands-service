@@ -39,9 +39,10 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories {
   mavenCentral()
-  mavenLocal {
-    url = uri(file(System.getProperty("user.home") + "/.m2/repository"))
+  maven {
+    url = uri(file("${rootProject.projectDir}/.m2/repository"))
   }
+  mavenLocal()
 }
 
 val mockWebServerVersion = "4.12.0"
