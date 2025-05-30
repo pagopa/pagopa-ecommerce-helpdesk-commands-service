@@ -249,6 +249,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.named("nativeCompile") { dependsOn("install-commons") }
+tasks.named("compileKotlin") { dependsOn("install-commons") }
 
 tasks.test {
   useJUnitPlatform()
