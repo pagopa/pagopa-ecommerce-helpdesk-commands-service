@@ -33,13 +33,6 @@ stages:
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
 
-          - task: JavaToolInstaller@0
-            inputs:
-              versionSpec: '21' # string. Required. JDK version. Default: 8.
-              jdkArchitectureOption: 'x64' # Required. JDK architecture.
-              jdkSourceOption: 'PreInstalled'
-            displayName: 'Install Java 21'
-
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.

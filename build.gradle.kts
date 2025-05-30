@@ -39,7 +39,9 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories {
   mavenCentral()
-  mavenLocal()
+  mavenLocal {
+    url = uri(file(System.getProperty("user.home") + "/.m2/repository"))
+  }
 }
 
 val mockWebServerVersion = "4.12.0"
@@ -233,7 +235,7 @@ tasks.register<Exec>("install-commons") {
   description = "Installs the commons library for this project."
   group = "commons"
   val buildCommons = providers.gradleProperty("buildCommons")
-//  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
+  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
   commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
 }
 
