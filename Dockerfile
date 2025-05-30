@@ -6,7 +6,7 @@ RUN microdnf install -y findutils
 COPY . .
 
 RUN chmod +x ./gradlew
-RUN ./gradlew :nativeCompile
+RUN ./gradlew :nativeCompile -PbuildCommons
 
 FROM debian:stable-20240701-slim@sha256:f8bbfa052db81e5b8ac12e4a1d8310a85d1509d4d0d5579148059c0e8b717d4e
 WORKDIR /app/

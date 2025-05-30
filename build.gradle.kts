@@ -14,13 +14,21 @@ plugins {
   jacoco
 }
 
+// ecommerce commons library version
+val ecommerceCommonsVersion = "1.37.2"
+// ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
+// for testing purpose we can use a branch/commit reference)
+val ecommerceCommonsGitRef = ecommerceCommonsVersion
+
 group = "it.pagopa.helpdeskcommands"
 
 version = "0.17.0"
 
 description = "pagopa-helpdeskcommands-service"
 
-sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+sourceSets {
+  main { java { srcDirs("${layout.buildDirectory.get().asFile.path}/generated/src/main/java") } }
+}
 
 springBoot {
   mainClass.set("it.pagopa.helpdeskcommands.HelpDeskCommandsApplicationKt")
@@ -29,7 +37,10 @@ springBoot {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-repositories { mavenCentral() }
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
 
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
@@ -45,6 +56,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("it.pagopa:pagopa-ecommerce-commons:$ecommerceCommonsGitRef")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
@@ -99,7 +111,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("helpdeskcommands-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/v1/openapi.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.helpdeskcommands.api")
   modelPackage.set("it.pagopa.generated.helpdeskcommands.model")
   generateApiTests.set(false)
@@ -129,7 +141,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("redirect-api-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/client/openapi/redirect/redirect-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.ecommerce.redirect.v1.api")
   modelPackage.set("it.pagopa.generated.ecommerce.redirect.v1.dto")
   generateApiTests.set(false)
@@ -159,7 +171,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("red
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.npg.api")
   modelPackage.set("it.pagopa.generated.npg.model")
   generateApiTests.set(false)
@@ -192,7 +204,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   library.set("webclient")
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -217,8 +229,22 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
+tasks.register<Exec>("install-commons") {
+  description = "Installs the commons library for this project."
+  group = "commons"
+  val buildCommons = providers.gradleProperty("buildCommons")
+  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
+  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
+}
+
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
+  dependsOn(
+    "helpdeskcommands-v1",
+    "npg-api",
+    "node-forwarder-api-v1",
+    "redirect-api-v1",
+    "install-commons"
+  )
   // kotlinOptions.jvmTarget = "21"
 }
 
