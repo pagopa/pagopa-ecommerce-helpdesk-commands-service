@@ -233,6 +233,12 @@ tasks.register<Exec>("install-commons") {
   description = "Installs the commons library for this project."
   group = "commons"
   val buildCommons = providers.gradleProperty("buildCommons")
+  doFirst {
+    println("=== INSTALL-COMMONS TASK STARTING ===")
+    println("buildCommons property present: ${buildCommons.isPresent}")
+    println("Working directory: ${project.projectDir}")
+    println("Script path: ${project.projectDir}/pagopa-ecommerce-commons-maven-install.sh")
+  }
   onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
   commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
 }

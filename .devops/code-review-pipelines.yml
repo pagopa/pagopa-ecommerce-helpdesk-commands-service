@@ -41,6 +41,11 @@ stages:
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
 
+          - script: |
+              chmod +x ./pagopa-ecommerce-commons-maven-install.sh
+              ./pagopa-ecommerce-commons-maven-install.sh 1.37.2
+            displayName: 'Install ecommerce commons'
+
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
