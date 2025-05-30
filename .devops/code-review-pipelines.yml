@@ -20,14 +20,6 @@ stages:
               path: $(GRADLE_USER_HOME)
             displayName: Configure gradle caching
 
-          - task: Cache@2
-            inputs:
-              key: 'maven | "$(Agent.OS)"'
-              restoreKeys: |
-                maven
-              path: ~/.m2/repository
-            displayName: Cache Maven repository
-
           - task: SonarCloudPrepare@3
             displayName: 'Prepare SonarCloud analysis configuration'
             inputs:
@@ -49,7 +41,7 @@ stages:
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              tasks: 'build -PbuildCommons' # string. Required. Tasks. Default: build.
+              tasks: 'build' # string. Required. Tasks. Default: build.
               publishJUnitResults: true
               testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
               codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
