@@ -41,12 +41,6 @@ stages:
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
 
-          - script: |
-              # Verify Maven repository contents
-              echo "Contents of ~/.m2/repository after build:"
-              ls -lahR ~/.m2/repository
-              displayName: Verify Maven repository
-
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
