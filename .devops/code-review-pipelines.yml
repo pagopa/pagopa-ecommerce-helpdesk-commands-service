@@ -33,10 +33,15 @@ stages:
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
 
+          - script: |
+              chmod +x ./pagopa-ecommerce-commons-maven-install.sh
+              ./pagopa-ecommerce-commons-maven-install.sh 1.37.2
+            displayName: 'Install ecommerce commons'
+
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              tasks: 'build -PbuildCommons' # string. Required. Tasks. Default: build.
+              tasks: 'build' # string. Required. Tasks. Default: build.
               publishJUnitResults: true
               testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
               codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
