@@ -248,6 +248,8 @@ tasks.withType<KotlinCompile> {
   // kotlinOptions.jvmTarget = "21"
 }
 
+tasks.named("nativeCompile") { dependsOn("install-commons") }
+
 tasks.test {
   useJUnitPlatform()
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
