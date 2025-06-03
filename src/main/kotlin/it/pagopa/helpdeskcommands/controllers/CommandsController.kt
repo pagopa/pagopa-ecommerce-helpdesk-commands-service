@@ -26,7 +26,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
                 "Received refund redirect request for userId: [{}], transactionId: [{}}, idPSPTransaction: [{}], " +
-                        "from IP: [{}]",
+                    "from IP: [{}]",
                 xUserId,
                 requestDto.idTransaction,
                 requestDto.idPSPTransaction,
