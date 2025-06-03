@@ -14,11 +14,15 @@ plugins {
   jacoco
 }
 
-// ecommerce commons library version
-val ecommerceCommonsVersion = "1.37.2"
+object Deps {
+  const val azureSpringCloudDepsVersion = "5.22.0"
+  const val mongoReactiveVersion = "3.5.0"
+  const val ecommerceCommonsVersion = "1.37.2"
+}
+
 // ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
 // for testing purpose we can use a branch/commit reference)
-val ecommerceCommonsGitRef = ecommerceCommonsVersion
+val ecommerceCommonsGitRef = Deps.ecommerceCommonsVersion
 
 group = "it.pagopa.helpdeskcommands"
 
@@ -56,12 +60,15 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
-  // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation(
+    "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:${Deps.mongoReactiveVersion}"
+  )
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.projectreactor:reactor-test")
@@ -250,7 +257,7 @@ tasks.withType<KotlinCompile> {
 tasks.register("printCommonsVersion") {
   description = "Prints the referenced commons library version."
   group = "commons"
-  doLast { print(ecommerceCommonsVersion) }
+  doLast { print(ecommerceCommonsGitRef) }
 }
 
 tasks.test {
