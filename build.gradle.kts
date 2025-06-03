@@ -291,6 +291,7 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
+      buildArgs.add("--strict-image-heap")
       buildArgs.add("--initialize-at-run-time=com.ctc.wstx.stax.WstxInputFactory")
       buildArgs.add("--initialize-at-run-time=com.ctc.wstx.util.DefaultXmlSymbolTable")
       buildArgs.add("--initialize-at-run-time=com.ctc.wstx.api.CommonConfig")
