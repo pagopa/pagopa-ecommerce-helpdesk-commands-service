@@ -94,17 +94,8 @@ class AzureStorageConfig {
         jsonSerializer: JsonSerializer
     ): Mono<QueueAsyncClient> {
         val azureQueueClient = createAzureQueueClient(storageConnectionString, queueName)
-
-        return ensureQueueExists(azureQueueClient, queueName)
-            .map { QueueAsyncClient(azureQueueClient, jsonSerializer) }
-            .onErrorResume { e ->
-                logger.error(
-                    "Failed to ensure queue '{}' exists. No QueueAsyncClient will be provided for this queue.",
-                    queueName,
-                    e
-                )
-                Mono.empty()
-            }
+        logger.debug("Queue client created for queue: {}", queueName)
+        return Mono.just(QueueAsyncClient(azureQueueClient, jsonSerializer))
     }
 
     /**
@@ -135,31 +126,5 @@ class AzureStorageConfig {
                 HttpClient.create().resolver { nameResolverSpec -> nameResolverSpec.ndots(1) }
             )
             .build()
-    }
-
-    /**
-     * Ensures the specified queue exists in Azure Storage, creating it if necessary.
-     *
-     * @param queueClient Azure queue client to check
-     * @param queueName Queue name for logging purposes
-     * @return Mono emitting the queue client on success
-     */
-    private fun ensureQueueExists(
-        queueClient: AzureQueueAsyncClient,
-        queueName: String
-    ): Mono<AzureQueueAsyncClient> {
-        return queueClient
-            .createIfNotExistsWithResponse(null)
-            .doOnSuccess { response ->
-                logger.info(
-                    "Queue '{}' creation check completed. Status code: {}",
-                    queueName,
-                    response?.statusCode ?: "N/A"
-                )
-            }
-            .doOnError { e ->
-                logger.error("Error during queue '{}' creation check: {}", queueName, e.message, e)
-            }
-            .thenReturn(queueClient)
     }
 }
