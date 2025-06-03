@@ -14,12 +14,6 @@ plugins {
   jacoco
 }
 
-object Deps {
-  const val azureSpringCloudDepsVersion = "5.22.0"
-  const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "1.37.2"
-}
-
 // ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
 // for testing purpose we can use a branch/commit reference)
 val ecommerceCommonsGitRef = Deps.ecommerceCommonsVersion
