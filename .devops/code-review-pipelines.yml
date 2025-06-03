@@ -33,9 +33,19 @@ stages:
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
 
+          - task: Gradle@3
+            displayName: 'Extract commons version'
+            inputs:
+              gradleWrapperFile: 'gradlew'
+              tasks: 'printCommonsVersion -q'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.17'
+            name: extractVersion
+
           - script: |
+              COMMONS_VERSION=$(./gradlew -q printCommonsVersion)
               chmod +x ./pagopa-ecommerce-commons-maven-install.sh
-              ./pagopa-ecommerce-commons-maven-install.sh 1.37.2
+              ./pagopa-ecommerce-commons-maven-install.sh $COMMONS_VERSION
             displayName: 'Install ecommerce commons'
 
           - task: Gradle@3
