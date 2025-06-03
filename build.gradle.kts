@@ -22,7 +22,7 @@ val ecommerceCommonsGitRef = ecommerceCommonsVersion
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.17.0"
+version = "0.18.0"
 
 description = "pagopa-helpdeskcommands-service"
 
