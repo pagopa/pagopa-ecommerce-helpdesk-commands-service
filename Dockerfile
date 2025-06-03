@@ -5,7 +5,7 @@ RUN microdnf install -y findutils git
 COPY . .
 RUN chmod +x ./gradlew
 RUN chmod +x ./pagopa-ecommerce-commons-maven-install.sh
-RUN ./gradlew install-commons -PbuildCommons
+RUN ./gradlew installLibs -PbuildCommons
 
 FROM ghcr.io/graalvm/native-image-community:21.0.2@sha256:faed0fd6809b138254bdd6c7046e56894f4d9566ecbc7b0952aab43e65e16e0e AS builder
 WORKDIR /workspace/app

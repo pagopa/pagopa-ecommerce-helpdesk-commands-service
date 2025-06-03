@@ -229,16 +229,10 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
-tasks.register<Exec>("install-commons") {
+tasks.register<Exec>("installLibs") {
   description = "Installs the commons library for this project."
   group = "commons"
   val buildCommons = providers.gradleProperty("buildCommons")
-  doFirst {
-    println("=== INSTALL-COMMONS TASK STARTING ===")
-    println("buildCommons property present: ${buildCommons.isPresent}")
-    println("Working directory: ${project.projectDir}")
-    println("Script path: ${project.projectDir}/pagopa-ecommerce-commons-maven-install.sh")
-  }
   onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
   commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
 }
@@ -249,7 +243,7 @@ tasks.withType<KotlinCompile> {
     "npg-api",
     "node-forwarder-api-v1",
     "redirect-api-v1",
-    "install-commons"
+    "installLibs"
   )
   // kotlinOptions.jvmTarget = "21"
 }
@@ -291,11 +285,11 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
-      // Add --strict-image-heap to prevent class initialization issues during native image
-      // building.
-      // This flag ensures problematic classes (like XML processors) are properly initialized at
-      // runtime
-      // rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
+      /*
+      Add --strict-image-heap to prevent class initialization issues during native image building.
+      This flag ensures problematic classes (like XML processors) are properly initialized at runtime
+      rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
+      */
       buildArgs.add("--strict-image-heap")
     }
   }
