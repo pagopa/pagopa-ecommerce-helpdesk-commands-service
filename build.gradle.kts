@@ -257,9 +257,7 @@ tasks.withType<KotlinCompile> {
 tasks.register("printCommonsVersion") {
   description = "Prints the referenced commons library version."
   group = "commons"
-  doLast {
-    print(ecommerceCommonsVersion)
-  }
+  doLast { print(ecommerceCommonsVersion) }
 }
 
 tasks.test {
@@ -293,6 +291,10 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
+      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.stax.WstxInputFactory")
+      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.util.DefaultXmlSymbolTable")
+      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.api.CommonConfig")
+      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.api.ReaderConfig")
     }
   }
 
