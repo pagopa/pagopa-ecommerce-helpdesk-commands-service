@@ -14,6 +14,12 @@ plugins {
   jacoco
 }
 
+// ecommerce commons library version
+val ecommerceCommonsVersion = "1.37.2"
+// ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
+// for testing purpose we can use a branch/commit reference)
+val ecommerceCommonsGitRef = ecommerceCommonsVersion
+
 group = "it.pagopa.helpdeskcommands"
 
 version = "0.17.0"
@@ -31,7 +37,10 @@ springBoot {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-repositories { mavenCentral() }
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
 
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
@@ -47,6 +56,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("it.pagopa:pagopa-ecommerce-commons:$ecommerceCommonsGitRef")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
@@ -219,9 +229,29 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
+tasks.register<Exec>("installLibs") {
+  description = "Installs the commons library for this project."
+  group = "commons"
+  val buildCommons = providers.gradleProperty("buildCommons")
+  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
+  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
+}
+
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
+  dependsOn(
+    "helpdeskcommands-v1",
+    "npg-api",
+    "node-forwarder-api-v1",
+    "redirect-api-v1",
+    "installLibs"
+  )
   // kotlinOptions.jvmTarget = "21"
+}
+
+tasks.register("printCommonsVersion") {
+  description = "Prints the referenced commons library version."
+  group = "commons"
+  doLast { print(ecommerceCommonsVersion) }
 }
 
 tasks.test {
@@ -255,6 +285,12 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
+      /*
+      Add --strict-image-heap to prevent class initialization issues during native image building.
+      This flag ensures problematic classes (like XML processors) are properly initialized at runtime
+      rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
+      */
+      buildArgs.add("--strict-image-heap")
     }
   }
 
