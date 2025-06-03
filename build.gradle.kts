@@ -291,11 +291,12 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
+      // Add --strict-image-heap to prevent class initialization issues during native image
+      // building.
+      // This flag ensures problematic classes (like XML processors) are properly initialized at
+      // runtime
+      // rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
       buildArgs.add("--strict-image-heap")
-      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.stax.WstxInputFactory")
-      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.util.DefaultXmlSymbolTable")
-      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.api.CommonConfig")
-      buildArgs.add("--initialize-at-run-time=com.ctc.wstx.api.ReaderConfig")
     }
   }
 
