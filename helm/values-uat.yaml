@@ -105,7 +105,7 @@ microservice-chart:
     NODE_FORWARDER_CONNECTION_TIMEOUT: "10000"
     REDIRECT_PAYMENT_TYPE_CODES: "BPPIITRRXXX-RBPR,BPPIITRRXXX-RBPP,BPPIITRRXXX-RBPB,PPAYITR1XXX-RBPB,CHECKOUT-PPAYITR1XXX-RBPP,IO-PPAYITR1XXX-RBPP,PPAYITR1XXX-RBPR,RBPS,RPIC,RICO"
     MONGO_HOST: pagopa-u-weu-ecommerce-cosmos-account.mongo.cosmos.azure.com
-    MONGO_USERNAME: pagopa-d-weu-ecommerce-cosmos-account
+    MONGO_USERNAME: pagopa-u-weu-ecommerce-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
     MONGO_MIN_POOL_SIZE: "0"
