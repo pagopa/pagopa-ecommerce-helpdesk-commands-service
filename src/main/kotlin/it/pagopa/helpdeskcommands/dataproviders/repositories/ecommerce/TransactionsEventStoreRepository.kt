@@ -1,4 +1,4 @@
-package it.pagopa.helpdeskcommands.repositories.ecommerce
+package it.pagopa.helpdeskcommands.dataproviders.repositories.ecommerce
 
 import it.pagopa.ecommerce.commons.documents.BaseTransactionEvent
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
