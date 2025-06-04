@@ -84,7 +84,6 @@ stages:
           - script: |
               docker compose up mongo-ecommerce -d
             displayName: 'Start MongoDB from ecommerceLocal'
-            workingDirectory: $(Pipeline.Workspace)/ecommerceLocal
 
           - script: cp .env.example .env
             displayName: 'Setup helpdesk env'
