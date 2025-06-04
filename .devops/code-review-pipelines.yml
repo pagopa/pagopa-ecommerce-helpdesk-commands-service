@@ -106,7 +106,7 @@ stages:
             displayName: 'Setup helpdesk env'
             workingDirectory: $(Pipeline.Workspace)/helpdesk
 
-          - script: docker compose up -d --network pagopa-ecommerce-net
+          - script: docker compose up -d
             displayName: 'Run helpdesk app with docker-compose'
             workingDirectory: $(Pipeline.Workspace)/helpdesk
 
@@ -127,3 +127,8 @@ stages:
               testResultsFormat: 'JUnit'
               testResultsFiles: '**/*-TEST.xml'
               searchFolder: '$(System.DefaultWorkingDirectory)'
+
+# Define the external network in the helpdesk's docker-compose.yml
+networks:
+  pagopa-ecommerce-net:
+    external: true
