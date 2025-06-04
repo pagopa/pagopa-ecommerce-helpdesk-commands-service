@@ -93,6 +93,8 @@ stages:
             - script: |
                 docker compose up mongo -d
               displayName: 'Start MongoDB from ecommerceLocal'
+            - checkout: self
+              displayName: 'Checkout main repository'
             - script: cp .env.example .env
               displayName: 'Setup env'
             - script: docker compose up -d --network pagopa-ecommerce-net
