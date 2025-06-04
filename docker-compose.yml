@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  mongo:
-    container_name: pagopa-helpdesk-mongo
-    image: mongo
-    restart: always
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-    networks:
-      - pagopa-ecommerce-net
-    ports:
-      - "27017:27017"
-
   pagopa-ecommerce-helpdesk-commands-service:
     container_name: pagopa-ecommerce-helpdesk-commands-service
     build:
@@ -24,10 +12,6 @@ services:
       - "8080:8080"
     networks:
       - pagopa-ecommerce-net
-    depends_on:
-      - mongo
-    restart: on-failure
-
   pagopa-npg-mock:
     build:
       context: .
@@ -42,7 +26,6 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
-
   pagopa-psp-mock:
     build:
       context: .
@@ -64,5 +47,4 @@ networks:
     driver_opts:
       com.docker.network.driver.mtu: 1450
 
-volumes:
-  mongodb_data:
+
