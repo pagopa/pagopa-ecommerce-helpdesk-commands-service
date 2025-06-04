@@ -39,6 +39,24 @@ services:
       - "8096:3000"
     networks:
       - pagopa-ecommerce-net
+  mongo-ecommerce:
+    container_name: pagopa-helpdesk-mongo
+    image: mongo@sha256:e2a89840984371bb7b5b207347cd3cf0ed77e1a496dfd14affc12b6b5e4eaea3
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - pagopa-ecommerce-net
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
 
 networks:
   pagopa-ecommerce-net:
@@ -47,4 +65,5 @@ networks:
     driver_opts:
       com.docker.network.driver.mtu: 1450
 
-
+volumes:
+  mongodb_data:
