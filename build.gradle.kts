@@ -14,10 +14,6 @@ plugins {
   jacoco
 }
 
-// ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
-// for testing purpose we can use a branch/commit reference)
-val ecommerceCommonsGitRef = Deps.ecommerceCommonsVersion
-
 group = "it.pagopa.helpdeskcommands"
 
 version = "0.18.0"
@@ -240,7 +236,7 @@ tasks.register<Exec>("installLibs") {
   group = "commons"
   val buildCommons = providers.gradleProperty("buildCommons")
   onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
-  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
+  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", Deps.ecommerceCommonsVersion)
 }
 
 tasks.withType<KotlinCompile> {
@@ -257,7 +253,7 @@ tasks.withType<KotlinCompile> {
 tasks.register("printCommonsVersion") {
   description = "Prints the referenced commons library version."
   group = "commons"
-  doLast { print(ecommerceCommonsGitRef) }
+  doLast { print(Deps.ecommerceCommonsVersion) }
 }
 
 tasks.test {
