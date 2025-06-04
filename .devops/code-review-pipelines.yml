@@ -72,8 +72,8 @@ stages:
             displayName: 'Publish SonarCloud results on build summary'
             inputs:
               pollingTimeoutSec: '300'
+
           - script: |
-              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
               ./gradlew --stop
             displayName: Gradlew stop
 
@@ -122,13 +122,9 @@ stages:
             displayName: 'Run refunds api test with mock'
             continueOnError: false
             workingDirectory: $(Pipeline.Workspace)/helpdesk
+
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: 'JUnit'
               testResultsFiles: '**/*-TEST.xml'
               searchFolder: '$(System.DefaultWorkingDirectory)'
-
-# Define the external network in the helpdesk's docker-compose.yml
-networks:
-  pagopa-ecommerce-net:
-    external: true

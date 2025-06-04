@@ -42,9 +42,4 @@ services:
 
 networks:
   pagopa-ecommerce-net:
-    name: pagopa-ecommerce-net
-    driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1450
-
-
+    external: true
