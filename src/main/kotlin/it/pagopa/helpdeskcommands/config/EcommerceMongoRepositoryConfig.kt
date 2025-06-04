@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 
 @Configuration
 @EnableReactiveMongoRepositories(
-    basePackages = ["it.pagopa.helpdeskcommands.dataproviders.repositories.ecommerce"],
+    basePackages = ["it.pagopa.helpdeskcommands.repositories"],
     reactiveMongoTemplateRef = "ecommerceReactiveMongoTemplate"
 )
 class EcommerceMongoRepositoryConfig {}
