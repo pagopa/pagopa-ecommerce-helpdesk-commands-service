@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  mongo:
+    container_name: pagopa-helpdesk-mongo
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - pagopa-ecommerce-net
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
   pagopa-ecommerce-helpdesk-commands-service:
     container_name: pagopa-ecommerce-helpdesk-commands-service
     build:
@@ -12,6 +31,10 @@ services:
       - "8080:8080"
     networks:
       - pagopa-ecommerce-net
+    depends_on:
+      - mongo
+    restart: on-failure
+
   pagopa-npg-mock:
     build:
       context: .
@@ -26,6 +49,7 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
+
   pagopa-psp-mock:
     build:
       context: .
@@ -47,4 +71,5 @@ networks:
     driver_opts:
       com.docker.network.driver.mtu: 1450
 
-
+volumes:
+  mongodb_data:
