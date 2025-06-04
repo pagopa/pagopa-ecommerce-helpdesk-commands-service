@@ -64,8 +64,8 @@ stages:
             displayName: 'Publish SonarCloud results on build summary'
             inputs:
               pollingTimeoutSec: '300'
-
           - script: |
+              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
               ./gradlew --stop
             displayName: Gradlew stop
 
@@ -81,29 +81,24 @@ stages:
     jobs:
       - job: make_integration_test
         steps:
-          - script: |
-              docker compose up mongo-ecommerce -d
-            displayName: 'Start MongoDB from ecommerceLocal'
+            - script: |
+                docker compose up mongo-ecommerce -d
+              displayName: 'Start MongoDB instance'
 
-          - script: cp .env.example .env
-            displayName: 'Setup helpdesk env'
-
-          - script: docker compose up -d
-            displayName: 'Run helpdesk app with docker-compose'
-
-          - script: |
-              timeout 240 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
-            displayName: 'Health check'
-
-          - script: yarn global add newman
-            displayName: 'newman installation'
-
-          - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
-            displayName: 'Run refunds api test with mock'
-            continueOnError: false
-
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/*-TEST.xml'
-              searchFolder: '$(System.DefaultWorkingDirectory)'
+            - script: cp .env.example .env
+              displayName: 'Setup env'
+            - script: docker compose up -d
+              displayName: 'Run app with docker-compose'
+            - script: |
+                timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
+              displayName: 'Health check'
+            - script: yarn global add newman
+              displayName: 'newman installation'
+            - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
+              displayName: 'Run refunds api test with mock'
+              continueOnError: false
+            - task: PublishTestResults@2
+              inputs:
+                testResultsFormat: 'JUnit'
+                testResultsFiles: '**/*-TEST.xml'
+                searchFolder: '$(System.DefaultWorkingDirectory)'
