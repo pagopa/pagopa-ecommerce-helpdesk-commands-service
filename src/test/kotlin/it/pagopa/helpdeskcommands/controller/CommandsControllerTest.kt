@@ -7,6 +7,7 @@ import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
 import it.pagopa.helpdeskcommands.controllers.CommandsController
 import it.pagopa.helpdeskcommands.services.CommandsService
+import it.pagopa.helpdeskcommands.services.TransactionService
 import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -31,12 +32,13 @@ class CommandsControllerTest {
     private lateinit var commandsController: CommandsController
 
     @MockBean private lateinit var commandsService: CommandsService
+    @MockBean private lateinit var transactionService: TransactionService
 
     @Autowired private lateinit var webClient: WebTestClient
 
     @BeforeEach
     fun beforeTest() {
-        commandsController = CommandsController(commandsService)
+        commandsController = CommandsController(commandsService, transactionService)
     }
 
     companion object {

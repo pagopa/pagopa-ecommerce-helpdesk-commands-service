@@ -1,18 +1,15 @@
 package it.pagopa.helpdeskcommands.services
 
-import it.pagopa.ecommerce.commons.documents.BaseTransactionEvent
 import it.pagopa.ecommerce.commons.documents.v2.BaseTransactionRefundedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionEvent
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
 import it.pagopa.ecommerce.commons.documents.v2.authorization.TransactionGatewayAuthorizationData
 import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
-import it.pagopa.ecommerce.commons.domain.v2.Transaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.exceptions.TransactionNotRefundableException
 import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
 import org.slf4j.Logger
@@ -39,7 +36,7 @@ class TransactionService(
         val events =
             transactionsEventStoreRepository
                 .findByTransactionIdOrderByCreationDateAsc(transactionId)
-                .map { it as BaseTransactionEvent<Any> }
+                .map { it as TransactionEvent<Any> }
 
         return reduceEvents(events)
             .switchIfEmpty(
@@ -57,19 +54,13 @@ class TransactionService(
         logger.info("Creating refund request event for transaction with ID: [{}]", transactionId)
 
         return getTransaction(transactionId).flatMap { transaction ->
-            if (!isTransactionRefundable(transaction)) {
-                Mono.error(
-                    TransactionNotRefundableException(
-                        "Transaction not in a refundable state: $transactionId"
-                    )
-                )
-            } else if (transaction is BaseTransactionWithRefundRequested) {
+            if (transaction is BaseTransactionWithRefundRequested) {
                 // Transaction already has a refund requested, return null
                 logger.info(
                     "Transaction [{}] already has a refund requested, returning null",
                     transaction.transactionId.value()
                 )
-                Mono.empty() // This will result in null in the Mono
+                Mono.empty()
             } else {
                 // Create and persist the refund request event
                 createAndPersistRefundRequestEvent(transaction)
@@ -103,17 +94,36 @@ class TransactionService(
     }
 
     /** Reduces a flux of transaction events into a transaction object */
-    private fun <T> reduceEvents(events: Flux<BaseTransactionEvent<T>>): Mono<BaseTransaction> {
-        return events
-            .reduce(EmptyTransaction(), Transaction::applyEvent)
-            .cast(BaseTransaction::class.java)
-    }
+    fun reduceEvents(
+        transactionId: Mono<String>,
+        transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>
+    ): Mono<BaseTransaction> =
+        reduceEvents(transactionId, transactionsEventStoreRepository, EmptyTransaction())
 
-    /** Checks if a transaction is in a refundable state */
-    private fun isTransactionRefundable(tx: BaseTransaction): Boolean {
-        // TODO
-        return true
-    }
+    fun reduceEvents(
+        transactionId: Mono<String>,
+        transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>,
+        emptyTransaction: EmptyTransaction
+    ): Mono<BaseTransaction> =
+        reduceEvents(
+            transactionId.flatMapMany {
+                transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(it).map {
+                    it as TransactionEvent<Any>
+                }
+            },
+            emptyTransaction
+        )
+
+    fun <T> reduceEvents(events: Flux<TransactionEvent<T>>): Mono<BaseTransaction> =
+        reduceEvents(events, EmptyTransaction())
+
+    fun <T> reduceEvents(
+        events: Flux<TransactionEvent<T>>,
+        emptyTransaction: EmptyTransaction
+    ): Mono<BaseTransaction> =
+        events
+            .reduce(emptyTransaction, it.pagopa.ecommerce.commons.domain.v2.Transaction::applyEvent)
+            .cast(BaseTransaction::class.java)
 
     /**
      * Create a refund event from the given transaction and authorization data explicitly using the
@@ -139,7 +149,7 @@ class TransactionService(
         transactionsEventStoreRepository:
             TransactionsEventStoreRepository<BaseTransactionRefundedData>,
         transactionsViewRepository: TransactionsViewRepository
-    ): Mono<Pair<BaseTransactionWithRefundRequested?, TransactionRefundRequestedEvent?>> {
+    ): Mono<BaseTransaction?> {
         return transactionsEventStoreRepository
             .save(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
             .then(
@@ -151,12 +161,11 @@ class TransactionService(
                         transactionsViewRepository.save(tx)
                     }
             )
-            .thenReturn(
-                Pair<BaseTransactionWithRefundRequested?, TransactionRefundRequestedEvent?>(
-                    (transaction as Transaction).applyEvent(refundRequestedEvent)
-                        as BaseTransactionWithRefundRequested,
-                    refundRequestedEvent
+            .doOnSuccess {
+                logger.info(
+                    "Updated event for transaction with id ${transaction.transactionId.value()} to status refund"
                 )
-            )
+            }
+            .thenReturn(transaction)
     }
 }
