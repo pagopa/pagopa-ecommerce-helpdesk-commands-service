@@ -1,14 +1,12 @@
 package it.pagopa.helpdeskcommands.services
 
-import it.pagopa.ecommerce.commons.documents.v2.BaseTransactionRefundedData
-import it.pagopa.ecommerce.commons.documents.v2.TransactionEvent
-import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
-import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
+import it.pagopa.ecommerce.commons.documents.v2.*
 import it.pagopa.ecommerce.commons.documents.v2.authorization.TransactionGatewayAuthorizationData
 import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
+import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
@@ -26,6 +24,9 @@ class TransactionService(
     private val transactionsRefundedEventStoreRepository:
         TransactionsEventStoreRepository<BaseTransactionRefundedData>,
     @Autowired private val transactionsViewRepository: TransactionsViewRepository,
+    @Autowired
+    private val userReceiptEventStoreRepository:
+        TransactionsEventStoreRepository<TransactionUserReceiptData>
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -167,5 +168,76 @@ class TransactionService(
                 )
             }
             .thenReturn(transaction)
+    }
+
+    /**
+     * Resends a notification for a transaction that is already in USER_RECEIPT_REQUESTED state
+     *
+     * @param transactionId ID of the transaction
+     * @return Mono containing the existing TransactionUserReceiptRequestedEvent
+     */
+    fun resendUserReceiptNotification(
+        transactionId: String
+    ): Mono<TransactionUserReceiptRequestedEvent> {
+        logger.info(
+            "Attempting to resend user receipt notification for transaction ID: [{}]",
+            transactionId
+        )
+
+        return getTransaction(transactionId).flatMap { transaction ->
+            if (transaction.status == TransactionStatusDto.NOTIFICATION_REQUESTED) {
+                // NOTE: Spring Boot 3.x has built-in support for AOT processing, which pre-generates proxies at build time.
+                // Until then, we use this "native-friendly" way to the Desc
+                userReceiptEventStoreRepository
+                    .findByTransactionIdOrderByCreationDateAsc(transactionId)
+                    .collectList()
+                    .map { events -> events.maxByOrNull { it.creationDate } }
+                    .cast(TransactionUserReceiptRequestedEvent::class.java)
+                    .flatMap { existingEvent ->
+                        logger.info(
+                            "Found existing user receipt event for transaction ID: [{}], creating new event",
+                            transactionId
+                        )
+
+                        // Create a NEW event with the same data but a new ID and current timestamp
+                        val newEvent =
+                            TransactionUserReceiptRequestedEvent(
+                                transactionId,
+                                existingEvent.getData()
+                            )
+
+                        // Save the new event
+                        userReceiptEventStoreRepository
+                            .save(newEvent)
+                            .doOnSuccess {
+                                logger.info(
+                                    "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
+                                    newEvent.getId(),
+                                    transactionId
+                                )
+                            }
+                            .doOnError { e ->
+                                logger.error(
+                                    "Error saving new user receipt event for transaction ID: [{}]: {}",
+                                    transactionId,
+                                    e.message,
+                                    e
+                                )
+                            }
+                    }
+            } else {
+                // Transaction is not in the correct state
+                logger.error(
+                    "Transaction [{}] is not in NOTIFICATION_REQUESTED state, current state: {}",
+                    transactionId,
+                    transaction.status
+                )
+                Mono.error(
+                    InvalidTransactionStatusException(
+                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}"
+                    )
+                )
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
+import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotRefundableException
 import it.pagopa.helpdeskcommands.services.CommandsService
@@ -187,7 +188,41 @@ class CommandsController(
         xUserId: @NotNull String?,
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
+    ): Mono<ResponseEntity<Void>> {
+        // Validate required transactionId
+        if (transactionId.isNullOrBlank()) {
+            return Mono.just(ResponseEntity.badRequest().build())
+        }
+
+        return transactionService
+            .resendUserReceiptNotification(transactionId)
+            .flatMap<ResponseEntity<Void>> { event ->
+                logger.info(
+                    "Successfully resent user receipt notification for transaction ID: {}",
+                    transactionId
+                )
+                // TODO: Send event to the queue
+                Mono.just(ResponseEntity.accepted().build())
+            }
+            .onErrorResume { error ->
+                when (error) {
+                    is TransactionNotFoundException -> {
+                        logger.error("Transaction not found: {}", transactionId, error)
+                        Mono.just(ResponseEntity.notFound().build())
+                    }
+                    is InvalidTransactionStatusException -> {
+                        logger.error("Invalid transaction status: {}", transactionId, error)
+                        Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build())
+                    }
+                    else -> {
+                        logger.error(
+                            "Error resending user receipt for transaction ID: {}",
+                            transactionId,
+                            error
+                        )
+                        Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
+                    }
+                }
+            }
     }
 }
