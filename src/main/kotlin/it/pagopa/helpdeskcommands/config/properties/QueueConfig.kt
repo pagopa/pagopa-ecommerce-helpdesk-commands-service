@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class QueueConfig(
     val storageConnectionString: String,
     val transactionRefundQueueName: String,
-    val transactionNotificationRequestedQueueName: String
+    val transactionNotificationRequestedQueueName: String,
+    val ttlSeconds: Long = 3600
 )
