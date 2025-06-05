@@ -15,7 +15,6 @@ import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotRefundableException
 import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
-import it.pagopa.helpdeskcommands.utils.RefundRequestResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,46 +48,58 @@ class TransactionService(
     }
 
     /**
-     * Requests a refund for a transaction
+     * Creates a refund request for a transaction if one doesn't already exist
      *
      * @param transactionId ID of the transaction to refund
-     * @return Mono containing refund request details or null if already requested
+     * @return Mono containing the TransactionRefundRequestedEvent or null if already requested
      */
-    fun requestRefund(transactionId: String): Mono<RefundRequestResponse?> {
-        logger.info("Requesting refund for transaction with ID: [{}]", transactionId)
+    fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent?> {
+        logger.info("Creating refund request event for transaction with ID: [{}]", transactionId)
 
         return getTransaction(transactionId).flatMap { transaction ->
-            if (isTransactionRefundable(transaction)) {
-                logger.info(
-                    "Transaction [{}] is refundable, creating refund request event",
-                    transactionId
-                )
-
-                // Create the refund request event
-                appendRefundRequestedEventIfNeeded(
-                        transaction,
-                        transactionsRefundedEventStoreRepository,
-                        transactionsViewRepository
-                    )
-                    .map { (tx, event) ->
-                        // Only return a response if a new event was created
-                        event?.let {
-                            RefundRequestResponse(
-                                transactionId = tx!!.transactionId.value(),
-                                status = TransactionStatusDto.REFUND_REQUESTED,
-                                refundRequestedAt = event.creationDate,
-                            )
-                        }
-                    }
-            } else {
-                logger.warn("Transaction [{}] is not in a refundable state", transactionId)
+            if (!isTransactionRefundable(transaction)) {
                 Mono.error(
                     TransactionNotRefundableException(
                         "Transaction not in a refundable state: $transactionId"
                     )
                 )
+            } else if (transaction is BaseTransactionWithRefundRequested) {
+                // Transaction already has a refund requested, return null
+                logger.info(
+                    "Transaction [{}] already has a refund requested, returning null",
+                    transaction.transactionId.value()
+                )
+                Mono.empty() // This will result in null in the Mono
+            } else {
+                // Create and persist the refund request event
+                createAndPersistRefundRequestEvent(transaction)
             }
         }
+    }
+
+    /**
+     * Creates and persists a refund request event for a transaction
+     *
+     * @param transaction The transaction to create a refund request for
+     * @return Mono containing the created TransactionRefundRequestedEvent
+     */
+    private fun createAndPersistRefundRequestEvent(
+        transaction: BaseTransaction
+    ): Mono<TransactionRefundRequestedEvent> {
+        // Create new refund request event
+        val refundRequestedEvent = createRefundRequestedEvent(transaction, null)
+
+        // Save the event and update view
+        return saveRefundRequestedEventAndUpdateTransactionView(
+                transaction,
+                refundRequestedEvent,
+                transactionsRefundedEventStoreRepository,
+                transactionsViewRepository
+            )
+            .map {
+                // Return the event itself
+                refundRequestedEvent
+            }
     }
 
     /** Reduces a flux of transaction events into a transaction object */
@@ -102,30 +113,6 @@ class TransactionService(
     private fun isTransactionRefundable(tx: BaseTransaction): Boolean {
         // TODO
         return true
-    }
-
-    private fun appendRefundRequestedEventIfNeeded(
-        transaction: BaseTransaction,
-        transactionsEventStoreRepository:
-            TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-        transactionsViewRepository: TransactionsViewRepository,
-        authorizationData: TransactionGatewayAuthorizationData? = null
-    ): Mono<Pair<BaseTransactionWithRefundRequested?, TransactionRefundRequestedEvent?>> {
-        if (transaction is BaseTransactionWithRefundRequested) {
-            logger.warn(
-                "Transaction ${transaction.transactionId.value()} already has a refund requested."
-            )
-            return Mono.just(Pair(transaction, null))
-        }
-
-        val refundRequestedEvent = createRefundRequestedEvent(transaction, authorizationData)
-
-        return saveRefundRequestedEventAndUpdateTransactionView(
-            transaction,
-            refundRequestedEvent,
-            transactionsEventStoreRepository,
-            transactionsViewRepository
-        )
     }
 
     /**
