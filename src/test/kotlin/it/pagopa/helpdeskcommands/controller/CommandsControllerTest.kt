@@ -178,7 +178,7 @@ class CommandsControllerTest {
     }
 
     @Test
-    fun `requestTransactionRefund returns 409 when transaction is not in a refundable state`() {
+    fun `requestTransactionRefund returns 422 when transaction is not in a refundable state`() {
         val userId = UUID.randomUUID().toString()
 
         // Mock the service to throw the exception
@@ -197,7 +197,7 @@ class CommandsControllerTest {
             .header("X-Forwarded-For", SOURCE_IP)
             .exchange()
             .expectStatus()
-            .isEqualTo(HttpStatus.CONFLICT)
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
     }
 
     @Test
@@ -267,7 +267,7 @@ class CommandsControllerTest {
     }
 
     @Test
-    fun `resendTransactionEmail returns 409 when transaction status is invalid`() {
+    fun `resendTransactionEmail returns 422 when transaction status is invalid`() {
         val userId = UUID.randomUUID().toString()
 
         given { transactionService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
@@ -280,7 +280,7 @@ class CommandsControllerTest {
             .header("X-Forwarded-For", SOURCE_IP)
             .exchange()
             .expectStatus()
-            .isEqualTo(HttpStatus.CONFLICT)
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
     }
 
     @Test

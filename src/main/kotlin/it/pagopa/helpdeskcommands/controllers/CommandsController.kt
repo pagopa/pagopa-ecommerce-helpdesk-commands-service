@@ -2,8 +2,6 @@ package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
-import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
-import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.services.TransactionService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
@@ -11,7 +9,6 @@ import it.pagopa.helpdeskcommands.utils.TransactionId
 import jakarta.validation.constraints.NotNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
@@ -169,35 +166,15 @@ class CommandsController(
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        return transactionService
-            .resendUserReceiptNotification(transactionId)
-            .flatMap<ResponseEntity<Void>> { event ->
-                logger.info(
-                    "Successfully resent user receipt notification for transaction ID: {}",
-                    transactionId
-                )
-                // TODO: Send event to the queue
-                Mono.just(ResponseEntity.accepted().build())
-            }
-            .onErrorResume { error ->
-                when (error) {
-                    is TransactionNotFoundException -> {
-                        logger.error("Transaction not found: {}", transactionId, error)
-                        Mono.just(ResponseEntity.notFound().build())
-                    }
-                    is InvalidTransactionStatusException -> {
-                        logger.error("Invalid transaction status: {}", transactionId, error)
-                        Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build())
-                    }
-                    else -> {
-                        logger.error(
-                            "Error resending user receipt for transaction ID: {}",
-                            transactionId,
-                            error
-                        )
-                        Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
-                    }
-                }
-            }
+        return transactionService.resendUserReceiptNotification(transactionId).flatMap<
+            ResponseEntity<Void>
+        > { event ->
+            logger.info(
+                "Successfully resent user receipt notification for transaction ID: {}",
+                transactionId
+            )
+            // TODO: Send event to the queue
+            Mono.just(ResponseEntity.accepted().build())
+        }
     }
 }

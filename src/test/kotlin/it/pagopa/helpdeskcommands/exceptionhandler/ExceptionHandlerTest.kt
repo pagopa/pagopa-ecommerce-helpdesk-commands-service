@@ -247,12 +247,12 @@ class ExceptionHandlerTest {
 
         assertEquals(
             HelpDeskCommandsTestUtils.buildProblemJson(
-                httpStatus = HttpStatus.CONFLICT,
+                httpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
                 title = "Invalid transaction status",
                 description = TRANSACTION_ID
             ),
             response.body
         )
-        assertEquals(HttpStatus.CONFLICT, response.statusCode)
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.statusCode)
     }
 }

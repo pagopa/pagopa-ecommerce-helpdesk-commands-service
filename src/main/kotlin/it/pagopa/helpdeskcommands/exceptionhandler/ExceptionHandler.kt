@@ -119,10 +119,10 @@ class ExceptionHandler {
         e: InvalidTransactionStatusException
     ): ResponseEntity<ProblemJsonDto> {
         logger.error("Invalid transaction status", e)
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(
                 ProblemJsonDto()
-                    .status(HttpStatus.CONFLICT.value())
+                    .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
                     .title("Invalid transaction status")
                     .detail(e.message)
             )
