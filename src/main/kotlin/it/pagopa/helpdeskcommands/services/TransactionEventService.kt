@@ -21,19 +21,12 @@ class TransactionEventService(
     private val notificationQueueClient: Mono<QueueAsyncClient>,
     @Value("\${azurestorage.queues.ttlSeconds}") private val transientQueueTTLSeconds: Long,
     private val tracingUtils: TracingUtils
-) {
+) : TransactionEventServiceInterface {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    /**
-     * Sends a refund request event to the transaction refund queue for processing by the dedicated
-     * service.
-     *
-     * @param event The refund request event with transaction details and manual trigger
-     * @return Mono that completes when the message is queued successfully
-     */
     @Suppress("kotlin:S6508")
-    fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
+    override fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
         return tracingUtils.traceMono(this.javaClass.simpleName) { tracingInfo ->
             refundQueueClient
                 .flatMap { client ->
@@ -54,15 +47,10 @@ class TransactionEventService(
         }
     }
 
-    /**
-     * Sends a notification request event to the transaction notification queue for processing by
-     * the dedicated service.
-     *
-     * @param event The notification request event with transaction details and manual trigger
-     * @return Mono that completes when the message is queued successfully
-     */
     @Suppress("kotlin:S6508")
-    fun sendNotificationRequestedEvent(event: TransactionUserReceiptRequestedEvent): Mono<Void> {
+    override fun sendNotificationRequestedEvent(
+        event: TransactionUserReceiptRequestedEvent
+    ): Mono<Void> {
         return tracingUtils.traceMono(this.javaClass.simpleName) { tracingInfo ->
             notificationQueueClient
                 .flatMap { client ->
