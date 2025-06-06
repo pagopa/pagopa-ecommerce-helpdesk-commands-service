@@ -3,6 +3,7 @@ package it.pagopa.helpdeskcommands.controllers
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.services.CommandsService
+import it.pagopa.helpdeskcommands.services.TransactionService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import jakarta.validation.constraints.NotNull
@@ -14,7 +15,10 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 @RestController("CommandsController")
-class CommandsController(@Autowired private val commandsService: CommandsService) : CommandsApi {
+class CommandsController(
+    @Autowired private val commandsService: CommandsService,
+    @Autowired private val transactionService: TransactionService
+) : CommandsApi {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun commandsRefundRedirectPost(
@@ -93,13 +97,37 @@ class CommandsController(@Autowired private val commandsService: CommandsService
      *   server error (status code 500)
      */
     @Suppress("kotlin:S6508")
+    /** Controller method to handle transaction refund requests */
     override fun requestTransactionRefund(
         transactionId: String?,
         xUserId: @NotNull String?,
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
+    ): Mono<ResponseEntity<Void?>> {
+
+        // Validate required parameters
+        if (transactionId.isNullOrBlank()) {
+            return Mono.just(ResponseEntity.badRequest().build())
+        }
+
+        // Log the request
+        logger.info(
+            "Refund request received for transaction [{}] from user [{}] with IP [{}]",
+            transactionId,
+            xUserId,
+            xForwardedFor
+        )
+
+        return transactionService.createRefundRequestEvent(transactionId).map { event ->
+            // If we get here, refund was successfully requested
+            logger.info(
+                "Refund successfully requested for transaction [{}], event ID: [{}]",
+                transactionId,
+                event?.id
+            )
+            // TODO: call the queue
+            ResponseEntity.accepted().build<Void?>()
+        }
     }
 
     /**
@@ -120,7 +148,21 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         xUserId: @NotNull String?,
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
+    ): Mono<ResponseEntity<Void>> {
+        // Validate required transactionId
+        if (transactionId.isNullOrBlank()) {
+            return Mono.just(ResponseEntity.badRequest().build())
+        }
+
+        return transactionService.resendUserReceiptNotification(transactionId).flatMap<
+            ResponseEntity<Void>
+        > { event ->
+            logger.info(
+                "Successfully resent user receipt notification for transaction ID: {}",
+                transactionId
+            )
+            // TODO: Send event to the queue
+            Mono.just(ResponseEntity.accepted().build())
+        }
     }
 }
