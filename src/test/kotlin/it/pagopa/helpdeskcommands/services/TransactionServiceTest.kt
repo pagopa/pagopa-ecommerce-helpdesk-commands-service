@@ -109,6 +109,100 @@ class TransactionServiceTest {
     }
 
     @Test
+    fun `resendUserReceiptNotification should create and save a new event for transaction in NOTIFICATION_ERROR state`() {
+        // Given
+        val mockTransaction = mock(BaseTransaction::class.java)
+        doReturn(TransactionStatusDto.NOTIFICATION_ERROR).`when`(mockTransaction).status
+
+        // Mock getTransaction to return our mock transaction
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
+
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
+        val events = listOf(existingUserReceiptEvent)
+
+        // Mock repository behavior
+        doReturn(Flux.fromIterable(events))
+            .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        doAnswer { invocation ->
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
+
+        // When
+        val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionId, event.transactionId)
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
+                assertNotEquals(existingUserReceiptEvent.id, event.id)
+            }
+            .verifyComplete()
+
+        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        val savedEvent = userReceiptEventCaptor.value
+        assertEquals(transactionId, savedEvent.transactionId)
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should create and save a new event for transaction in NOTIFIED_OK state`() {
+        // Given
+        val mockTransaction = mock(BaseTransaction::class.java)
+        doReturn(TransactionStatusDto.NOTIFIED_OK).`when`(mockTransaction).status
+
+        // Mock getTransaction to return our mock transaction
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
+
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
+        val events = listOf(existingUserReceiptEvent)
+
+        // Mock repository behavior
+        doReturn(Flux.fromIterable(events))
+            .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        doAnswer { invocation ->
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
+
+        // When
+        val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionId, event.transactionId)
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
+                assertNotEquals(existingUserReceiptEvent.id, event.id)
+            }
+            .verifyComplete()
+
+        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        val savedEvent = userReceiptEventCaptor.value
+        assertEquals(transactionId, savedEvent.transactionId)
+    }
+
+    @Test
     fun `resendUserReceiptNotification should throw InvalidTransactionStatusException for transaction not in NOTIFICATION_REQUESTED state`() {
         // Given
         val mockTransaction = mock<BaseTransaction>()

@@ -160,6 +160,20 @@ class TransactionService(
      * @param transactionId ID of the transaction
      * @return Mono containing the existing TransactionUserReceiptRequestedEvent
      */
+    /**
+     * Resends a notification for a transaction that is in USER_RECEIPT_REQUESTED or
+     * NOTIFICATION_ERROR state
+     *
+     * @param transactionId ID of the transaction
+     * @return Mono containing the existing TransactionUserReceiptRequestedEvent
+     */
+    /**
+     * Resends a notification for a transaction that is in an allowed state for notification
+     * resending
+     *
+     * @param transactionId ID of the transaction
+     * @return Mono containing the existing TransactionUserReceiptRequestedEvent
+     */
     fun resendUserReceiptNotification(
         transactionId: String
     ): Mono<TransactionUserReceiptRequestedEvent> {
@@ -168,8 +182,16 @@ class TransactionService(
             transactionId
         )
 
+        // Valid states for resending notifications
+        val validStatesForResending =
+            setOf(
+                TransactionStatusDto.NOTIFICATION_REQUESTED,
+                TransactionStatusDto.NOTIFICATION_ERROR,
+                TransactionStatusDto.NOTIFIED_OK
+            )
+
         return getTransaction(transactionId).flatMap { transaction ->
-            if (transaction.status == TransactionStatusDto.NOTIFICATION_REQUESTED) {
+            if (transaction.status in validStatesForResending) {
                 // NOTE: Spring Boot 3.x has built-in support for AOT processing, which
                 // pre-generates proxies at build time.
                 // Until then, we use this "native-friendly" way to the Desc
@@ -218,13 +240,14 @@ class TransactionService(
             } else {
                 // Transaction is not in the correct state
                 logger.error(
-                    "Transaction [{}] is not in NOTIFICATION_REQUESTED state, current state: {}",
+                    "Transaction [{}] is not in a valid state for resending notification, current state: {}",
                     transactionId,
                     transaction.status
                 )
                 Mono.error(
                     InvalidTransactionStatusException(
-                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}"
+                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. " +
+                            "Transaction must be in one of these states: ${validStatesForResending.joinToString()}"
                     )
                 )
             }
