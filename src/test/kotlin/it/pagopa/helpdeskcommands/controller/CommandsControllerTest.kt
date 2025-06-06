@@ -143,14 +143,12 @@ class CommandsControllerTest {
             .isAccepted
     }
 
-    /*@Test
+    @Test
     fun `requestTransactionRefund returns 204 when refund was already requested`() {
         val userId = UUID.randomUUID().toString()
 
         given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(Mono.empty())
-
-        println("Transaction got")
 
         webClient
             .post()
@@ -159,8 +157,8 @@ class CommandsControllerTest {
             .header("X-Forwarded-For", SOURCE_IP)
             .exchange()
             .expectStatus()
-            .isNoContent
-    }*/
+            .isNoContent()
+    }
 
     @Test
     fun `requestTransactionRefund returns 404 when transaction is not found`() {
@@ -179,17 +177,19 @@ class CommandsControllerTest {
             .isNotFound
     }
 
-    /*@Test
+    @Test
     fun `requestTransactionRefund returns 409 when transaction is not in a refundable state`() {
         val userId = UUID.randomUUID().toString()
 
-        // Based on your controller code, it seems CONFLICT (409) is returned for transactions not
-        // in refundable state
+        // Mock the service to throw the exception
         given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(
                 Mono.error(InvalidTransactionStatusException("Transaction not in refundable state"))
             )
 
+        // When testing with WebTestClient, we're testing the full request/response cycle
+        // including exception handlers, so we should use WebTestClient instead of testing
+        // the controller method directly
         webClient
             .post()
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
@@ -198,7 +198,7 @@ class CommandsControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.CONFLICT)
-    }*/
+    }
 
     @Test
     fun `requestTransactionRefund returns 400 when transaction ID is invalid`() {

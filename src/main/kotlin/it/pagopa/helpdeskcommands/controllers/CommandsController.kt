@@ -4,7 +4,6 @@ import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.exceptions.TransactionNotRefundableException
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.services.TransactionService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
@@ -124,50 +123,26 @@ class CommandsController(
 
         return transactionService
             .createRefundRequestEvent(transactionId)
-            .flatMap<ResponseEntity<Void?>> { event ->
-                // If event is not null, refund was successfully requested
-                if (event != null) {
-                    logger.info(
-                        "Refund successfully requested for transaction [{}], event ID: [{}]",
-                        transactionId,
-                        event.id
-                    )
-                    // TODO: call the queue
-
-                    Mono.just(ResponseEntity.accepted().build())
-                } else {
-                    // If event is null, refund was already requested
+            .map { event ->
+                // If we get here, refund was successfully requested
+                logger.info(
+                    "Refund successfully requested for transaction [{}], event ID: [{}]",
+                    transactionId,
+                    event?.id
+                )
+                // TODO: call the queue
+                ResponseEntity.accepted().build<Void?>()
+            }
+            .switchIfEmpty(
+                // If we get an empty Mono, refund was already requested
+                Mono.fromCallable {
                     logger.info(
                         "Refund already requested for transaction [{}], no action taken",
                         transactionId
                     )
-                    Mono.just(ResponseEntity.noContent().build())
+                    ResponseEntity.noContent().build<Void?>()
                 }
-            }
-            .onErrorResume { error ->
-                when (error) {
-                    is TransactionNotRefundableException -> {
-                        logger.warn(
-                            "Transaction [{}] not refundable: {}",
-                            transactionId,
-                            error.message
-                        )
-                        Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build())
-                    }
-                    is TransactionNotFoundException -> {
-                        logger.warn("Transaction [{}] not found", transactionId)
-                        Mono.just(ResponseEntity.notFound().build())
-                    }
-                    else -> {
-                        logger.error(
-                            "Error processing refund request for transaction [{}]",
-                            transactionId,
-                            error
-                        )
-                        Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
-                    }
-                }
-            }
+            )
     }
 
     /**

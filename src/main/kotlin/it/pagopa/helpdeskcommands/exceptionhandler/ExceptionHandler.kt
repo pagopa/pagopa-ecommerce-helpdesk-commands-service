@@ -2,9 +2,11 @@ package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
+import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
+import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -94,6 +96,34 @@ class ExceptionHandler {
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Exception retrieving configuration type")
+                    .detail(e.message)
+            )
+    }
+
+    @ExceptionHandler(TransactionNotFoundException::class)
+    fun handleTransactionNotFoundException(
+        e: TransactionNotFoundException
+    ): ResponseEntity<ProblemJsonDto> {
+        logger.error("Transaction not found", e)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .title("Transaction not found")
+                    .detail(e.message)
+            )
+    }
+
+    @ExceptionHandler(InvalidTransactionStatusException::class)
+    fun handleInvalidTransactionStatusException(
+        e: InvalidTransactionStatusException
+    ): ResponseEntity<ProblemJsonDto> {
+        logger.error("Invalid transaction status", e)
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.CONFLICT.value())
+                    .title("Invalid transaction status")
                     .detail(e.message)
             )
     }

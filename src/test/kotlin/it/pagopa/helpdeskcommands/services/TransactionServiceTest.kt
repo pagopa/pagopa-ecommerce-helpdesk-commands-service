@@ -95,7 +95,10 @@ class TransactionServiceTest {
             .assertNext { event ->
                 assertNotNull(event)
                 assertEquals(transactionId, event.transactionId)
-                assertEquals(existingUserReceiptEvent.getData(), event.getData())
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
                 assertNotEquals(existingUserReceiptEvent.id, event.id)
             }
             .verifyComplete()
@@ -103,7 +106,6 @@ class TransactionServiceTest {
         verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionId, savedEvent.transactionId)
-        assertEquals(existingUserReceiptEvent.getData(), savedEvent.getData())
     }
 
     @Test
@@ -205,14 +207,18 @@ class TransactionServiceTest {
             .assertNext { event ->
                 assertNotNull(event)
                 assertEquals(transactionId, event.transactionId)
-                assertEquals(latestEvent.getData(), event.getData())
+                assertEquals(latestEvent.data.paymentDate, event.data.paymentDate)
+                assertEquals(latestEvent.data.language, event.data.language)
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
             }
             .verifyComplete()
 
         verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionId, savedEvent.transactionId)
-        assertEquals(latestEvent.getData(), savedEvent.getData())
     }
 
     private fun createUserReceiptRequestedEvent(

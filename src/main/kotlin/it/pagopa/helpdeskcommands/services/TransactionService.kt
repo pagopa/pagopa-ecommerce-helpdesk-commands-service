@@ -201,12 +201,17 @@ class TransactionService(
                             transactionId
                         )
 
+                        val newEventData =
+                            TransactionUserReceiptData(
+                                existingEvent.data.responseOutcome,
+                                existingEvent.data.language,
+                                existingEvent.data.paymentDate,
+                                TransactionUserReceiptData.NotificationTrigger.MANUAL
+                            )
+
                         // Create a NEW event with the same data but a new ID and current timestamp
                         val newEvent =
-                            TransactionUserReceiptRequestedEvent(
-                                transactionId,
-                                existingEvent.getData()
-                            )
+                            TransactionUserReceiptRequestedEvent(transactionId, newEventData)
 
                         // Save the new event
                         userReceiptEventStoreRepository
@@ -214,7 +219,7 @@ class TransactionService(
                             .doOnSuccess {
                                 logger.info(
                                     "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
-                                    newEvent.getId(),
+                                    newEvent.id,
                                     transactionId
                                 )
                             }
