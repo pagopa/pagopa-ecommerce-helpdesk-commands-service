@@ -95,20 +95,6 @@ class TransactionService(
     }
 
     /** Reduces a flux of transaction events into a transaction object */
-    fun reduceEvents(
-        transactionId: Mono<String>,
-        transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>,
-        emptyTransaction: EmptyTransaction
-    ): Mono<BaseTransaction> =
-        reduceEvents(
-            transactionId.flatMapMany {
-                transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(it).map {
-                    it as TransactionEvent<Any>
-                }
-            },
-            emptyTransaction
-        )
-
     fun <T> reduceEvents(events: Flux<TransactionEvent<T>>): Mono<BaseTransaction> =
         reduceEvents(events, EmptyTransaction())
 
