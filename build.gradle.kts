@@ -291,6 +291,7 @@ graalvmNative {
       rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
       */
       buildArgs.add("--strict-image-heap")
+      buildArgs.add("-H:+AddAllCharsets")
     }
   }
 

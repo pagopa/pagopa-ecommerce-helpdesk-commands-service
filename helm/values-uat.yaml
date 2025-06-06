@@ -104,6 +104,9 @@ microservice-chart:
     NODE_FORWARDER_READ_TIMEOUT: "10000"
     NODE_FORWARDER_CONNECTION_TIMEOUT: "10000"
     REDIRECT_PAYMENT_TYPE_CODES: "BPPIITRRXXX-RBPR,BPPIITRRXXX-RBPP,BPPIITRRXXX-RBPB,PPAYITR1XXX-RBPB,CHECKOUT-PPAYITR1XXX-RBPP,IO-PPAYITR1XXX-RBPP,PPAYITR1XXX-RBPR,RBPS,RPIC,RICO"
+    TRANSACTION_REFUND_QUEUE_NAME: "pagopa-ecommerce-transactions-refund-queue"
+    TRANSACTION_NOTIFICATIONS_QUEUE_NAME: "pagopa-ecommerce-transactions-notifications-queue"
+    TRANSIENT_QUEUES_TTL_SECONDS: "7200"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     NPG_CARDS_PSP_KEYS: npg-cards-psp-keys
@@ -115,6 +118,7 @@ microservice-chart:
     NPG_GOOGLE_PAY_PSP_KEYS: npg-google-pay-psp-keys
     NODE_FORWARDER_API_KEY: node-forwarder-api-key
     REDIRECT_URL_MAPPING: redirect-url-mapping
+    ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
   keyvault:
     name: "pagopa-u-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
