@@ -118,28 +118,16 @@ class CommandsController(
             xForwardedFor
         )
 
-        return transactionService
-            .createRefundRequestEvent(transactionId)
-            .map { event ->
-                // If we get here, refund was successfully requested
-                logger.info(
-                    "Refund successfully requested for transaction [{}], event ID: [{}]",
-                    transactionId,
-                    event?.id
-                )
-                // TODO: call the queue
-                ResponseEntity.accepted().build<Void?>()
-            }
-            .switchIfEmpty(
-                // If we get an empty Mono, refund was already requested
-                Mono.fromCallable {
-                    logger.info(
-                        "Refund already requested for transaction [{}], no action taken",
-                        transactionId
-                    )
-                    ResponseEntity.noContent().build<Void?>()
-                }
+        return transactionService.createRefundRequestEvent(transactionId).map { event ->
+            // If we get here, refund was successfully requested
+            logger.info(
+                "Refund successfully requested for transaction [{}], event ID: [{}]",
+                transactionId,
+                event?.id
             )
+            // TODO: call the queue
+            ResponseEntity.accepted().build<Void?>()
+        }
     }
 
     /**

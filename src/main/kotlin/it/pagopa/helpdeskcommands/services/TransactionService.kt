@@ -56,16 +56,13 @@ class TransactionService(
 
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction is BaseTransactionWithRefundRequested) {
-                // Transaction already has a refund requested, return null
-                logger.info(
-                    "Transaction [{}] already has a refund requested, returning null",
+                // Transaction already has a refund requested
+                logger.warn(
+                    "Transaction [{}] already has a refund requested",
                     transaction.transactionId.value()
                 )
-                Mono.empty()
-            } else {
-                // Create and persist the refund request event
-                createAndPersistRefundRequestEvent(transaction)
             }
+            createAndPersistRefundRequestEvent(transaction)
         }
     }
 

@@ -144,11 +144,14 @@ class CommandsControllerTest {
     }
 
     @Test
-    fun `requestTransactionRefund returns 204 when refund was already requested`() {
+    fun `requestTransactionRefund returns 202 when refund was already requested`() {
         val userId = UUID.randomUUID().toString()
+        val refundEvent = HelpDeskCommandsTestUtils.createMockRefundEvent()
 
+        // Since the service now returns an event even when refund was already requested,
+        // we should mock it to return an event
         given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
-            .willReturn(Mono.empty())
+            .willReturn(Mono.just(refundEvent))
 
         webClient
             .post()
@@ -157,7 +160,7 @@ class CommandsControllerTest {
             .header("X-Forwarded-For", SOURCE_IP)
             .exchange()
             .expectStatus()
-            .isNoContent()
+            .isAccepted
     }
 
     @Test

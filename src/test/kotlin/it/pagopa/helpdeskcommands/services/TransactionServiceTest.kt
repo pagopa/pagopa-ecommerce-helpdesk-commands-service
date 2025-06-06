@@ -391,7 +391,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    fun `createRefundRequestEvent should return empty when transaction already has refund requested`() {
+    fun `createRefundRequestEvent should create a valid refund request also for transaction already has refund requested`() {
         // Given
         val mockTransaction = mock(BaseTransactionWithRefundRequested::class.java)
         val mockTransactionId =
@@ -413,16 +413,34 @@ class TransactionServiceTest {
             .`when`(transactionServiceSpy)
             .reduceEvents(any<Flux<TransactionEvent<Any>>>())
 
+        // Mock the saveRefundRequestedEventAndUpdateTransactionView method to return the
+        // transaction
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionsRefundedEventStoreRepository)
+            .save(any<TransactionEvent<BaseTransactionRefundedData>>())
+
+        val mockTx = mock(Transaction::class.java)
+        doReturn(Mono.just(mockTx))
+            .`when`(transactionsViewRepository)
+            .findByTransactionId(transactionId)
+
+        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(mockTx)
+
         // When
         val result = transactionServiceSpy.createRefundRequestEvent(transactionId)
 
         // Then
-        StepVerifier.create(result).verifyComplete() // Should complete without emitting any value
+        StepVerifier.create(result)
+            .expectNextMatches { event ->
+                event is TransactionRefundRequestedEvent && event.transactionId == transactionId
+            }
+            .verifyComplete()
 
-        // Verify repository calls
-        verify(transactionsRefundedEventStoreRepository, never()).save(any())
-        verify(transactionsViewRepository, never()).findByTransactionId(any())
-        verify(transactionsViewRepository, never()).save(any())
+        // Verify that the repository methods were called
+        verify(transactionsRefundedEventStoreRepository)
+            .save(any<TransactionEvent<BaseTransactionRefundedData>>())
+        verify(transactionsViewRepository).findByTransactionId(transactionId)
+        verify(transactionsViewRepository).save(any())
     }
 
     @Test
