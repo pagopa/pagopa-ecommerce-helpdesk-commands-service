@@ -160,20 +160,6 @@ class TransactionService(
      * @param transactionId ID of the transaction
      * @return Mono containing the existing TransactionUserReceiptRequestedEvent
      */
-    /**
-     * Resends a notification for a transaction that is in USER_RECEIPT_REQUESTED or
-     * NOTIFICATION_ERROR state
-     *
-     * @param transactionId ID of the transaction
-     * @return Mono containing the existing TransactionUserReceiptRequestedEvent
-     */
-    /**
-     * Resends a notification for a transaction that is in an allowed state for notification
-     * resending
-     *
-     * @param transactionId ID of the transaction
-     * @return Mono containing the existing TransactionUserReceiptRequestedEvent
-     */
     fun resendUserReceiptNotification(
         transactionId: String
     ): Mono<TransactionUserReceiptRequestedEvent> {
@@ -182,7 +168,7 @@ class TransactionService(
             transactionId
         )
 
-        // Valid states for resending notifications
+        // Define the set of valid states for resending notifications
         val validStatesForResending =
             setOf(
                 TransactionStatusDto.NOTIFICATION_REQUESTED,
@@ -198,44 +184,62 @@ class TransactionService(
                 userReceiptEventStoreRepository
                     .findByTransactionIdOrderByCreationDateAsc(transactionId)
                     .collectList()
-                    .map { events -> events.maxByOrNull { it.creationDate } }
-                    .cast(TransactionUserReceiptRequestedEvent::class.java)
-                    .flatMap { existingEvent ->
-                        logger.info(
-                            "Found existing user receipt event for transaction ID: [{}], creating new event",
-                            transactionId
-                        )
+                    .flatMap { events ->
+                        // Find the latest event that is of type
+                        // TransactionUserReceiptRequestedEvent
+                        val latestRequestedEvent =
+                            events
+                                .filterIsInstance<TransactionUserReceiptRequestedEvent>()
+                                .maxByOrNull { it.creationDate }
 
-                        val newEventData =
-                            TransactionUserReceiptData(
-                                existingEvent.data.responseOutcome,
-                                existingEvent.data.language,
-                                existingEvent.data.paymentDate,
-                                TransactionUserReceiptData.NotificationTrigger.MANUAL
+                        if (latestRequestedEvent != null) {
+                            logger.info(
+                                "Found existing user receipt event for transaction ID: [{}], creating new event",
+                                transactionId
                             )
 
-                        // Create a NEW event with the same data but a new ID and current timestamp
-                        val newEvent =
-                            TransactionUserReceiptRequestedEvent(transactionId, newEventData)
+                            val newEventData =
+                                TransactionUserReceiptData(
+                                    latestRequestedEvent.data.responseOutcome,
+                                    latestRequestedEvent.data.language,
+                                    latestRequestedEvent.data.paymentDate,
+                                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                                )
 
-                        // Save the new event
-                        userReceiptEventStoreRepository
-                            .save(newEvent)
-                            .doOnSuccess {
-                                logger.info(
-                                    "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
-                                    newEvent.id,
-                                    transactionId
+                            // Create a NEW event with the same data but a new ID and current
+                            // timestamp
+                            val newEvent =
+                                TransactionUserReceiptRequestedEvent(transactionId, newEventData)
+
+                            // Save the new event
+                            userReceiptEventStoreRepository
+                                .save(newEvent)
+                                .doOnSuccess {
+                                    logger.info(
+                                        "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
+                                        newEvent.id,
+                                        transactionId
+                                    )
+                                }
+                                .doOnError { e ->
+                                    logger.error(
+                                        "Error saving new user receipt event for transaction ID: [{}]: {}",
+                                        transactionId,
+                                        e.message,
+                                        e
+                                    )
+                                }
+                        } else {
+                            logger.error(
+                                "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}]",
+                                transactionId
+                            )
+                            Mono.error(
+                                IllegalStateException(
+                                    "No TransactionUserReceiptRequestedEvent found for transaction ID: $transactionId"
                                 )
-                            }
-                            .doOnError { e ->
-                                logger.error(
-                                    "Error saving new user receipt event for transaction ID: [{}]: {}",
-                                    transactionId,
-                                    e.message,
-                                    e
-                                )
-                            }
+                            )
+                        }
                     }
             } else {
                 // Transaction is not in the correct state
