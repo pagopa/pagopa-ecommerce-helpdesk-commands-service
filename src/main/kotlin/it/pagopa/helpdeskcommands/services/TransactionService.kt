@@ -119,6 +119,13 @@ class TransactionService(
         events
             .reduce(emptyTransaction, it.pagopa.ecommerce.commons.domain.v2.Transaction::applyEvent)
             .cast(BaseTransaction::class.java)
+            .onErrorResume { e ->
+                if (e is ClassCastException && e.message?.contains("EmptyTransaction") == true) {
+                    Mono.error(TransactionNotFoundException("Transaction not found"))
+                } else {
+                    Mono.error(e)
+                }
+            }
 
     /**
      * Create a refund event from the given transaction and authorization data explicitly using the

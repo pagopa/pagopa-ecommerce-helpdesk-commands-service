@@ -73,7 +73,7 @@ class TransactionServiceTest {
             .`when`(transactionServiceSpy)
             .getTransaction(transactionId)
 
-        val existingUserReceiptEvent = createUserReceiptRequestedEvent()
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
         val events = listOf(existingUserReceiptEvent)
 
         // Mock repository behavior
@@ -146,7 +146,7 @@ class TransactionServiceTest {
             .`when`(transactionServiceSpy)
             .getTransaction(transactionId)
 
-        val existingUserReceiptEvent = createUserReceiptRequestedEvent()
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
         val events = listOf(existingUserReceiptEvent)
 
         // Mock repository behavior
@@ -222,11 +222,8 @@ class TransactionServiceTest {
 
         // Create a spy of TransactionUserReceiptRequestedEvent to control the creation date
         val event = TransactionUserReceiptRequestedEvent(transactionId, mockData)
+        event.creationDate = timestamp.toString()
         val spyEvent = spy(event)
-
-        // Mock the getCreationDate method to return our custom timestamp
-        // doReturn(timestamp.toString()).`when`(spyEvent).getCreationDate()
-
         return spyEvent
     }
 
@@ -290,7 +287,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    fun `reduceEvents should throw ClassCastException when no events are provided`() {
+    fun `reduceEvents should throw TransactionNotFoundException when no events are provided`() {
         // Given
         val emptyFlux = Flux.empty<TransactionEvent<Any>>()
 
@@ -298,7 +295,7 @@ class TransactionServiceTest {
         val result = transactionService.reduceEvents(emptyFlux)
 
         // Then
-        StepVerifier.create(result).expectError(ClassCastException::class.java).verify()
+        StepVerifier.create(result).expectError(TransactionNotFoundException::class.java).verify()
     }
 
     @Test
@@ -422,43 +419,6 @@ class TransactionServiceTest {
         verify(transactionsViewRepository, never()).save(any())
     }
 
-    /*@Test
-    fun `getTransaction should retrieve and reduce transaction events`() {
-        // Given
-        // Use concrete TransactionEvent implementations
-        val transactionEvent1 = TransactionActivatedEvent(transactionId, TransactionActivatedData())
-        val transactionEvent2 = TransactionAuthorizationRequestedEvent(
-            transactionId,
-            TransactionAuthorizationRequestData()
-        )
-
-        doReturn(Flux.just(transactionEvent1, transactionEvent2))
-            .`when`(transactionsEventStoreRepository)
-            .findByTransactionIdOrderByCreationDateAsc(transactionId)
-
-        val mockTransaction = mock(BaseTransaction::class.java)
-
-        // Mock the reduce operation
-        val transactionServiceSpy = spy(transactionService)
-        doReturn(Mono.just(mockTransaction))
-            .`when`(transactionServiceSpy)
-            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
-
-        // When
-        val result = transactionServiceSpy.getTransaction(transactionId)
-
-        // Then
-        StepVerifier.create(result)
-            .assertNext { transaction ->
-                assertNotNull(transaction)
-                assertSame(mockTransaction, transaction)
-            }
-            .verifyComplete()
-
-        // Verify repository calls
-        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
-    }
-
     @Test
     fun `getTransaction should return error when transaction not found`() {
         // Given
@@ -470,13 +430,12 @@ class TransactionServiceTest {
         val result = transactionService.getTransaction(transactionId)
 
         // Then
-        StepVerifier.create(result)
-            .expectError(TransactionNotFoundException::class.java)
-            .verify()
+        StepVerifier.create(result).expectError(TransactionNotFoundException::class.java).verify()
 
         // Verify repository calls
-        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
-    }*/
+        verify(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+    }
 
     @Test
     fun `getTransaction should retrieve and reduce transaction events`() {
