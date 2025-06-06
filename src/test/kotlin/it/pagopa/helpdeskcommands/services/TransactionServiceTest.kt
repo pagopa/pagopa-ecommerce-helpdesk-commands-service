@@ -8,6 +8,7 @@ import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
+import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,7 +23,6 @@ import org.mockito.kotlin.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.time.ZonedDateTime
 
 @ExtendWith(MockitoExtension::class)
 class TransactionServiceTest {
@@ -32,17 +32,17 @@ class TransactionServiceTest {
 
     @Mock
     private lateinit var transactionsRefundedEventStoreRepository:
-            TransactionsEventStoreRepository<BaseTransactionRefundedData>
+        TransactionsEventStoreRepository<BaseTransactionRefundedData>
 
-    @Mock
-    private lateinit var transactionsViewRepository: TransactionsViewRepository
+    @Mock private lateinit var transactionsViewRepository: TransactionsViewRepository
 
     @Mock
     private lateinit var userReceiptEventStoreRepository:
-            TransactionsEventStoreRepository<TransactionUserReceiptData>
+        TransactionsEventStoreRepository<TransactionUserReceiptData>
 
     @Captor
-    private lateinit var userReceiptEventCaptor: ArgumentCaptor<TransactionUserReceiptRequestedEvent>
+    private lateinit var userReceiptEventCaptor:
+        ArgumentCaptor<TransactionUserReceiptRequestedEvent>
 
     private lateinit var transactionService: TransactionService
 
@@ -50,12 +50,13 @@ class TransactionServiceTest {
 
     @BeforeEach
     fun setup() {
-        transactionService = TransactionService(
-            transactionsEventStoreRepository,
-            transactionsRefundedEventStoreRepository,
-            transactionsViewRepository,
-            userReceiptEventStoreRepository
-        )
+        transactionService =
+            TransactionService(
+                transactionsEventStoreRepository,
+                transactionsRefundedEventStoreRepository,
+                transactionsViewRepository,
+                userReceiptEventStoreRepository
+            )
     }
 
     @Test
@@ -66,7 +67,9 @@ class TransactionServiceTest {
 
         // Mock getTransaction to return our mock transaction
         val transactionServiceSpy = spy(transactionService)
-        doReturn(Mono.just(mockTransaction)).`when`(transactionServiceSpy).getTransaction(transactionId)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
 
         val existingUserReceiptEvent = createUserReceiptRequestedEvent()
         val events = listOf(existingUserReceiptEvent)
@@ -77,8 +80,10 @@ class TransactionServiceTest {
             .findByTransactionIdOrderByCreationDateAsc(transactionId)
 
         doAnswer { invocation ->
-            Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
-        }.`when`(userReceiptEventStoreRepository).save(any())
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
 
         // When
         val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
@@ -107,7 +112,9 @@ class TransactionServiceTest {
 
         // Mock getTransaction to return our mock transaction
         val transactionServiceSpy = spy(transactionService)
-        doReturn(Mono.just(mockTransaction)).whenever(transactionServiceSpy).getTransaction(transactionId)
+        doReturn(Mono.just(mockTransaction))
+            .whenever(transactionServiceSpy)
+            .getTransaction(transactionId)
 
         // When
         val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
@@ -116,7 +123,9 @@ class TransactionServiceTest {
         StepVerifier.create(result)
             .expectErrorMatches { error ->
                 error is InvalidTransactionStatusException &&
-                        error.message?.contains("Cannot resend user receipt notification for transaction in state: CLOSED") == true
+                    error.message?.contains(
+                        "Cannot resend user receipt notification for transaction in state: CLOSED"
+                    ) == true
             }
             .verify()
 
@@ -131,7 +140,9 @@ class TransactionServiceTest {
 
         // Mock getTransaction to return our mock transaction
         val transactionServiceSpy = spy(transactionService)
-        doReturn(Mono.just(mockTransaction)).`when`(transactionServiceSpy).getTransaction(transactionId)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
 
         val existingUserReceiptEvent = createUserReceiptRequestedEvent()
         val events = listOf(existingUserReceiptEvent)
@@ -141,7 +152,9 @@ class TransactionServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionId)
 
-        doReturn(Mono.error<TransactionUserReceiptRequestedEvent>(RuntimeException("Database error")))
+        doReturn(
+                Mono.error<TransactionUserReceiptRequestedEvent>(RuntimeException("Database error"))
+            )
             .`when`(userReceiptEventStoreRepository)
             .save(any())
 
@@ -149,9 +162,7 @@ class TransactionServiceTest {
         val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
 
         // Then
-        StepVerifier.create(result)
-            .expectError(RuntimeException::class.java)
-            .verify()
+        StepVerifier.create(result).expectError(RuntimeException::class.java).verify()
 
         verify(userReceiptEventStoreRepository).save(any())
     }
@@ -164,7 +175,9 @@ class TransactionServiceTest {
 
         // Mock getTransaction to return our mock transaction
         val transactionServiceSpy = spy(transactionService)
-        doReturn(Mono.just(mockTransaction)).`when`(transactionServiceSpy).getTransaction(transactionId)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
 
         // Create multiple events with different timestamps
         val oldEvent = createUserReceiptRequestedEvent(ZonedDateTime.now().minusDays(2))
@@ -177,8 +190,10 @@ class TransactionServiceTest {
             .findByTransactionIdOrderByCreationDateAsc(transactionId)
 
         doAnswer { invocation ->
-            Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
-        }.`when`(userReceiptEventStoreRepository).save(any())
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
 
         // When
         val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
@@ -219,7 +234,11 @@ class TransactionServiceTest {
         val transactionEvent = TransactionActivatedEvent(transactionId, TransactionActivatedData())
         val events = listOf(transactionEvent)
 
-        `when`(transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(transactionId))
+        `when`(
+                transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionId
+                )
+            )
             .thenReturn(Flux.fromIterable(events) as Flux<BaseTransactionEvent<Any>>?)
 
         // Mock the reduction process
@@ -232,17 +251,20 @@ class TransactionServiceTest {
         val result = spyService.getTransaction(transactionId)
 
         // Assert
-        StepVerifier.create(result)
-            .expectNext(mockTransaction)
-            .verifyComplete()
+        StepVerifier.create(result).expectNext(mockTransaction).verifyComplete()
 
-        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
+        verify(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
     }
 
     @Test
     fun `getTransaction should throw TransactionNotFoundException when transaction not found`() {
         // Given
-        whenever(transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(transactionId))
+        whenever(
+                transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionId
+                )
+            )
             .thenReturn(Flux.empty())
 
         // Create a spy of the service
@@ -258,12 +280,11 @@ class TransactionServiceTest {
         val result = transactionServiceSpy.getTransaction(transactionId)
 
         // Then
-        StepVerifier.create(result)
-            .expectError(TransactionNotFoundException::class.java)
-            .verify()
+        StepVerifier.create(result).expectError(TransactionNotFoundException::class.java).verify()
 
         // Verify that the repository was called with the correct transaction ID
-        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
+        verify(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
     }
 
     @Test
@@ -275,9 +296,7 @@ class TransactionServiceTest {
         val result = transactionService.reduceEvents(emptyFlux)
 
         // Then
-        StepVerifier.create(result)
-            .expectError(ClassCastException::class.java)
-            .verify()
+        StepVerifier.create(result).expectError(ClassCastException::class.java).verify()
     }
 
     @Test
@@ -286,16 +305,19 @@ class TransactionServiceTest {
         val transactionServiceSpy = spy(transactionService)
 
         // Mock getTransaction to throw TransactionNotFoundException
-        doReturn(Mono.error<BaseTransaction>(TransactionNotFoundException("Transaction not found: $transactionId")))
-            .whenever(transactionServiceSpy).getTransaction(transactionId)
+        doReturn(
+                Mono.error<BaseTransaction>(
+                    TransactionNotFoundException("Transaction not found: $transactionId")
+                )
+            )
+            .whenever(transactionServiceSpy)
+            .getTransaction(transactionId)
 
         // When
         val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
 
         // Then
-        StepVerifier.create(result)
-            .expectError(TransactionNotFoundException::class.java)
-            .verify()
+        StepVerifier.create(result).expectError(TransactionNotFoundException::class.java).verify()
 
         // Verify getTransaction was called but userReceiptEventStoreRepository.save was not
         verify(transactionServiceSpy).getTransaction(transactionId)

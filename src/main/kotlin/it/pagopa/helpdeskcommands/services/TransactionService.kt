@@ -97,12 +97,6 @@ class TransactionService(
     /** Reduces a flux of transaction events into a transaction object */
     fun reduceEvents(
         transactionId: Mono<String>,
-        transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>
-    ): Mono<BaseTransaction> =
-        reduceEvents(transactionId, transactionsEventStoreRepository, EmptyTransaction())
-
-    fun reduceEvents(
-        transactionId: Mono<String>,
         transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>,
         emptyTransaction: EmptyTransaction
     ): Mono<BaseTransaction> =
@@ -156,7 +150,7 @@ class TransactionService(
             .then(
                 transactionsViewRepository
                     .findByTransactionId(transaction.transactionId.value())
-                    .cast(it.pagopa.ecommerce.commons.documents.v2.Transaction::class.java)
+                    .cast(Transaction::class.java)
                     .flatMap { tx ->
                         tx.status = TransactionStatusDto.REFUND_REQUESTED
                         transactionsViewRepository.save(tx)
@@ -186,7 +180,8 @@ class TransactionService(
 
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction.status == TransactionStatusDto.NOTIFICATION_REQUESTED) {
-                // NOTE: Spring Boot 3.x has built-in support for AOT processing, which pre-generates proxies at build time.
+                // NOTE: Spring Boot 3.x has built-in support for AOT processing, which
+                // pre-generates proxies at build time.
                 // Until then, we use this "native-friendly" way to the Desc
                 userReceiptEventStoreRepository
                     .findByTransactionIdOrderByCreationDateAsc(transactionId)
