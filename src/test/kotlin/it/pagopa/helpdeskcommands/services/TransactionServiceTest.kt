@@ -2,7 +2,9 @@ package it.pagopa.helpdeskcommands.services
 
 import it.pagopa.ecommerce.commons.documents.BaseTransactionEvent
 import it.pagopa.ecommerce.commons.documents.v2.*
+import it.pagopa.ecommerce.commons.documents.v2.authorization.RedirectTransactionGatewayAuthorizationRequestedData
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
+import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
@@ -321,6 +323,294 @@ class TransactionServiceTest {
 
         // Verify getTransaction was called but userReceiptEventStoreRepository.save was not
         verify(transactionServiceSpy).getTransaction(transactionId)
+        verify(userReceiptEventStoreRepository, never()).save(any())
+    }
+
+    @Test
+    fun `createRefundRequestEvent should create a valid refund request event for transaction`() {
+        // Given
+        val mockTransaction = mock(BaseTransaction::class.java)
+        val mockTransactionId =
+            mock(it.pagopa.ecommerce.commons.domain.v2.TransactionId::class.java)
+
+        doReturn(mockTransactionId).`when`(mockTransaction).transactionId
+        doReturn(transactionId).`when`(mockTransactionId).value()
+        doReturn(TransactionStatusDto.CLOSED).`when`(mockTransaction).status
+
+        val transactionEvent = TransactionActivatedEvent(transactionId, TransactionActivatedData())
+
+        doReturn(Flux.just(transactionEvent))
+            .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        // Mock the reduce operation
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
+
+        // Mock the repository save
+        @Suppress("UNCHECKED_CAST")
+        doReturn(Mono.just(transactionEvent as TransactionEvent<BaseTransactionRefundedData>))
+            .`when`(transactionsRefundedEventStoreRepository)
+            .save(any())
+
+        // Mock view repository
+        val mockTx = mock(Transaction::class.java)
+        doReturn(Mono.just(mockTx))
+            .`when`(transactionsViewRepository)
+            .findByTransactionId(transactionId)
+
+        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
+
+        // When
+        val result = transactionServiceSpy.createRefundRequestEvent(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionId, event?.transactionId)
+                assertTrue(event?.data is TransactionRefundRequestedData)
+                val data = event?.data as TransactionRefundRequestedData
+                assertEquals(TransactionStatusDto.CLOSED, data.statusBeforeRefunded)
+                assertEquals(
+                    TransactionRefundRequestedData.RefundTrigger.MANUAL,
+                    data.refundTrigger
+                )
+            }
+            .verifyComplete()
+
+        // Verify repository calls
+        verify(transactionsRefundedEventStoreRepository).save(any())
+        verify(transactionsViewRepository).findByTransactionId(transactionId)
+        verify(transactionsViewRepository).save(any())
+    }
+
+    @Test
+    fun `createRefundRequestEvent should return empty when transaction already has refund requested`() {
+        // Given
+        val mockTransaction = mock(BaseTransactionWithRefundRequested::class.java)
+        val mockTransactionId =
+            mock(it.pagopa.ecommerce.commons.domain.v2.TransactionId::class.java)
+
+        doReturn(mockTransactionId).`when`(mockTransaction).transactionId
+        doReturn(transactionId).`when`(mockTransactionId).value()
+
+        // Use concrete TransactionEvent implementation
+        val transactionEvent = TransactionActivatedEvent(transactionId, TransactionActivatedData())
+
+        doReturn(Flux.just(transactionEvent))
+            .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        // Mock the reduce operation
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
+
+        // When
+        val result = transactionServiceSpy.createRefundRequestEvent(transactionId)
+
+        // Then
+        StepVerifier.create(result).verifyComplete() // Should complete without emitting any value
+
+        // Verify repository calls
+        verify(transactionsRefundedEventStoreRepository, never()).save(any())
+        verify(transactionsViewRepository, never()).findByTransactionId(any())
+        verify(transactionsViewRepository, never()).save(any())
+    }
+
+    /*@Test
+    fun `getTransaction should retrieve and reduce transaction events`() {
+        // Given
+        // Use concrete TransactionEvent implementations
+        val transactionEvent1 = TransactionActivatedEvent(transactionId, TransactionActivatedData())
+        val transactionEvent2 = TransactionAuthorizationRequestedEvent(
+            transactionId,
+            TransactionAuthorizationRequestData()
+        )
+
+        doReturn(Flux.just(transactionEvent1, transactionEvent2))
+            .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        val mockTransaction = mock(BaseTransaction::class.java)
+
+        // Mock the reduce operation
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
+
+        // When
+        val result = transactionServiceSpy.getTransaction(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { transaction ->
+                assertNotNull(transaction)
+                assertSame(mockTransaction, transaction)
+            }
+            .verifyComplete()
+
+        // Verify repository calls
+        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
+    }
+
+    @Test
+    fun `getTransaction should return error when transaction not found`() {
+        // Given
+        doReturn(Flux.empty<TransactionEvent<Any>>())
+            .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        // When
+        val result = transactionService.getTransaction(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .expectError(TransactionNotFoundException::class.java)
+            .verify()
+
+        // Verify repository calls
+        verify(transactionsEventStoreRepository).findByTransactionIdOrderByCreationDateAsc(transactionId)
+    }*/
+
+    @Test
+    fun `getTransaction should retrieve and reduce transaction events`() {
+        // Given
+        val transactionEvent1 = TransactionActivatedEvent(transactionId, TransactionActivatedData())
+
+        // Assuming you have the necessary imports and the
+        // TransactionGatewayAuthorizationRequestedData is defined
+
+        // Create an instance of the required data class
+        val transactionData =
+            RedirectTransactionGatewayAuthorizationRequestedData() // Initialize as needed
+
+        // Now instantiate TransactionAuthorizationRequestData using the public constructor
+        val authRequestData =
+            TransactionAuthorizationRequestData(
+                1000, // amount
+                50, // fee
+                "paymentInstrumentId123", // paymentInstrumentId
+                "pspId123", // pspId
+                "paymentTypeCode123", // paymentTypeCode
+                "brokerName123", // brokerName
+                "pspChannelCode123", // pspChannelCode
+                "paymentMethodName123", // paymentMethodName
+                "pspBusinessName123", // pspBusinessName
+                true, // isPspOnUs
+                "authRequestId123", // authorizationRequestId
+                TransactionAuthorizationRequestData.PaymentGateway.VPOS, // paymentGateway
+                "paymentMethodDescription123", // paymentMethodDescription
+                transactionData, // transactionGatewayAuthorizationRequestedData
+                null // idBundle (optional, can be null)
+            )
+
+        // Create the event with the mocked data
+        val transactionEvent2 =
+            TransactionAuthorizationRequestedEvent(transactionId, authRequestData)
+
+        doReturn(Flux.just(transactionEvent1, transactionEvent2))
+            .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        val mockTransaction = mock(BaseTransaction::class.java)
+
+        // Mock the reduce operation
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
+
+        // When
+        val result = transactionServiceSpy.getTransaction(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { transaction ->
+                assertNotNull(transaction)
+                assertSame(mockTransaction, transaction)
+            }
+            .verifyComplete()
+
+        // Verify repository calls
+        verify(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should resend notification for transaction in correct state`() {
+        // Given
+        val mockTransaction = mock(BaseTransaction::class.java)
+
+        doReturn(TransactionStatusDto.NOTIFICATION_REQUESTED).`when`(mockTransaction).status
+
+        // Mock getTransaction to return our mock transaction
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
+
+        // Mock existing receipt event with concrete implementation
+        val existingReceiptData = TransactionUserReceiptData()
+        val existingReceiptEvent =
+            TransactionUserReceiptRequestedEvent(transactionId, existingReceiptData)
+
+        doReturn(Flux.just(existingReceiptEvent))
+            .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+
+        // Mock save of new event
+        doReturn(Mono.just(existingReceiptEvent))
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
+
+        // When
+        val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionId, event?.transactionId)
+                assertEquals(existingReceiptData, event?.data)
+            }
+            .verifyComplete()
+
+        // Verify repository calls
+        verify(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionId)
+        verify(userReceiptEventStoreRepository).save(any())
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should return error when transaction in wrong state`() {
+        // Given
+        val mockTransaction = mock(BaseTransaction::class.java)
+
+        doReturn(TransactionStatusDto.CLOSED).`when`(mockTransaction).status // Wrong state
+
+        // Mock getTransaction to return our mock transaction
+        val transactionServiceSpy = spy(transactionService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionServiceSpy)
+            .getTransaction(transactionId)
+
+        // When
+        val result = transactionServiceSpy.resendUserReceiptNotification(transactionId)
+
+        // Then
+        StepVerifier.create(result)
+            .expectError(InvalidTransactionStatusException::class.java)
+            .verify()
+
+        // Verify repository calls - should not be called
+        verify(userReceiptEventStoreRepository, never())
+            .findByTransactionIdOrderByCreationDateAsc(any())
         verify(userReceiptEventStoreRepository, never()).save(any())
     }
 }
