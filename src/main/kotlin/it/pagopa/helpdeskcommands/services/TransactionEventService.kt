@@ -25,49 +25,54 @@ class TransactionEventService(
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    @Suppress("kotlin:S6508")
     override fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
-        return tracingUtils.traceMono(this.javaClass.simpleName) { tracingInfo ->
-            refundQueueClient
-                .flatMap { client ->
+        logger.info("📤 Sending refund for transaction: {}", event.transactionId)
+
+        return refundQueueClient
+            .doOnNext { logger.info("📤 Queue client obtained") }
+            .flatMap { client ->
+                logger.info("📤 Creating message...")
+                try {
+                    val queueEvent = QueueEvent(event, null)
+                    logger.info("📤 Sending to Azure...")
+
                     client.sendMessageWithResponse(
-                        QueueEvent(event, tracingInfo),
+                        queueEvent,
                         Duration.ZERO,
                         Duration.ofSeconds(transientQueueTTLSeconds)
                     )
+                } catch (e: Exception) {
+                    logger.error("📤 Error: {}", e.message, e)
+                    Mono.error<Any>(e)
                 }
-                .doOnSuccess {
-                    logger.info(
-                        "Generated refund request event {} for transactionId {}",
-                        event.eventCode,
-                        event.transactionId
-                    )
-                }
-                .then()
-        }
+            }
+            .doOnSuccess { logger.info("📤 ✅ Success!") }
+            .doOnError { e -> logger.error("📤 ❌ Failed: {}", e.message, e) }
+            .then()
     }
 
-    @Suppress("kotlin:S6508")
     override fun sendNotificationRequestedEvent(
         event: TransactionUserReceiptRequestedEvent
     ): Mono<Void> {
-        return tracingUtils.traceMono(this.javaClass.simpleName) { tracingInfo ->
-            notificationQueueClient
-                .flatMap { client ->
+        logger.info("📧 Sending notification for transaction: {}", event.transactionId)
+
+        return notificationQueueClient
+            .doOnNext { logger.info("📧 Queue client obtained") }
+            .flatMap { client ->
+                try {
+                    val queueEvent = QueueEvent(event, null)
                     client.sendMessageWithResponse(
-                        QueueEvent(event, tracingInfo),
+                        queueEvent,
                         Duration.ZERO,
                         Duration.ofSeconds(transientQueueTTLSeconds)
                     )
+                } catch (e: Exception) {
+                    logger.error("📧 Error: {}", e.message, e)
+                    Mono.error<Any>(e)
                 }
-                .doOnSuccess {
-                    logger.info(
-                        "Generated send notification event {} for transactionId {}",
-                        event.eventCode,
-                        event.transactionId
-                    )
-                }
-                .then()
-        }
+            }
+            .doOnSuccess { logger.info("📧 ✅ Success!") }
+            .doOnError { e -> logger.error("📧 ❌ Failed: {}", e.message, e) }
+            .then()
     }
 }
