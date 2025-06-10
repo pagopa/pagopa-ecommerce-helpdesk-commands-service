@@ -144,7 +144,7 @@ class DirectAzureQueueClientTest {
         assertEquals("POST", recordedRequest.method)
         assertEquals("/$TEST_STORAGE_ACCOUNT/$TEST_QUEUE_NAME/messages", recordedRequest.path)
         assertEquals("application/xml", recordedRequest.getHeader("Content-Type"))
-        assertEquals("2017-04-17", recordedRequest.getHeader("x-ms-version"))
+        assertEquals("2025-05-05", recordedRequest.getHeader("x-ms-version"))
         assertEquals("helpdesk-commands-service/1.0", recordedRequest.getHeader("User-Agent"))
 
         val authHeader = recordedRequest.getHeader("Authorization")
