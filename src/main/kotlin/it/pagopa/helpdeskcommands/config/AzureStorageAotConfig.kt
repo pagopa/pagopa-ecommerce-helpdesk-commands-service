@@ -53,14 +53,6 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
             )
 
             registerType(
-                it.pagopa.ecommerce.commons.queues.TracingUtils::class.java,
-                MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
-                MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS
-            )
-
-            registerType(
                 it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent::class
                     .java,
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,

@@ -3,16 +3,6 @@ package it.pagopa.helpdeskcommands.services
 import com.azure.core.http.rest.Response as AzureResponse
 import com.azure.storage.queue.models.SendMessageResult
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanBuilder
-import io.opentelemetry.api.trace.SpanContext
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.context.Context
-import io.opentelemetry.context.propagation.ContextPropagators
-import io.opentelemetry.context.propagation.TextMapPropagator
-import io.opentelemetry.context.propagation.TextMapSetter
 import it.pagopa.ecommerce.commons.client.QueueAsyncClient
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
@@ -20,7 +10,6 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.ecommerce.commons.queues.QueueEvent
-import it.pagopa.ecommerce.commons.queues.TracingUtils
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
 import it.pagopa.generated.npg.api.PaymentServicesApi
@@ -30,7 +19,6 @@ import it.pagopa.helpdeskcommands.config.WebClientConfig
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import java.time.Duration
-import java.util.*
 import java.util.stream.Stream
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
@@ -39,8 +27,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.provider.Arguments
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -82,64 +68,16 @@ class TransactionEventServiceTest {
     private val notificationQueueClient: QueueAsyncClient = mock()
     private val transientQueueTTLSeconds: Long = 2700 // 45 minutes
     private lateinit var transactionEventService: TransactionEventService
-    private lateinit var spiedTracingUtils: TracingUtils
 
     @BeforeEach
-    fun setupWithRealTracingUtils() {
+    fun setup() {
         reset(npgClient, nodeForwarderRedirectApiClient, refundQueueClient, notificationQueueClient)
-
-        val mockOpenTelemetry: OpenTelemetry = mock()
-        val mockTracer: Tracer = mock()
-        val mockSpanBuilder: SpanBuilder = mock()
-        val mockSpan: Span = mock()
-        val mockContextPropagators: ContextPropagators = mock()
-        val mockTextMapPropagator: TextMapPropagator = mock()
-
-        given(mockOpenTelemetry.getTracer(anyString())).willReturn(mockTracer)
-        given(mockOpenTelemetry.propagators).willReturn(mockContextPropagators)
-        given(mockContextPropagators.textMapPropagator).willReturn(mockTextMapPropagator)
-
-        Mockito.doAnswer { invocation ->
-                val carrier = invocation.getArgument<HashMap<String, String>>(1)
-                @Suppress("UNCHECKED_CAST")
-                val setter = invocation.getArgument<TextMapSetter<HashMap<String, String>>>(2)
-
-                setter.set(carrier, TracingUtils.TRACEPARENT, "00-dummytraceid-dummyspanid-01")
-                setter.set(carrier, TracingUtils.TRACESTATE, "statekey=statevalue")
-                setter.set(carrier, TracingUtils.BAGGAGE, "baggagekey=baggagevalue")
-                null
-            }
-            .`when`(mockTextMapPropagator)
-            .inject(
-                any<Context>(),
-                any<HashMap<String, String>>(),
-                any<TextMapSetter<HashMap<String, String>>>()
-            )
-
-        given(mockTextMapPropagator.fields())
-            .willReturn(
-                listOf(TracingUtils.TRACEPARENT, TracingUtils.TRACESTATE, TracingUtils.BAGGAGE)
-            )
-
-        given(mockTracer.spanBuilder(anyString())).willReturn(mockSpanBuilder)
-
-        given(mockSpanBuilder.setSpanKind(any<SpanKind>())).willReturn(mockSpanBuilder)
-        given(mockSpanBuilder.setParent(any<Context>())).willReturn(mockSpanBuilder)
-        given(mockSpanBuilder.setNoParent()).willReturn(mockSpanBuilder)
-        given(mockSpanBuilder.startSpan()).willReturn(mockSpan)
-
-        Mockito.`when`(mockSpan.spanContext).thenReturn(SpanContext.getInvalid())
-        given(mockSpan.isRecording).willReturn(true)
-
-        val actualTracingUtilsInstance = TracingUtils(mockOpenTelemetry, mockTracer)
-        this.spiedTracingUtils = spy(actualTracingUtilsInstance)
 
         transactionEventService =
             TransactionEventService(
                 refundQueueClient = Mono.just(refundQueueClient),
                 notificationQueueClient = Mono.just(notificationQueueClient),
-                transientQueueTTLSeconds = transientQueueTTLSeconds,
-                tracingUtils = this.spiedTracingUtils
+                transientQueueTTLSeconds = transientQueueTTLSeconds
             )
     }
 
@@ -148,7 +86,7 @@ class TransactionEventServiceTest {
 
         @JvmStatic
         @BeforeAll
-        fun setup() {
+        fun setupMockServer() {
             mockWebServer = MockWebServer()
             mockWebServer.start(8080)
             println("Mock web server started on ${mockWebServer.hostName}:${mockWebServer.port}")

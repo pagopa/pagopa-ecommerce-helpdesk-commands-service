@@ -4,7 +4,6 @@ import it.pagopa.ecommerce.commons.client.QueueAsyncClient
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
 import it.pagopa.ecommerce.commons.queues.QueueEvent
-import it.pagopa.ecommerce.commons.queues.TracingUtils
 import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,7 +19,6 @@ class TransactionEventService(
     @Qualifier("transactionNotificationQueueAsyncClient")
     private val notificationQueueClient: Mono<QueueAsyncClient>,
     @Value("\${azurestorage.queues.ttlSeconds}") private val transientQueueTTLSeconds: Long,
-    private val tracingUtils: TracingUtils
 ) : TransactionEventServiceInterface {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
