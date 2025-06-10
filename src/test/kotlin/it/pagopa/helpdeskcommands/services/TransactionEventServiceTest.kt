@@ -20,7 +20,6 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.ecommerce.commons.queues.QueueEvent
-import it.pagopa.ecommerce.commons.queues.TracingInfo
 import it.pagopa.ecommerce.commons.queues.TracingUtils
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
@@ -36,7 +35,6 @@ import java.util.stream.Stream
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -237,12 +235,6 @@ class TransactionEventServiceTest {
         StepVerifier.create(transactionEventService.sendRefundRequestedEvent(refundEvent))
             .verifyComplete()
 
-        verify(spiedTracingUtils)
-            .traceMono(
-                eq(TransactionEventService::class.java.simpleName),
-                any<java.util.function.Function<TracingInfo, Mono<Void>>>()
-            )
-
         verify(refundQueueClient)
             .sendMessageWithResponse(
                 queueEventCaptor.capture(),
@@ -252,9 +244,10 @@ class TransactionEventServiceTest {
 
         val capturedQueueEvent = queueEventCaptor.firstValue
         assertEquals(refundEvent, capturedQueueEvent.event)
-        assertNotNull(
+        assertEquals(
+            null,
             capturedQueueEvent.tracingInfo,
-            "TracingInfo should be populated in QueueEvent"
+            "TracingInfo should be null in QueueEvent"
         )
     }
 
@@ -316,12 +309,6 @@ class TransactionEventServiceTest {
             )
             .verifyComplete()
 
-        verify(spiedTracingUtils)
-            .traceMono(
-                eq(TransactionEventService::class.java.simpleName),
-                any<java.util.function.Function<TracingInfo, Mono<Void>>>()
-            )
-
         verify(notificationQueueClient)
             .sendMessageWithResponse(
                 queueEventCaptor.capture(),
@@ -331,9 +318,10 @@ class TransactionEventServiceTest {
 
         val capturedQueueEvent = queueEventCaptor.firstValue
         assertEquals(notificationEvent, capturedQueueEvent.event)
-        assertNotNull(
+        assertEquals(
+            null,
             capturedQueueEvent.tracingInfo,
-            "TracingInfo should be populated in QueueEvent"
+            "TracingInfo should be null in QueueEvent"
         )
     }
 

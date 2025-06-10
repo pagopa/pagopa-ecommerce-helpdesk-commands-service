@@ -189,7 +189,6 @@ class AzureStorageConfig {
 
     /** Creates a mock SendMessageResult response for the direct HTTP client fallback */
     private fun createMockSendMessageResponse(): Response<SendMessageResult> {
-        logger.info("called createMockSendMessageResponse method")
         val mockResult = SendMessageResult()
         return object : Response<SendMessageResult> {
             override fun getStatusCode(): Int = 201
