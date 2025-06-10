@@ -11,9 +11,27 @@ import org.springframework.context.annotation.ImportRuntimeHints
 class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
 
     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
+        registerAzureStorageProxies(hints)
         registerSerializationClasses(hints)
         registerTransactionEventTypeResolverInitialization(hints)
         registerStaticFieldAccess(hints)
+    }
+
+    private fun registerAzureStorageProxies(hints: RuntimeHints) {
+        hints.proxies().apply {
+            registerJdkProxy(
+                com.azure.storage.queue.implementation.ServicesImpl.ServicesService::class.java
+            )
+            registerJdkProxy(
+                com.azure.storage.queue.implementation.QueuesImpl.QueuesService::class.java
+            )
+            registerJdkProxy(
+                com.azure.storage.queue.implementation.MessagesImpl.MessagesService::class.java
+            )
+            registerJdkProxy(
+                com.azure.storage.queue.implementation.MessageIdsImpl.MessageIdsService::class.java
+            )
+        }
     }
 
     private fun registerSerializationClasses(hints: RuntimeHints) {
