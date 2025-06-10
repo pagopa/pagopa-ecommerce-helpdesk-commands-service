@@ -83,19 +83,10 @@ class TransactionEventResolverNativeConfig {
             pathToClassMap.clear()
 
             eventMappings.forEach { (clazz, path) ->
-                @Suppress("UNCHECKED_CAST") val eventClass = clazz as Class<out TransactionEvent<*>>
+                @Suppress("UNCHECKED_CAST") val eventClass = clazz
                 classToPathMap[eventClass] = path
                 pathToClassMap[path] = eventClass
             }
-
-            logger.info("Successfully populated ${classToPathMap.size} event mappings")
-
-            val testEvent = TransactionRefundRequestedEvent()
-            val resolver = TransactionEventTypeResolver()
-            val eventCode = resolver.idFromValue(testEvent)
-            logger.info(
-                "Verification successful - TransactionRefundRequestedEvent resolves to: $eventCode"
-            )
         } catch (e: Exception) {
             logger.error("Failed to populate TransactionEventTypeResolver maps: ${e.message}", e)
             throw e

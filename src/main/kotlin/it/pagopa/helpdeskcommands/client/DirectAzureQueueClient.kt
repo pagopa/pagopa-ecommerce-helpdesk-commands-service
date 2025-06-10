@@ -30,16 +30,9 @@ class DirectAzureQueueClient {
         storageKey: String
     ): Mono<String> {
         return try {
-            logger.info(
-                "🔧 Sending message via direct HTTP with Storage Account Key authentication"
-            )
-            logger.debug("Message content: $message")
-            logger.debug("Storage account: $storageAccount")
-            logger.debug("Queue: $queueName")
+            logger.info("Sending message via direct HTTP with Storage Account Key authentication")
 
             val encodedMessage = Base64.getEncoder().encodeToString(message.toByteArray())
-            logger.debug("Base64 encoded message length: ${encodedMessage.length}")
-
             val xmlBody =
                 """<?xml version="1.0" encoding="utf-8"?>
 <QueueMessage>
@@ -47,9 +40,6 @@ class DirectAzureQueueClient {
 </QueueMessage>"""
                     .trimIndent()
 
-            logger.debug("XML body length: ${xmlBody.length} bytes")
-
-            // generate azure storage auth signature
             val timestamp = generateRfc1123Timestamp()
             val authHeader =
                 generateAuthorizationHeader(
@@ -62,9 +52,6 @@ class DirectAzureQueueClient {
                 )
 
             val fullUrl = "$queueUrl/messages"
-            logger.debug("Full URL: $fullUrl")
-            logger.debug("Authorization header: ${authHeader.take(80)}...")
-            logger.debug("Timestamp: $timestamp")
 
             webClient
                 .post()
@@ -78,12 +65,7 @@ class DirectAzureQueueClient {
                 .bodyValue(xmlBody)
                 .retrieve()
                 .bodyToMono(String::class.java)
-                .doOnSuccess { response ->
-                    logger.info(
-                        "DirectAzureQueueClient: Direct HTTP message sent successfully with Storage Account Key"
-                    )
-                    logger.debug("Response: $response")
-                }
+                .doOnSuccess { response -> logger.info("Direct HTTP message sent successfully") }
                 .doOnError { error ->
                     logger.error(
                         "Direct HTTP message send failed with Storage Account Key: ${error.message}",
@@ -98,7 +80,6 @@ class DirectAzureQueueClient {
 
     /** Generates RFC 1123 formatted timestamp for Azure Storage requests */
     private fun generateRfc1123Timestamp(): String {
-        logger.debug("generateRfc1123Timestamp method call")
         return ZonedDateTime.now(ZoneOffset.UTC)
             .format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH))
     }
@@ -124,9 +105,6 @@ class DirectAzureQueueClient {
             val stringToSign =
                 "$method\n\n$contentType\n\n$canonicalizedHeaders$canonicalizedResource"
 
-            logger.debug("String to sign: ${stringToSign.replace("\n", "\\n")}")
-
-            // decode storage key and compute HMAC-SHA256 signature
             val keyBytes = Base64.getDecoder().decode(storageKey)
             val mac = Mac.getInstance("HmacSHA256")
             val secretKey = SecretKeySpec(keyBytes, "HmacSHA256")
@@ -135,10 +113,7 @@ class DirectAzureQueueClient {
             val signatureBytes = mac.doFinal(stringToSign.toByteArray(Charsets.UTF_8))
             val signature = Base64.getEncoder().encodeToString(signatureBytes)
 
-            val authHeader = "SharedKeyLite $storageAccount:$signature"
-            logger.debug("Generated signature: ${signature.take(20)}...")
-
-            return authHeader
+            return "SharedKeyLite $storageAccount:$signature"
         } catch (e: NoSuchAlgorithmException) {
             logger.error("HMAC-SHA256 algorithm not available: ${e.message}")
             throw IllegalStateException("HMAC-SHA256 not available", e)
@@ -156,8 +131,6 @@ class DirectAzureQueueClient {
 
     fun parseConnectionString(connectionString: String): StorageCredentials {
         try {
-            logger.debug("Parsing Azure Storage connection string")
-
             val parts =
                 connectionString.split(";").associate { part ->
                     val keyValue = part.split("=", limit = 2)
@@ -170,9 +143,6 @@ class DirectAzureQueueClient {
             val accountKey =
                 parts["AccountKey"]
                     ?: throw IllegalArgumentException("AccountKey not found in connection string")
-
-            logger.debug("Extracted account: $accountName")
-            logger.debug("Key length: ${accountKey.length} characters")
 
             return StorageCredentials(accountName, accountKey)
         } catch (e: Exception) {
