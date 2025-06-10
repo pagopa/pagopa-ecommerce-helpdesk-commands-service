@@ -34,6 +34,9 @@ class TransactionEventService(
                 logger.info("📤 Creating message...")
                 try {
                     val queueEvent = QueueEvent(event, null)
+                    logger.info("📤 QueueEvent created: {}", queueEvent)
+                    logger.info("📤 Event class: {}", event.javaClass.name)
+                    logger.info("📤 Event data: {}", event.data)
                     logger.info("📤 Sending to Azure...")
 
                     client.sendMessageWithResponse(
@@ -42,7 +45,7 @@ class TransactionEventService(
                         Duration.ofSeconds(transientQueueTTLSeconds)
                     )
                 } catch (e: Exception) {
-                    logger.error("📤 Error: {}", e.message, e)
+                    logger.error("📤 Error during message creation: {}", e.message, e)
                     Mono.error<Any>(e)
                 }
             }

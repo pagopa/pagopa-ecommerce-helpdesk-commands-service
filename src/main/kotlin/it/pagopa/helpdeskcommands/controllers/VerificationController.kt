@@ -53,9 +53,7 @@ class VerificationController(
 
         return transactionEventService
             .sendNotificationRequestedEvent(event)
-            .thenReturn(
-                "✅ SUCCESS: Notification event sent for transaction: $transactionId"
-            )
+            .thenReturn("✅ SUCCESS: Notification event sent for transaction: $transactionId")
             .onErrorReturn("❌ ERROR: Failed to send notification event")
     }
 
