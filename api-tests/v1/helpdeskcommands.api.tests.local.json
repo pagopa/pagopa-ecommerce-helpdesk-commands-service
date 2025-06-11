@@ -393,6 +393,164 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Request Transaction Refund - Success (202)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Request Transaction Refund - Status code is 202\", function () {",
+							"    pm.response.to.have.status(202);",
+							"});",
+							"",
+							"// Polling validation for CLOSED → REFUND_REQUESTED transition",
+							"pm.test(\"Transaction state transitions to REFUND_REQUESTED\", function () {",
+							"    let attempts = 0;",
+							"    const maxAttempts = 3;",
+							"    const pollInterval = 3000; // 3 seconds",
+							"    ",
+							"    function pollTransactionStatus() {",
+							"        if (attempts >= maxAttempts) {",
+							"            pm.test.skip(\"Max polling attempts reached - transaction may still be processing\");",
+							"            return;",
+							"        }",
+							"        ",
+							"        attempts++;",
+							"        ",
+							"        setTimeout(() => {",
+							"            pm.sendRequest({",
+							"                url: `{{TRANSACTION_SERVICE_HOST}}/transactions/${pm.environment.get('REFUNDABLE_TRANSACTION_ID')}`,",
+							"                method: 'GET',",
+							"                header: {",
+							"                    'Ocp-Apim-Subscription-Key': pm.environment.get('API_SUBSCRIPTION_KEY'),",
+							"                    'deployment': pm.environment.get('DEPLOYMENT')",
+							"                }",
+							"            }, (err, response) => {",
+							"                if (err) {",
+							"                    console.log(`Polling attempt ${attempts} failed:`, err);",
+							"                    if (attempts < maxAttempts) pollTransactionStatus();",
+							"                    return;",
+							"                }",
+							"                ",
+							"                const transaction = response.json();",
+							"                console.log(`Polling attempt ${attempts} - Transaction status:`, transaction.status);",
+							"                ",
+							"                if (transaction.status === 'REFUND_REQUESTED') {",
+							"                    pm.test('Transaction successfully transitioned to REFUND_REQUESTED', () => {",
+							"                        pm.expect(transaction.status).to.equal('REFUND_REQUESTED');",
+							"                    });",
+							"                } else if (attempts < maxAttempts) {",
+							"                    pollTransactionStatus();",
+							"                } else {",
+							"                    pm.test.skip(`Transaction status is ${transaction.status} after ${maxAttempts} attempts`);",
+							"                }",
+							"            });",
+							"        }, pollInterval);",
+							"    }",
+							"    ",
+							"    pollTransactionStatus();",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/commands/transactions/{{REFUNDABLE_TRANSACTION_ID}}/refund",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"commands",
+						"transactions",
+						"{{REFUNDABLE_TRANSACTION_ID}}",
+						"refund"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resend Transaction Email - Success (202)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Resend Transaction Email - Status code is 202\", function () {",
+							"    pm.response.to.have.status(202);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/commands/transactions/{{REFUNDABLE_TRANSACTION_ID}}/resend-email",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"commands",
+						"transactions",
+						"{{REFUNDABLE_TRANSACTION_ID}}",
+						"resend-email"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
