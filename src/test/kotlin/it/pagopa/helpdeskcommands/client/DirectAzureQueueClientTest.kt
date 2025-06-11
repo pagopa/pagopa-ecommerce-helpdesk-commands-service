@@ -166,7 +166,7 @@ class DirectAzureQueueClientTest {
 
     @ParameterizedTest
     @MethodSource("httpErrorResponses")
-    fun `should handle HTTP error responses`(httpStatus: HttpStatus, statusText: String) {
+    fun `should handle HTTP error responses`(httpStatus: HttpStatus) {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(httpStatus.value())

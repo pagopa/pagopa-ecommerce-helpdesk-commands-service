@@ -104,7 +104,7 @@ class AzureStorageConfig {
      *
      * @param queueConfig Configuration properties containing queue connection details
      * @param jsonSerializerV2 Serializer for marshalling queue messages
-     * @return Mono emitting configured QueueAsyncClient or empty on failure
+     * @return configured QueueAsyncClient
      */
     @Bean
     @Qualifier("transactionRefundQueueAsyncClient")
@@ -112,7 +112,7 @@ class AzureStorageConfig {
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
         directClient: DirectAzureQueueClient
-    ): Mono<QueueAsyncClient> {
+    ): QueueAsyncClient {
         val queueName = queueConfig.transactionRefundQueueName
         return buildQueueAsyncClient(
             queueConfig.storageConnectionString,
@@ -128,7 +128,7 @@ class AzureStorageConfig {
      *
      * @param queueConfig Configuration properties containing queue connection details
      * @param jsonSerializerV2 Serializer for marshalling queue messages
-     * @return Mono emitting configured QueueAsyncClient or empty on failure
+     * @return configured QueueAsyncClient
      */
     @Bean
     @Qualifier("transactionNotificationQueueAsyncClient")
@@ -136,7 +136,7 @@ class AzureStorageConfig {
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
         directClient: DirectAzureQueueClient
-    ): Mono<QueueAsyncClient> {
+    ): QueueAsyncClient {
         val queueName = queueConfig.transactionNotificationRequestedQueueName
         return buildQueueAsyncClient(
             queueConfig.storageConnectionString,
@@ -153,7 +153,7 @@ class AzureStorageConfig {
      * @param storageConnectionString Azure Storage connection string
      * @param queueName Name of the queue to connect to
      * @param jsonSerializer Serializer for message marshalling
-     * @return Mono emitting QueueAsyncClient or empty if queue setup fails
+     * @return QueueAsyncClient compatible with native builds
      */
     private fun buildQueueAsyncClient(
         storageConnectionString: String,
@@ -161,7 +161,7 @@ class AzureStorageConfig {
         jsonSerializer: JsonSerializer,
         queueConfig: QueueConfig,
         directClient: DirectAzureQueueClient
-    ): Mono<QueueAsyncClient> {
+    ): QueueAsyncClient {
         val azureQueueClient = createAzureQueueClient(storageConnectionString, queueName)
         val queueAsyncClient =
             createNativeCompatibleQueueClient(
@@ -170,7 +170,7 @@ class AzureStorageConfig {
                 directClient,
                 queueConfig
             )
-        return Mono.just(queueAsyncClient)
+        return queueAsyncClient
     }
 
     /**
