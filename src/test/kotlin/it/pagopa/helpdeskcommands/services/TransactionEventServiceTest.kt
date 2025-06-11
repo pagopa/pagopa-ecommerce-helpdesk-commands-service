@@ -75,8 +75,8 @@ class TransactionEventServiceTest {
 
         transactionEventService =
             TransactionEventService(
-                refundQueueClient = Mono.just(refundQueueClient),
-                notificationQueueClient = Mono.just(notificationQueueClient),
+                refundQueueClient = refundQueueClient,
+                notificationQueueClient = notificationQueueClient,
                 transientQueueTTLSeconds = transientQueueTTLSeconds
             )
     }
