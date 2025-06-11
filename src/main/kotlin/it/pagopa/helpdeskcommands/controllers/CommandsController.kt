@@ -99,7 +99,7 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
+        return Mono.just(ResponseEntity.accepted().build())
     }
 
     /**
@@ -121,6 +121,6 @@ class CommandsController(@Autowired private val commandsService: CommandsService
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void?>?>? {
-        TODO("Not yet implemented")
+        return Mono.just(ResponseEntity.accepted().build())
     }
 }
