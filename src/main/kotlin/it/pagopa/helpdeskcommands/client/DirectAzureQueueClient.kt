@@ -21,6 +21,9 @@ class DirectAzureQueueClient {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val webClient = WebClient.builder().build()
 
+    // https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
+    private val apiVersion = "2025-05-05"
+
     // working solution for native compile/run
     fun sendMessageWithStorageKey(
         queueUrl: String,
@@ -58,7 +61,7 @@ class DirectAzureQueueClient {
                 .uri(fullUrl)
                 .header("Authorization", authHeader)
                 .header("x-ms-date", timestamp)
-                .header("x-ms-version", "2017-04-17")
+                .header("x-ms-version", apiVersion)
                 .header("Content-Type", "application/xml")
                 .header("Content-Length", xmlBody.toByteArray().size.toString())
                 .header("User-Agent", "helpdesk-commands-service/1.0")
@@ -99,7 +102,7 @@ class DirectAzureQueueClient {
         try {
             // build canonical string for SharedKeyLite
             // format: METHOD\n\nCONTENT-TYPE\n\nCANONICALIZED-HEADERS\nCANONICALIZED-RESOURCE
-            val canonicalizedHeaders = "x-ms-date:$timestamp\nx-ms-version:2017-04-17\n"
+            val canonicalizedHeaders = "x-ms-date:$timestamp\nx-ms-version:$apiVersion\n"
             val canonicalizedResource = "/$storageAccount/$queueName/messages"
 
             val stringToSign =
