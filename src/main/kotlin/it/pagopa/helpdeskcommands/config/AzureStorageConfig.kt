@@ -79,17 +79,18 @@ class AzureStorageConfig {
 
                     val queueName = azureQueueClient.queueName
                     val queueUrl = azureQueueClient.queueUrl
-                    val credentials =
-                        directClient.parseConnectionString(queueConfig.storageConnectionString)
 
                     directClient
-                        .sendMessageWithStorageKey(
-                            queueUrl,
-                            queueName,
-                            jsonString,
-                            credentials.accountName,
-                            credentials.accountKey
-                        )
+                        .parseConnectionString(queueConfig.storageConnectionString)
+                        .flatMap { credentials ->
+                            directClient.sendMessageWithStorageKey(
+                                queueUrl,
+                                queueName,
+                                jsonString,
+                                credentials.accountName,
+                                credentials.accountKey
+                            )
+                        }
                         .map { response -> createMockSendMessageResponse() }
                 } catch (e: Exception) {
                     logger.error("Direct HTTP client error: {}", e.message)

@@ -84,7 +84,8 @@ class DirectAzureQueueClientTest {
 
     @Test
     fun `should parse valid connection string successfully`() {
-        val credentials = directAzureQueueClient.parseConnectionString(VALID_CONNECTION_STRING)
+        val credentials =
+            directAzureQueueClient.parseConnectionString(VALID_CONNECTION_STRING).block()!!
 
         assertEquals(TEST_STORAGE_ACCOUNT, credentials.accountName)
         assertEquals(TEST_STORAGE_KEY, credentials.accountKey)
@@ -98,7 +99,7 @@ class DirectAzureQueueClientTest {
     ) {
         val exception =
             assertThrows<IllegalArgumentException> {
-                directAzureQueueClient.parseConnectionString(connectionString)
+                directAzureQueueClient.parseConnectionString(connectionString).block()
             }
 
         assertTrue(exception.message!!.contains(expectedErrorMessage))
