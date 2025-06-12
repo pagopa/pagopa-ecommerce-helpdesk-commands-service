@@ -34,11 +34,10 @@ class DirectAzureQueueClient {
     ): Mono<String> {
         logger.info("Sending message via direct HTTP with Storage Account Key authentication")
 
-        val encodedMessage = Base64.getEncoder().encodeToString(message.toByteArray())
         val xmlBody =
             """<?xml version="1.0" encoding="utf-8"?>
 <QueueMessage>
-    <MessageText>$encodedMessage</MessageText>
+    <MessageText>$message</MessageText>
 </QueueMessage>"""
                 .trimIndent()
 
