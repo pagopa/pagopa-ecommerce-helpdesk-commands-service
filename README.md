@@ -172,6 +172,35 @@ docker-compose up
 
 The docker-compose up command will build the image and start the containers.
 
+## Integration Testing
+
+This service supports two integration testing approaches:
+
+### Local Integration Testing (Docker Compose)
+Run integration tests using the local Docker Compose setup:
+
+1. Start the local environment:
+   ```shell
+   docker-compose up
+   ```
+
+2. Run the Postman collection:
+   ```shell
+   newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json
+   ```
+
+### eCommerce-Local Integration Testing
+The service is also integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
+
+**Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that runs tests in the full ecommerce environment using Traefik routing and centralized infrastructure.
+
+**Service URLs in ecommerce-local**:
+- **Helpdesk Commands**: `http://pagopa-ecommerce-traefik/helpdesk-commands-service`
+- **Health Check**: `http://localhost:8087/actuator/health/liveness`
+
+**Polling Tests**: Integration tests include transaction state polling to verify:
+- Refund operations: `CLOSED` → `REFUND_REQUESTED`
+- Notification operations: `NOTIFICATION_ERROR` → `TRANSACTION_USER_RECEIPT_REQUESTED_EVENT`
 
 #### Tips
 The main issue with native image is related to Java Reflection.
