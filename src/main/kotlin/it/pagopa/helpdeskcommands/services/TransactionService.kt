@@ -214,6 +214,15 @@ class TransactionService(
                             // Save the new event
                             userReceiptEventStoreRepository
                                 .save(newEvent)
+                                .then(
+                                    transactionsViewRepository
+                                        .findByTransactionId(transaction.transactionId.value())
+                                        .cast(Transaction::class.java)
+                                        .flatMap { tx ->
+                                            tx.status = TransactionStatusDto.NOTIFICATION_REQUESTED
+                                            transactionsViewRepository.save(tx)
+                                        }
+                                )
                                 .doOnSuccess {
                                     logger.info(
                                         "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
@@ -229,6 +238,7 @@ class TransactionService(
                                         e
                                     )
                                 }
+                                .thenReturn(newEvent)
                         } else {
                             logger.error(
                                 "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}]",
