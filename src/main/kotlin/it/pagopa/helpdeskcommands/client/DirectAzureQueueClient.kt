@@ -22,7 +22,7 @@ class DirectAzureQueueClient {
     private val webClient = WebClient.builder().build()
 
     // https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
-    private val apiVersion = "2025-05-05"
+    private val apiVersion = "2021-02-12"
 
     // working solution for native compile/run
     fun sendMessageWithStorageKey(
@@ -46,6 +46,7 @@ class DirectAzureQueueClient {
                 generateAuthorizationHeader(
                         method = "POST",
                         contentType = "application/xml",
+                        contentLength = xmlBody.toByteArray().size.toString(),
                         timestamp = timestamp,
                         queueName = queueName,
                         storageAccount = storageAccount,
@@ -90,25 +91,27 @@ class DirectAzureQueueClient {
     }
 
     /**
-     * Generates Azure Storage SharedKeyLite authorization header Format: SharedKeyLite
+     * Generates Azure Storage SharedKey authorization header Format: SharedKey
      * {account}:{signature}
      */
     private fun generateAuthorizationHeader(
         method: String,
         contentType: String,
+        contentLength: String,
         timestamp: String,
         queueName: String,
         storageAccount: String,
         storageKey: String
     ): Mono<String> {
         return Mono.fromCallable {
-                // build canonical string for SharedKeyLite
-                // format: METHOD\n\nCONTENT-TYPE\n\nCANONICALIZED-HEADERS\nCANONICALIZED-RESOURCE
-                val canonicalizedHeaders = "x-ms-date:$timestamp\nx-ms-version:$apiVersion\n"
+                // build canonical string for SharedKey
+                // format:
+                // VERB\nContent-Encoding\nContent-Language\nContent-Length\nContent-MD5\nContent-Type\nDate\nIf-Modified-Since\nIf-Match\nIf-None-Match\nIf-Unmodified-Since\nRange\nCanonicalizedHeaders\nCanonicalizedResource
+                val canonicalizedHeaders = "x-ms-date:$timestamp\nx-ms-version:$apiVersion"
                 val canonicalizedResource = "/$storageAccount/$queueName/messages"
 
                 val stringToSign =
-                    "$method\n\n$contentType\n\n$canonicalizedHeaders$canonicalizedResource"
+                    "$method\n\n\n$contentLength\n\n$contentType\n\n\n\n\n\n\n$canonicalizedHeaders\n$canonicalizedResource"
 
                 val keyBytes = Base64.getDecoder().decode(storageKey)
                 val mac = Mac.getInstance("HmacSHA256")
@@ -118,7 +121,7 @@ class DirectAzureQueueClient {
                 val signatureBytes = mac.doFinal(stringToSign.toByteArray(Charsets.UTF_8))
                 val signature = Base64.getEncoder().encodeToString(signatureBytes)
 
-                "SharedKeyLite $storageAccount:$signature"
+                "SharedKey $storageAccount:$signature"
             }
             .onErrorMap { e ->
                 when (e) {
