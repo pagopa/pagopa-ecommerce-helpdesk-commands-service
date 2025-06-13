@@ -17,7 +17,6 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedE
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.ecommerce.commons.queues.StrictJsonSerializerProvider
 import it.pagopa.ecommerce.commons.queues.TracingInfo
-import it.pagopa.ecommerce.commons.queues.mixin.deserialization.v2.TransactionEventMixInClassFieldDiscriminator
 import it.pagopa.ecommerce.commons.queues.mixin.serialization.v2.QueueEventMixInClassFieldDiscriminator
 import it.pagopa.helpdeskcommands.client.DirectAzureQueueClient
 import it.pagopa.helpdeskcommands.config.properties.QueueConfig
@@ -128,13 +127,6 @@ class AzureStorageConfig {
                     QueueEventMixInClassFieldDiscriminator::class.java
                 )
 
-        // this adds the necessary v2 field _class for serialization
-        provider.objectMapper.activateDefaultTypingAsProperty(
-            provider.objectMapper.polymorphicTypeValidator,
-            com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL,
-            "_class"
-        )
-
         val baseSerializer = provider.createInstance()
         return TracingInfoReplacingJsonSerializer(baseSerializer)
     }
@@ -150,37 +142,37 @@ class AzureStorageConfig {
         queueConfig: QueueConfig
     ): QueueAsyncClient {
         return QueueAsyncClient(azureQueueClient, jsonSerializer)
-//        return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
-//            override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
-//                event: QueueEvent<T>,
-//                visibilityTimeout: java.time.Duration?,
-//                timeToLive: java.time.Duration?
-//            ): Mono<Response<SendMessageResult>> {
-//                return try {
-//                    val jsonBytes = jsonSerializer.serializeToBytes(event)
-//                    val jsonString = String(jsonBytes, Charsets.UTF_8)
-//
-//                    val queueName = azureQueueClient.queueName
-//                    val queueUrl = azureQueueClient.queueUrl
-//
-//                    directClient
-//                        .parseConnectionString(queueConfig.storageConnectionString)
-//                        .flatMap { credentials ->
-//                            directClient.sendMessageWithStorageKey(
-//                                queueUrl,
-//                                queueName,
-//                                jsonString,
-//                                credentials.accountName,
-//                                credentials.accountKey
-//                            )
-//                        }
-//                        .map { response -> createMockSendMessageResponse() }
-//                } catch (e: Exception) {
-//                    logger.error("Direct HTTP client error: {}", e.message)
-//                    Mono.error(e)
-//                }
-//            }
-//        }
+        //        return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
+        //            override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
+        //                event: QueueEvent<T>,
+        //                visibilityTimeout: java.time.Duration?,
+        //                timeToLive: java.time.Duration?
+        //            ): Mono<Response<SendMessageResult>> {
+        //                return try {
+        //                    val jsonBytes = jsonSerializer.serializeToBytes(event)
+        //                    val jsonString = String(jsonBytes, Charsets.UTF_8)
+        //
+        //                    val queueName = azureQueueClient.queueName
+        //                    val queueUrl = azureQueueClient.queueUrl
+        //
+        //                    directClient
+        //                        .parseConnectionString(queueConfig.storageConnectionString)
+        //                        .flatMap { credentials ->
+        //                            directClient.sendMessageWithStorageKey(
+        //                                queueUrl,
+        //                                queueName,
+        //                                jsonString,
+        //                                credentials.accountName,
+        //                                credentials.accountKey
+        //                            )
+        //                        }
+        //                        .map { response -> createMockSendMessageResponse() }
+        //                } catch (e: Exception) {
+        //                    logger.error("Direct HTTP client error: {}", e.message)
+        //                    Mono.error(e)
+        //                }
+        //            }
+        //        }
     }
 
     /**
