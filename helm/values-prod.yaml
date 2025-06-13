@@ -116,6 +116,9 @@ microservice-chart:
     MONGO_SERVER_SELECTION_TIMEOUT_MS: "2000"
     MONGO_WAITING_QUEUE_MS: "2000"
     MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
+    TRANSACTION_REFUND_QUEUE_NAME: "pagopa-ecommerce-transactions-refund-queue"
+    TRANSACTION_NOTIFICATIONS_QUEUE_NAME: "pagopa-ecommerce-transactions-notifications-queue"
+    TRANSIENT_QUEUES_TTL_SECONDS: "7200"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     NPG_CARDS_PSP_KEYS: npg-cards-psp-keys
@@ -128,6 +131,7 @@ microservice-chart:
     NODE_FORWARDER_API_KEY: node-forwarder-api-key
     REDIRECT_URL_MAPPING: redirect-url-mapping
     MONGO_PASSWORD: mongo-ecommerce-password
+    ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
   keyvault:
     name: "pagopa-p-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
