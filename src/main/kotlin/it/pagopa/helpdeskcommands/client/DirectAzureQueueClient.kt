@@ -35,18 +35,14 @@ class DirectAzureQueueClient {
         logger.info("Sending message via direct HTTP with Storage Account Key authentication")
 
         val xmlBody =
-            """<?xml version="1.0" encoding="utf-8"?>
-<QueueMessage>
-    <MessageText>$message</MessageText>
-</QueueMessage>"""
-                .trimIndent()
+            "<?xml version='1.0' encoding='utf-8'?><QueueMessage><MessageText>$message</MessageText></QueueMessage>"
 
         return generateRfc1123TimestampMono()
             .flatMap { timestamp ->
                 generateAuthorizationHeader(
                         method = "POST",
                         contentType = "application/xml",
-                        contentLength = xmlBody.toByteArray().size.toString(),
+                        contentLength = xmlBody.toByteArray(Charsets.UTF_8).size.toString(),
                         timestamp = timestamp,
                         queueName = queueName,
                         storageAccount = storageAccount,
@@ -64,7 +60,7 @@ class DirectAzureQueueClient {
                     .header("x-ms-date", timestamp)
                     .header("x-ms-version", apiVersion)
                     .header("Content-Type", "application/xml")
-                    .header("Content-Length", xmlBody.toByteArray().size.toString())
+                    .header("Content-Length", xmlBody.toByteArray(Charsets.UTF_8).size.toString())
                     .header("User-Agent", "helpdesk-commands-service/1.0")
                     .bodyValue(xmlBody)
                     .retrieve()

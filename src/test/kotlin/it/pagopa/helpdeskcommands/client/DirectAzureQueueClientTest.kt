@@ -145,12 +145,12 @@ class DirectAzureQueueClientTest {
         assertEquals("POST", recordedRequest.method)
         assertEquals("/$TEST_STORAGE_ACCOUNT/$TEST_QUEUE_NAME/messages", recordedRequest.path)
         assertEquals("application/xml", recordedRequest.getHeader("Content-Type"))
-        assertEquals("2025-05-05", recordedRequest.getHeader("x-ms-version"))
+        assertEquals("2021-02-12", recordedRequest.getHeader("x-ms-version"))
         assertEquals("helpdesk-commands-service/1.0", recordedRequest.getHeader("User-Agent"))
 
         val authHeader = recordedRequest.getHeader("Authorization")
         assertNotNull(authHeader)
-        assertTrue(authHeader!!.startsWith("SharedKeyLite $TEST_STORAGE_ACCOUNT:"))
+        assertTrue(authHeader!!.startsWith("SharedKey $TEST_STORAGE_ACCOUNT:"))
 
         val dateHeader = recordedRequest.getHeader("x-ms-date")
         assertNotNull(dateHeader)
@@ -303,6 +303,6 @@ class DirectAzureQueueClientTest {
         val recordedRequest = mockWebServer.takeRequest()
         val authHeader = recordedRequest.getHeader("Authorization")
         assertNotNull(authHeader)
-        assertTrue(authHeader!!.startsWith("SharedKeyLite $customStorageAccount:"))
+        assertTrue(authHeader!!.startsWith("SharedKey $customStorageAccount:"))
     }
 }

@@ -26,7 +26,9 @@ class VerificationController(
             TransactionRefundRequestedEvent(
                 transactionId,
                 TransactionRefundRequestedData(
-                    TransactionStatusDto.CLOSED
+                    null,
+                    TransactionStatusDto.CLOSED,
+                    TransactionRefundRequestedData.RefundTrigger.MANUAL
                 )
             )
 
