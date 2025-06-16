@@ -6,7 +6,6 @@ import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
-import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
@@ -51,7 +50,7 @@ class TransactionService(
      * @param transactionId ID of the transaction to refund
      * @return Mono containing the TransactionRefundRequestedEvent or null if already requested
      */
-    fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent?> {
+    fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent> {
         logger.info("Creating refund request event for transaction with ID: [{}]", transactionId)
 
         return getTransaction(transactionId).flatMap { transaction ->
@@ -177,84 +176,79 @@ class TransactionService(
             )
 
         return getTransaction(transactionId).flatMap { transaction ->
-            if (transaction.status in validStatesForResending) {
-                // NOTE: Spring Boot 3.x has built-in support for AOT processing, which
-                // pre-generates proxies at build time.
-                // Until then, we use this "native-friendly" way to the Desc
-                userReceiptEventStoreRepository
-                    .findByTransactionIdOrderByCreationDateAsc(transactionId)
-                    .collectList()
-                    .flatMap { events ->
-                        // Find the latest event that is of type
-                        // TransactionUserReceiptRequestedEvent
-                        val latestRequestedEvent =
-                            events
-                                .filterIsInstance<TransactionUserReceiptRequestedEvent>()
-                                .maxByOrNull { it.creationDate }
+            // NOTE: Spring Boot 3.x has built-in support for AOT processing, which
+            // pre-generates proxies at build time.
+            // Until then, we use this "native-friendly" way to the Desc
+            userReceiptEventStoreRepository
+                .findByTransactionIdOrderByCreationDateDesc(transactionId)
+                .collectList()
+                .flatMap { events ->
+                    // Find the latest event that is of type
+                    // TransactionUserReceiptRequestedEvent
+                    val latestRequestedEvent =
+                        events
+                            .filterIsInstance<TransactionUserReceiptRequestedEvent>()
+                            .maxByOrNull { it.creationDate }
 
-                        if (latestRequestedEvent != null) {
-                            logger.info(
-                                "Found existing user receipt event for transaction ID: [{}], creating new event",
-                                transactionId
+                    if (latestRequestedEvent != null) {
+                        logger.info(
+                            "Found existing user receipt event for transaction ID: [{}], creating new event",
+                            transactionId
+                        )
+
+                        val newEventData =
+                            TransactionUserReceiptData(
+                                latestRequestedEvent.data.responseOutcome,
+                                latestRequestedEvent.data.language,
+                                latestRequestedEvent.data.paymentDate,
+                                TransactionUserReceiptData.NotificationTrigger.MANUAL
                             )
 
-                            val newEventData =
-                                TransactionUserReceiptData(
-                                    latestRequestedEvent.data.responseOutcome,
-                                    latestRequestedEvent.data.language,
-                                    latestRequestedEvent.data.paymentDate,
-                                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                        // Create a NEW event with the same data but a new ID and current
+                        // timestamp
+                        val newEvent =
+                            TransactionUserReceiptRequestedEvent(transactionId, newEventData)
+
+                        // Save the new event
+                        userReceiptEventStoreRepository
+                            .save(newEvent)
+                            .then(
+                                transactionsViewRepository
+                                    .findByTransactionId(transaction.transactionId.value())
+                                    .cast(Transaction::class.java)
+                                    .flatMap { tx ->
+                                        tx.status = TransactionStatusDto.NOTIFICATION_REQUESTED
+                                        transactionsViewRepository.save(tx)
+                                    }
+                            )
+                            .doOnSuccess {
+                                logger.info(
+                                    "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
+                                    newEvent.id,
+                                    transactionId
                                 )
-
-                            // Create a NEW event with the same data but a new ID and current
-                            // timestamp
-                            val newEvent =
-                                TransactionUserReceiptRequestedEvent(transactionId, newEventData)
-
-                            // Save the new event
-                            userReceiptEventStoreRepository
-                                .save(newEvent)
-                                .doOnSuccess {
-                                    logger.info(
-                                        "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
-                                        newEvent.id,
-                                        transactionId
-                                    )
-                                }
-                                .doOnError { e ->
-                                    logger.error(
-                                        "Error saving new user receipt event for transaction ID: [{}]: {}",
-                                        transactionId,
-                                        e.message,
-                                        e
-                                    )
-                                }
-                        } else {
-                            logger.error(
-                                "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}]",
-                                transactionId
-                            )
-                            Mono.error(
-                                IllegalStateException(
-                                    "No TransactionUserReceiptRequestedEvent found for transaction ID: $transactionId"
+                            }
+                            .doOnError { e ->
+                                logger.error(
+                                    "Error saving new user receipt event for transaction ID: [{}]: {}",
+                                    transactionId,
+                                    e.message,
+                                    e
                                 )
+                            }
+                            .thenReturn(newEvent)
+                    } else {
+                        logger.error(
+                            "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}]",
+                            transactionId
+                        )
+                        Mono.error(
+                            IllegalStateException(
+                                "No TransactionUserReceiptRequestedEvent found for transaction ID: $transactionId"
                             )
-                        }
+                        )
                     }
-            } else {
-                // Transaction is not in the correct state
-                logger.error(
-                    "Transaction [{}] is not in a valid state for resending notification, current state: {}",
-                    transactionId,
-                    transaction.status
-                )
-                Mono.error(
-                    InvalidTransactionStatusException(
-                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. " +
-                            "Transaction must be in one of these states: ${validStatesForResending.joinToString()}"
-                    )
-                )
-            }
+                }
         }
     }
 }

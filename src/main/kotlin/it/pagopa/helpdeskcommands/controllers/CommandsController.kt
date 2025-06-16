@@ -3,6 +3,7 @@ package it.pagopa.helpdeskcommands.controllers
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.services.CommandsService
+import it.pagopa.helpdeskcommands.services.TransactionEventService
 import it.pagopa.helpdeskcommands.services.TransactionService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
@@ -17,7 +18,8 @@ import reactor.core.publisher.Mono
 @RestController("CommandsController")
 class CommandsController(
     @Autowired private val commandsService: CommandsService,
-    @Autowired private val transactionService: TransactionService
+    @Autowired private val transactionService: TransactionService,
+    @Autowired private val transactionEventService: TransactionEventService
 ) : CommandsApi {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -118,15 +120,16 @@ class CommandsController(
             xForwardedFor
         )
 
-        return transactionService.createRefundRequestEvent(transactionId).map { event ->
+        return transactionService.createRefundRequestEvent(transactionId).flatMap { event ->
             // If we get here, refund was successfully requested
             logger.info(
                 "Refund successfully requested for transaction [{}], event ID: [{}]",
                 transactionId,
                 event?.id
             )
-            // TODO: call the queue
-            ResponseEntity.accepted().build<Void?>()
+            transactionEventService.sendRefundRequestedEvent(event).map {
+                ResponseEntity.accepted().build<Void?>()
+            }
         }
     }
 
@@ -161,8 +164,9 @@ class CommandsController(
                 "Successfully resent user receipt notification for transaction ID: {}",
                 transactionId
             )
-            // TODO: Send event to the queue
-            Mono.just(ResponseEntity.accepted().build())
+            transactionEventService.sendNotificationRequestedEvent(event).map {
+                ResponseEntity.accepted().build<Void>()
+            }
         }
     }
 }

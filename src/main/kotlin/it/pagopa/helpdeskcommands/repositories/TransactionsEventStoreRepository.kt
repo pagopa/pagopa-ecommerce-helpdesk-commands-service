@@ -12,4 +12,8 @@ interface TransactionsEventStoreRepository<T> :
     fun findByTransactionIdOrderByCreationDateAsc(
         idTransaction: String
     ): Flux<BaseTransactionEvent<T>>
+
+    fun findByTransactionIdOrderByCreationDateDesc(
+        idTransaction: String
+    ): Flux<BaseTransactionEvent<T>>
 }
