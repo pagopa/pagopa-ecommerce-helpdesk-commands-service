@@ -23,18 +23,25 @@ import it.pagopa.helpdeskcommands.client.AzureApiQueueClient
 import it.pagopa.helpdeskcommands.config.properties.QueueConfig
 import java.io.InputStream
 import java.io.OutputStream
+import java.time.Duration
+import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.type.filter.AssignableTypeFilter
 import reactor.core.publisher.Mono
 
 @Configuration
 @EnableConfigurationProperties(QueueConfig::class)
-class AzureStorageConfig {
+class AzureStorageConfig(
+    @Value("\${azurestorage.queues.nativeClient.enabled}")
+    private val isNativeClientEnabled: Boolean
+) {
     private val logger = LoggerFactory.getLogger(AzureStorageConfig::class.java)
 
     /**
@@ -81,8 +88,8 @@ class AzureStorageConfig {
                 return jsonString
             }
 
-            val traceId = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 32)
-            val spanId = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+            val traceId = UUID.randomUUID().toString().replace("-", "").substring(0, 32)
+            val spanId = UUID.randomUUID().toString().replace("-", "").substring(0, 16)
             val traceparent = "00-$traceId-$spanId-00"
 
             val tracingInfoReplacement =
@@ -117,8 +124,8 @@ class AzureStorageConfig {
         TransactionRefundRequestedData::class,
         TransactionUserReceiptData::class,
         QueueStorageException::class,
-        org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider::class,
-        org.springframework.core.type.filter.AssignableTypeFilter::class
+        ClassPathScanningCandidateComponentProvider::class,
+        AssignableTypeFilter::class
     )
     fun jsonSerializerV2(): JsonSerializer {
         logger.info("Creating JsonSerializer for Azure Storage Queue with custom V2 mixin")
@@ -141,15 +148,15 @@ class AzureStorageConfig {
         azureQueueClient: AzureQueueAsyncClient,
         jsonSerializer: JsonSerializer,
         azureApiQueueClient: AzureApiQueueClient,
-        queueConfig: QueueConfig,
-        @Value("\${azurestorage.queues.nativeClient.enabled}") isNativeClientEnabled: Boolean
-        ): QueueAsyncClient {
+        queueConfig: QueueConfig
+    ): QueueAsyncClient {
+        logger.info("Using client based on isNativeClientEnabled = {}", isNativeClientEnabled)
         return if (isNativeClientEnabled) {
             return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
                 override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
                     event: QueueEvent<T>,
-                    visibilityTimeout: java.time.Duration?,
-                    timeToLive: java.time.Duration?
+                    visibilityTimeout: Duration?,
+                    timeToLive: Duration?
                 ): Mono<Response<SendMessageResult>> {
                     return try {
                         val jsonBytes = jsonSerializer.serializeToBytes(event)
@@ -250,8 +257,7 @@ class AzureStorageConfig {
                 azureQueueClient,
                 jsonSerializer,
                 azureApiQueueClient,
-                queueConfig,
-
+                queueConfig
             )
         return queueAsyncClient
     }
