@@ -19,13 +19,14 @@ import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.ecommerce.commons.queues.StrictJsonSerializerProvider
 import it.pagopa.ecommerce.commons.queues.TracingInfo
 import it.pagopa.ecommerce.commons.queues.mixin.serialization.v2.QueueEventMixInClassFieldDiscriminator
-import it.pagopa.helpdeskcommands.client.DirectAzureQueueClient
+import it.pagopa.helpdeskcommands.client.AzureApiQueueClient
 import it.pagopa.helpdeskcommands.config.properties.QueueConfig
 import java.io.InputStream
 import java.io.OutputStream
 import org.slf4j.LoggerFactory
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -133,45 +134,50 @@ class AzureStorageConfig {
     }
 
     /**
-     * Creates a standard QueueAsyncClient using Azure SDK (bypassing DirectAzureQueueClient for
+     * Creates a standard QueueAsyncClient using Azure SDK (bypassing AzureApiQueueClient for
      * testing)
      */
     private fun createNativeCompatibleQueueClient(
         azureQueueClient: AzureQueueAsyncClient,
         jsonSerializer: JsonSerializer,
-        directClient: DirectAzureQueueClient,
-        queueConfig: QueueConfig
-    ): QueueAsyncClient {
-        return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
-            override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
-                event: QueueEvent<T>,
-                visibilityTimeout: java.time.Duration?,
-                timeToLive: java.time.Duration?
-            ): Mono<Response<SendMessageResult>> {
-                return try {
-                    val jsonBytes = jsonSerializer.serializeToBytes(event)
-                    val jsonString = String(jsonBytes, Charsets.UTF_8)
+        azureApiQueueClient: AzureApiQueueClient,
+        queueConfig: QueueConfig,
+        @Value("\${azurestorage.queues.nativeClient.enabled}") isNativeClientEnabled: Boolean
+        ): QueueAsyncClient {
+        return if (isNativeClientEnabled) {
+            return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
+                override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
+                    event: QueueEvent<T>,
+                    visibilityTimeout: java.time.Duration?,
+                    timeToLive: java.time.Duration?
+                ): Mono<Response<SendMessageResult>> {
+                    return try {
+                        val jsonBytes = jsonSerializer.serializeToBytes(event)
+                        val jsonString = String(jsonBytes, Charsets.UTF_8)
 
-                    val queueName = azureQueueClient.queueName
-                    val queueUrl = azureQueueClient.queueUrl
+                        val queueName = azureQueueClient.queueName
+                        val queueUrl = azureQueueClient.queueUrl
 
-                    directClient
-                        .parseConnectionString(queueConfig.storageConnectionString)
-                        .flatMap { credentials ->
-                            directClient.sendMessageWithStorageKey(
-                                queueUrl,
-                                queueName,
-                                jsonString,
-                                credentials.accountName,
-                                credentials.accountKey
-                            )
-                        }
-                        .map { response -> createMockSendMessageResponse() }
-                } catch (e: Exception) {
-                    logger.error("Direct HTTP client error: {}", e.message)
-                    Mono.error(e)
+                        azureApiQueueClient
+                            .parseConnectionString(queueConfig.storageConnectionString)
+                            .flatMap { credentials ->
+                                azureApiQueueClient.sendMessageWithStorageKey(
+                                    queueUrl,
+                                    queueName,
+                                    jsonString,
+                                    credentials.accountName,
+                                    credentials.accountKey
+                                )
+                            }
+                            .map { response -> createMockSendMessageResponse() }
+                    } catch (e: Exception) {
+                        logger.error("Azure API queue HTTP client error: {}", e.message)
+                        Mono.error(e)
+                    }
                 }
             }
+        } else {
+            QueueAsyncClient(azureQueueClient, jsonSerializer)
         }
     }
 
@@ -187,7 +193,7 @@ class AzureStorageConfig {
     fun transactionRefundQueueAsyncClient(
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
-        directClient: DirectAzureQueueClient
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val queueName = queueConfig.transactionRefundQueueName
         return buildQueueAsyncClient(
@@ -195,7 +201,7 @@ class AzureStorageConfig {
             queueName,
             jsonSerializerV2,
             queueConfig,
-            directClient
+            azureApiQueueClient
         )
     }
 
@@ -211,7 +217,7 @@ class AzureStorageConfig {
     fun transactionNotificationQueueAsyncClient(
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
-        directClient: DirectAzureQueueClient
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val queueName = queueConfig.transactionNotificationRequestedQueueName
         return buildQueueAsyncClient(
@@ -219,7 +225,7 @@ class AzureStorageConfig {
             queueName,
             jsonSerializerV2,
             queueConfig,
-            directClient
+            azureApiQueueClient
         )
     }
 
@@ -236,22 +242,23 @@ class AzureStorageConfig {
         queueName: String,
         jsonSerializer: JsonSerializer,
         queueConfig: QueueConfig,
-        directClient: DirectAzureQueueClient
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val azureQueueClient = createAzureQueueClient(storageConnectionString, queueName)
         val queueAsyncClient =
             createNativeCompatibleQueueClient(
                 azureQueueClient,
                 jsonSerializer,
-                directClient,
-                queueConfig
+                azureApiQueueClient,
+                queueConfig,
+
             )
         return queueAsyncClient
     }
 
     /**
      * Creates minimal Azure Queue client for metadata only (queueName, queueUrl) Actual message
-     * sending bypassed via DirectAzureQueueClient
+     * sending bypassed via AzureApiQueueClient
      */
     private fun createAzureQueueClient(
         connectionString: String,
@@ -263,7 +270,7 @@ class AzureStorageConfig {
             .buildAsyncClient()
     }
 
-    /** Creates a mock SendMessageResult response for the direct HTTP client fallback */
+    /** Creates a mock SendMessageResult response for the Azure API queue HTTP client fallback */
     private fun createMockSendMessageResponse(): Response<SendMessageResult> {
         val mockResult = SendMessageResult()
         return object : Response<SendMessageResult> {

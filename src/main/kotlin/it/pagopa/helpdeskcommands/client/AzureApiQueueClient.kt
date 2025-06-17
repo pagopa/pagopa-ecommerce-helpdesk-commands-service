@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 @Component
-class DirectAzureQueueClient {
+class AzureApiQueueClient {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val webClient = WebClient.builder().build()

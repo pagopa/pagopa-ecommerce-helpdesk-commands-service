@@ -21,7 +21,7 @@ import reactor.test.StepVerifier
 class DirectAzureQueueClientTest {
 
     private lateinit var mockWebServer: MockWebServer
-    private lateinit var directAzureQueueClient: DirectAzureQueueClient
+    private lateinit var directAzureQueueClient: AzureApiQueueClient
 
     companion object {
         private const val VALID_CONNECTION_STRING =
@@ -73,7 +73,7 @@ class DirectAzureQueueClientTest {
     fun setUp() {
         mockWebServer = MockWebServer()
         mockWebServer.start()
-        directAzureQueueClient = DirectAzureQueueClient()
+        directAzureQueueClient = AzureApiQueueClient()
     }
 
     @AfterEach
