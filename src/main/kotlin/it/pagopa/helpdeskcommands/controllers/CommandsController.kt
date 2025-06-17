@@ -3,7 +3,7 @@ package it.pagopa.helpdeskcommands.controllers
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
 import it.pagopa.helpdeskcommands.services.CommandsService
-import it.pagopa.helpdeskcommands.services.TransactionService
+import it.pagopa.helpdeskcommands.services.TransactionEventService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import jakarta.validation.constraints.NotNull
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 @RestController("CommandsController")
 class CommandsController(
     @Autowired private val commandsService: CommandsService,
-    @Autowired private val transactionService: TransactionService
+    @Autowired private val transactionEventService: TransactionEventService
 ) : CommandsApi {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -104,13 +104,10 @@ class CommandsController(
         xForwardedFor: @NotNull String?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void?>> {
-
-        // Validate required parameters
         if (transactionId.isNullOrBlank()) {
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        // Log the request
         logger.info(
             "Refund request received for transaction [{}] from user [{}] with IP [{}]",
             transactionId,
@@ -118,15 +115,17 @@ class CommandsController(
             xForwardedFor
         )
 
-        return transactionService.createRefundRequestEvent(transactionId).map { event ->
-            // If we get here, refund was successfully requested
-            logger.info(
-                "Refund successfully requested for transaction [{}], event ID: [{}]",
-                transactionId,
-                event?.id
-            )
-            // TODO: call the queue
-            ResponseEntity.accepted().build<Void?>()
+        return transactionEventService.createRefundRequestEvent(transactionId).flatMap { event ->
+            transactionEventService
+                .sendRefundRequestedEvent(event)
+                .doOnSuccess {
+                    logger.info(
+                        "Refund successfully requested for transaction [{}], event ID: [{}]",
+                        transactionId,
+                        event?.id
+                    )
+                }
+                .then(Mono.just(ResponseEntity.accepted().build()))
         }
     }
 
@@ -154,15 +153,21 @@ class CommandsController(
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        return transactionService.resendUserReceiptNotification(transactionId).flatMap<
-            ResponseEntity<Void>
-        > { event ->
-            logger.info(
-                "Successfully resent user receipt notification for transaction ID: {}",
-                transactionId
-            )
-            // TODO: Send event to the queue
-            Mono.just(ResponseEntity.accepted().build())
+        return transactionEventService.resendUserReceiptNotification(transactionId).flatMap { event
+            ->
+            transactionEventService
+                .sendNotificationRequestedEvent(event)
+                .doOnSuccess {
+                    logger.info(
+                        "Successfully resent user receipt notification for transaction ID: [{}], event ID: [{}]",
+                        transactionId,
+                        event?.id
+                    )
+                }
+                .doOnError { e ->
+                    logger.error("Failed to send notification message event: {}", e.message, e)
+                }
+                .then(Mono.just(ResponseEntity.accepted().build()))
         }
     }
 }

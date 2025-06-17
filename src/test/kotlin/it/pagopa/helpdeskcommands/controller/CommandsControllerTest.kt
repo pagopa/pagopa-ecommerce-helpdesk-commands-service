@@ -9,13 +9,15 @@ import it.pagopa.helpdeskcommands.controllers.CommandsController
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.services.CommandsService
-import it.pagopa.helpdeskcommands.services.TransactionService
+import it.pagopa.helpdeskcommands.services.TransactionEventService
 import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -36,13 +38,13 @@ class CommandsControllerTest {
     private lateinit var commandsController: CommandsController
 
     @MockBean private lateinit var commandsService: CommandsService
-    @MockBean private lateinit var transactionService: TransactionService
+    @MockBean private lateinit var transactionEventService: TransactionEventService
 
     @Autowired private lateinit var webClient: WebTestClient
 
     @BeforeEach
     fun beforeTest() {
-        commandsController = CommandsController(commandsService, transactionService)
+        commandsController = CommandsController(commandsService, transactionEventService)
     }
 
     companion object {
@@ -125,13 +127,16 @@ class CommandsControllerTest {
             .expectStatus()
             .is5xxServerError
     }
+
     @Test
     fun `requestTransactionRefund returns 202 when refund is successfully requested`() {
         val userId = UUID.randomUUID().toString()
         val refundEvent = HelpDeskCommandsTestUtils.createMockRefundEvent()
 
-        given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
+        given { transactionEventService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(Mono.just(refundEvent))
+
+        given { transactionEventService.sendRefundRequestedEvent(any()) }.willReturn(Mono.empty())
 
         webClient
             .post()
@@ -141,33 +146,16 @@ class CommandsControllerTest {
             .exchange()
             .expectStatus()
             .isAccepted
-    }
 
-    @Test
-    fun `requestTransactionRefund returns 202 when refund was already requested`() {
-        val userId = UUID.randomUUID().toString()
-        val refundEvent = HelpDeskCommandsTestUtils.createMockRefundEvent()
-
-        // Since the service now returns an event even when refund was already requested,
-        // we should mock it to return an event
-        given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
-            .willReturn(Mono.just(refundEvent))
-
-        webClient
-            .post()
-            .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
-            .header("x-user-id", userId)
-            .header("X-Forwarded-For", SOURCE_IP)
-            .exchange()
-            .expectStatus()
-            .isAccepted
+        verify(transactionEventService, times(1)).createRefundRequestEvent(VALID_TRANSACTION_ID)
+        verify(transactionEventService, times(1)).sendRefundRequestedEvent(refundEvent)
     }
 
     @Test
     fun `requestTransactionRefund returns 404 when transaction is not found`() {
         val userId = UUID.randomUUID().toString()
 
-        given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
+        given { transactionEventService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(Mono.error(TransactionNotFoundException("Transaction not found")))
 
         webClient
@@ -185,7 +173,7 @@ class CommandsControllerTest {
         val userId = UUID.randomUUID().toString()
 
         // Mock the service to throw the exception
-        given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
+        given { transactionEventService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(
                 Mono.error(InvalidTransactionStatusException("Transaction not in refundable state"))
             )
@@ -221,7 +209,7 @@ class CommandsControllerTest {
     fun `requestTransactionRefund returns 500 on unexpected error`() {
         val userId = UUID.randomUUID().toString()
 
-        given { transactionService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
+        given { transactionEventService.createRefundRequestEvent(VALID_TRANSACTION_ID) }
             .willReturn(Mono.error(RuntimeException("Unexpected error")))
 
         webClient
@@ -239,8 +227,11 @@ class CommandsControllerTest {
         val userId = UUID.randomUUID().toString()
         val emailEvent = HelpDeskCommandsTestUtils.createMockEmailEvent()
 
-        given { transactionService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
+        given { transactionEventService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
             .willReturn(Mono.just(emailEvent))
+
+        given { transactionEventService.sendNotificationRequestedEvent(any()) }
+            .willAnswer { Mono.empty<Void>() }
 
         webClient
             .post()
@@ -250,13 +241,17 @@ class CommandsControllerTest {
             .exchange()
             .expectStatus()
             .isAccepted
+
+        verify(transactionEventService, times(1))
+            .resendUserReceiptNotification(VALID_TRANSACTION_ID)
+        verify(transactionEventService, times(1)).sendNotificationRequestedEvent(emailEvent)
     }
 
     @Test
     fun `resendTransactionEmail returns 404 when transaction is not found`() {
         val userId = UUID.randomUUID().toString()
 
-        given { transactionService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
+        given { transactionEventService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
             .willReturn(Mono.error(TransactionNotFoundException("Transaction not found")))
 
         webClient
@@ -267,13 +262,17 @@ class CommandsControllerTest {
             .exchange()
             .expectStatus()
             .isNotFound
+
+        verify(transactionEventService, times(1))
+            .resendUserReceiptNotification(VALID_TRANSACTION_ID)
+        verify(transactionEventService, times(0)).sendNotificationRequestedEvent(any())
     }
 
     @Test
     fun `resendTransactionEmail returns 422 when transaction status is invalid`() {
         val userId = UUID.randomUUID().toString()
 
-        given { transactionService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
+        given { transactionEventService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
             .willReturn(Mono.error(InvalidTransactionStatusException("Invalid transaction status")))
 
         webClient
@@ -284,6 +283,10 @@ class CommandsControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
+
+        verify(transactionEventService, times(1))
+            .resendUserReceiptNotification(VALID_TRANSACTION_ID)
+        verify(transactionEventService, times(0)).sendNotificationRequestedEvent(any())
     }
 
     @Test
@@ -304,7 +307,7 @@ class CommandsControllerTest {
     fun `resendTransactionEmail returns 500 on unexpected error`() {
         val userId = UUID.randomUUID().toString()
 
-        given { transactionService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
+        given { transactionEventService.resendUserReceiptNotification(VALID_TRANSACTION_ID) }
             .willReturn(Mono.error(RuntimeException("Unexpected error")))
 
         webClient
