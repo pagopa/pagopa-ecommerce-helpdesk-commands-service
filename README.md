@@ -303,6 +303,83 @@ Finally, you can add new dependencies both to gradle.lockfile writing verificati
 For more information read the
 following [article](https://docs.gradle.org/8.1/userguide/dependency_verification.html#sec:checksum-verification)
 
+## Testing event-based APIs with DEV Environment
+
+This section provides instructions for testing the helpdesk commands event-based APIs using the dev environment with real Azure Storage queues and MongoDB.
+
+### Prerequisites
+
+- Java 21 (GraalVM recommended for native compilation)
+- Gradle
+- Access to dev environment (MongoDB and Azure Storage)
+
+### APIs Available
+
+1. **Request Transaction Refund** - `POST /commands/transactions/{transactionId}/refund`
+2. **Resend Transaction Email** - `POST /commands/transactions/{transactionId}/resend-email`
+
+Both APIs return HTTP 202 (Accepted) and send events to dev Azure Storage Queues for async processing.
+
+### Environment Setup
+
+1. **Configure environment variables** by creating `.env.dev`:
+```bash
+cp .env.example .env.dev
+```
+
+2. **Environment should include**:
+   - Dev MongoDB connection settings
+   - Dev Azure Storage connection string and queue names
+   - `AZURE_QUEUE_NATIVE_CLIENT_ENABLED=true` for native compilation
+
+### Running the Application
+
+```bash
+# Start the application with dev environment
+export $(grep -v '^#' .env.local | xargs) && gradle bootRun
+
+# For native compilation (production-like testing)
+export $(grep -v '^#' .env.local | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
+```
+
+### Testing with curl
+
+Use real transaction IDs from the dev database:
+
+**Request Transaction Refund:**
+```bash
+curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/refund \
+--header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+**Resend Transaction Email:**
+```bash
+curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/resend-email \
+--header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+**Expected Results:**
+- Both APIs should return **HTTP 202 Accepted**
+- Empty response body (async processing)
+- Logs should show successful message sending to dev Azure Storage queues
+
+### Using Postman Collections
+
+1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
+3. **Set variables**:
+   - `HOSTNAME`: `http://localhost:8080` (your local running app)
+   - Transaction IDs: Use real transaction IDs from dev database
+   - Authentication headers as required
+
+4. **Run tests**: Execute the refund and resend email operations
+
 ## Contributors 👥
 
 Made with ❤️ by PagoPA S.p.A.
