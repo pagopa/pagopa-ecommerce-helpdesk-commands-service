@@ -21,7 +21,7 @@ import reactor.test.StepVerifier
 class DirectAzureQueueClientTest {
 
     private lateinit var mockWebServer: MockWebServer
-    private lateinit var directAzureQueueClient: DirectAzureQueueClient
+    private lateinit var directAzureQueueClient: AzureApiQueueClient
 
     companion object {
         private const val VALID_CONNECTION_STRING =
@@ -73,7 +73,7 @@ class DirectAzureQueueClientTest {
     fun setUp() {
         mockWebServer = MockWebServer()
         mockWebServer.start()
-        directAzureQueueClient = DirectAzureQueueClient()
+        directAzureQueueClient = AzureApiQueueClient()
     }
 
     @AfterEach
@@ -84,7 +84,8 @@ class DirectAzureQueueClientTest {
 
     @Test
     fun `should parse valid connection string successfully`() {
-        val credentials = directAzureQueueClient.parseConnectionString(VALID_CONNECTION_STRING)
+        val credentials =
+            directAzureQueueClient.parseConnectionString(VALID_CONNECTION_STRING).block()!!
 
         assertEquals(TEST_STORAGE_ACCOUNT, credentials.accountName)
         assertEquals(TEST_STORAGE_KEY, credentials.accountKey)
@@ -98,7 +99,7 @@ class DirectAzureQueueClientTest {
     ) {
         val exception =
             assertThrows<IllegalArgumentException> {
-                directAzureQueueClient.parseConnectionString(connectionString)
+                directAzureQueueClient.parseConnectionString(connectionString).block()
             }
 
         assertTrue(exception.message!!.contains(expectedErrorMessage))
@@ -144,12 +145,12 @@ class DirectAzureQueueClientTest {
         assertEquals("POST", recordedRequest.method)
         assertEquals("/$TEST_STORAGE_ACCOUNT/$TEST_QUEUE_NAME/messages", recordedRequest.path)
         assertEquals("application/xml", recordedRequest.getHeader("Content-Type"))
-        assertEquals("2025-05-05", recordedRequest.getHeader("x-ms-version"))
+        assertEquals("2021-02-12", recordedRequest.getHeader("x-ms-version"))
         assertEquals("helpdesk-commands-service/1.0", recordedRequest.getHeader("User-Agent"))
 
         val authHeader = recordedRequest.getHeader("Authorization")
         assertNotNull(authHeader)
-        assertTrue(authHeader!!.startsWith("SharedKeyLite $TEST_STORAGE_ACCOUNT:"))
+        assertTrue(authHeader!!.startsWith("SharedKey $TEST_STORAGE_ACCOUNT:"))
 
         val dateHeader = recordedRequest.getHeader("x-ms-date")
         assertNotNull(dateHeader)
@@ -302,6 +303,6 @@ class DirectAzureQueueClientTest {
         val recordedRequest = mockWebServer.takeRequest()
         val authHeader = recordedRequest.getHeader("Authorization")
         assertNotNull(authHeader)
-        assertTrue(authHeader!!.startsWith("SharedKeyLite $customStorageAccount:"))
+        assertTrue(authHeader!!.startsWith("SharedKey $customStorageAccount:"))
     }
 }

@@ -14,15 +14,9 @@ plugins {
   jacoco
 }
 
-// ecommerce commons library version
-val ecommerceCommonsVersion = "1.37.2"
-// ecommerce commons library git version (by default uses tag from ecommerceCommonsVersion val,
-// for testing purpose we can use a branch/commit reference)
-val ecommerceCommonsGitRef = ecommerceCommonsVersion
-
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.18.0"
+version = "0.19.0"
 
 description = "pagopa-helpdeskcommands-service"
 
@@ -45,6 +39,12 @@ repositories {
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
 
+object Deps {
+  const val azureSpringCloudDepsVersion = "5.22.0"
+  const val mongoReactiveVersion = "3.5.0"
+  const val ecommerceCommonsVersion = "1.37.2"
+}
+
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -56,13 +56,15 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  implementation("it.pagopa:pagopa-ecommerce-commons:$ecommerceCommonsGitRef")
+  implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
-  // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation(
+    "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:${Deps.mongoReactiveVersion}"
+  )
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.projectreactor:reactor-test")
@@ -234,7 +236,7 @@ tasks.register<Exec>("installLibs") {
   group = "commons"
   val buildCommons = providers.gradleProperty("buildCommons")
   onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
-  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", ecommerceCommonsGitRef)
+  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", Deps.ecommerceCommonsVersion)
 }
 
 tasks.withType<KotlinCompile> {
@@ -251,7 +253,7 @@ tasks.withType<KotlinCompile> {
 tasks.register("printCommonsVersion") {
   description = "Prints the referenced commons library version."
   group = "commons"
-  doLast { print(ecommerceCommonsVersion) }
+  doLast { print(Deps.ecommerceCommonsVersion) }
 }
 
 tasks.test {
