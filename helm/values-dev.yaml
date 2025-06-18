@@ -104,6 +104,10 @@ microservice-chart:
     NODE_FORWARDER_URL: "https://api.uat.platform.pagopa.it/pagopa-node-forwarder/api/v1"
     NODE_FORWARDER_READ_TIMEOUT: "10000"
     NODE_FORWARDER_CONNECTION_TIMEOUT: "10000"
+    TRANSACTION_REFUND_QUEUE_NAME: "pagopa-ecommerce-transactions-refund-queue"
+    TRANSACTION_NOTIFICATIONS_QUEUE_NAME: "pagopa-ecommerce-transactions-notifications-queue"
+    TRANSIENT_QUEUES_TTL_SECONDS: "7200"
+    AZURE_QUEUE_NATIVE_CLIENT_ENABLED: "true"
     MONGO_HOST: pagopa-d-weu-ecommerce-cosmos-account.mongo.cosmos.azure.com
     MONGO_USERNAME: pagopa-d-weu-ecommerce-cosmos-account
     MONGO_PORT: "10255"
@@ -127,6 +131,7 @@ microservice-chart:
     NPG_GOOGLE_PAY_PSP_KEYS: npg-google-pay-psp-keys
     NODE_FORWARDER_API_KEY: node-forwarder-api-key
     REDIRECT_URL_MAPPING: redirect-url-mapping
+    ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
     MONGO_PASSWORD: mongo-ecommerce-password
   keyvault:
     name: "pagopa-d-ecommerce-kv"

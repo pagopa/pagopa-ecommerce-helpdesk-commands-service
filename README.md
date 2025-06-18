@@ -36,8 +36,12 @@ These are all environment variables needed by the application:
 | NODE_FORWARDER_READ_TIMEOUT       | Node forwarder HTTP api call read timeout in milliseconds                                                                                                                       | integer |         |
 | NODE_FORWARDER_CONNECTION_TIMEOUT | Node forwarder HTTP api call connection timeout in milliseconds                                                                                                                 | integer |         |
 | NODE_FORWARDER_API_KEY            | Node forwarder api key                                                                                                                                                          | string  |         |
-| NPG_GOOGLE_PAY_PSP_KEYS           | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
-| NPG_GOOGLE_PAY_PSP_LIST           | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
+| NPG_GOOGLE_PAY_PSP_KEYS                   | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
+| NPG_GOOGLE_PAY_PSP_LIST                   | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
+| AZURE_QUEUE_NATIVE_CLIENT_ENABLED         | Flag to choose if we have to use the azure SDK storage queue client or the Rest API client                                                                                      | string  |         |
+| ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING | Azure Storage connection string for transient storage queues                                                                                                                    | string  |         |
+| TRANSACTION_REFUND_QUEUE_NAME             | Name of the Azure Storage queue for transaction refund events                                                                                                                   | string  |         |
+| TRANSACTION_NOTIFICATIONS_QUEUE_NAME      | Name of the Azure Storage queue for transaction notification events                                                                                                             | string  |         |
 
 An example configuration of these environment variables is in the `.env.example` file.
 
@@ -157,6 +161,13 @@ The following command should be used to start the mock server for local testing
 yarn json-server ./npg-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
 yarn json-server ./psp-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
 ```
+
+#### Test Coverage
+To generate test coverage reports, run:
+```shell
+gradle jacocoTestReport
+```
+The coverage report will be generated at `build/reports/jacoco/test/html/index.html`. Open this file in a browser to view detailed coverage metrics.
 
 ## Docker
 
