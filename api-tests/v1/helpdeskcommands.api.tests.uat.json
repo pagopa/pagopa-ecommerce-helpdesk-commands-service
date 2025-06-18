@@ -276,13 +276,13 @@
 			"response": []
 		},
 		{
-			"name": "Request Transaction Refund - Success (202)",
+			"name": "eCommerce helpDesk-Commands Event-Based Refund Operation",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Request Transaction Refund - Status code is 202\", function () {",
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Status code is 202\", function () {",
 							"    pm.response.to.have.status(202);",
 							"});"
 						],
@@ -334,13 +334,13 @@
 			"response": []
 		},
 		{
-			"name": "Resend Transaction Email - Success (202)",
+			"name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Resend Transaction Email - Status code is 202\", function () {",
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Status code is 202\", function () {",
 							"    pm.response.to.have.status(202);",
 							"});"
 						],
@@ -385,6 +385,246 @@
 						"commands",
 						"transactions",
 						"{{REFUNDABLE_TRANSACTION_ID}}",
+						"resend-email"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Event-Based Refund Operation - Transaction not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Transaction not found - Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Transaction not found\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/transactions/{{TRANSACTION_ID_NOT_FOUND}}/refund",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"transactions",
+						"{{TRANSACTION_ID_NOT_FOUND}}",
+						"refund"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Event-Based Refund Operation - Invalid transaction status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Invalid transaction status - Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Transaction cannot be refunded\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/transactions/{{INVALID_STATUS_TRANSACTION_ID}}/refund",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"transactions",
+						"{{INVALID_STATUS_TRANSACTION_ID}}",
+						"refund"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation - Transaction not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Transaction not found - Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Transaction not found\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/transactions/{{TRANSACTION_ID_NOT_FOUND}}/resend-email",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"transactions",
+						"{{TRANSACTION_ID_NOT_FOUND}}",
+						"resend-email"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation - Invalid transaction status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Invalid transaction status - Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.be.eq(\"Cannot resend user receipt notification for transaction in state\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Ocp-Apim-Subscription-Key",
+						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "deployment",
+						"value": "{{DEPLOYMENT}}",
+						"type": "text"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/ecommerce/helpdesk-commands-service/v1/commands/transactions/{{INVALID_STATUS_TRANSACTION_ID}}/resend-email",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"ecommerce",
+						"helpdesk-commands-service",
+						"v1",
+						"commands",
+						"transactions",
+						"{{INVALID_STATUS_TRANSACTION_ID}}",
 						"resend-email"
 					]
 				}
