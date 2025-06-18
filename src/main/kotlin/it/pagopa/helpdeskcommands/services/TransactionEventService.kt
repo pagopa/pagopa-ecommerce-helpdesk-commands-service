@@ -219,11 +219,13 @@ class TransactionEventService(
 
         // Define the set of valid states for resending notifications
         // Right now we are just handling the "notification requested" state because of limitations
-        // in the consumer logic. A refinement could review the logic.
-        val admissibleState = TransactionStatusDto.NOTIFICATION_REQUESTED
+        // in the consumer logic, and the expired event.
+        // A refinement could review the logic.
+        val admissibleStates =
+            listOf(TransactionStatusDto.NOTIFICATION_REQUESTED, TransactionStatusDto.EXPIRED)
 
         return getTransaction(transactionId).flatMap { transaction ->
-            if (transaction.status == admissibleState) {
+            if (transaction.status in admissibleStates) {
                 // NOTE: Spring Boot 3.x has built-in support for AOT processing, which
                 // pre-generates proxies at build time.
                 // Until then, we use this "native-friendly" way to the Desc
@@ -307,7 +309,7 @@ class TransactionEventService(
                 Mono.error(
                     InvalidTransactionStatusException(
                         "Cannot resend user receipt notification for transaction in state: ${transaction.status}. " +
-                            "Transaction must be in $admissibleState state"
+                            "Transaction must be one of ${admissibleStates.joinToString(",")}"
                     )
                 )
             }
