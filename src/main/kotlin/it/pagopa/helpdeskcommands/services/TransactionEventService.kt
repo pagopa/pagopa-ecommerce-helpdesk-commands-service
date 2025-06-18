@@ -10,7 +10,6 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
 import it.pagopa.ecommerce.commons.documents.v2.authorization.TransactionGatewayAuthorizationData
 import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
-import it.pagopa.ecommerce.commons.domain.v2.TransactionEventCode
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
@@ -219,8 +218,8 @@ class TransactionEventService(
         )
 
         // Define the set of valid states for resending notifications
-        // Right now we are just handling the "notification requested" state because of limitations in the
-        // consumer logic. A refinement could review the logic.
+        // Right now we are just handling the "notification requested" state because of limitations
+        // in the consumer logic. A refinement could review the logic.
         val admissibleState = TransactionStatusDto.NOTIFICATION_REQUESTED
 
         return getTransaction(transactionId).flatMap { transaction ->
