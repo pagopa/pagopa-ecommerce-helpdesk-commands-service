@@ -1,0 +1,445 @@
+{
+  "info": {
+    "_postman_id": "981e134d-04f2-4729-b1d1-cf6db6bf47ef",
+    "name": "Ecommerce helpDesk-Commands-service Event-Based APIs",
+    "description": "EVENT-BASED API COLLECTION:\n• Contains only event-based APIs (Refund/Resend Email)\n• Requires DEV environment with real Azure Storage queues\n• Not included in CI/CD integration tests\n• For manual testing only",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "36814090"
+  },
+  "item": [
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Refund Operation",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_REFUND_QUEUE_NAME = dev refund queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Status code is 202\", function () {",
+              "    pm.response.to.have.status(202);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev refund queue configuration\n• Real transaction ID from dev database\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{REFUNDABLE_TRANSACTION_ID}}/refund",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{REFUNDABLE_TRANSACTION_ID}}",
+            "refund"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_NOTIFICATIONS_QUEUE_NAME = dev notification queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Status code is 202\", function () {",
+              "    pm.response.to.have.status(202);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev notification queue configuration\n• Real transaction ID from dev database with NOTIFICATION_REQUESTED status\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{REFUNDABLE_TRANSACTION_ID}}/resend-email",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{REFUNDABLE_TRANSACTION_ID}}",
+            "resend-email"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Refund Operation - Transaction not found",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_REFUND_QUEUE_NAME = dev refund queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Transaction not found - Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.title).to.be.eq(\"Transaction not found\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev refund queue configuration\n• Non-existent transaction ID for 404 test\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{TRANSACTION_ID_NOT_FOUND}}/refund",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{TRANSACTION_ID_NOT_FOUND}}",
+            "refund"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Refund Operation - Invalid transaction status",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_REFUND_QUEUE_NAME = dev refund queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Refund Operation - Invalid transaction status - Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.title).to.be.eq(\"Transaction cannot be refunded\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev refund queue configuration\n• Transaction ID with invalid status for refund (e.g., ACTIVATED, CANCELED)\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{INVALID_STATUS_TRANSACTION_ID}}/refund",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{INVALID_STATUS_TRANSACTION_ID}}",
+            "refund"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation - Transaction not found",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_NOTIFICATIONS_QUEUE_NAME = dev notification queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Transaction not found - Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.title).to.be.eq(\"Transaction not found\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev notification queue configuration\n• Non-existent transaction ID for 404 test\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{TRANSACTION_ID_NOT_FOUND}}/resend-email",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{TRANSACTION_ID_NOT_FOUND}}",
+            "resend-email"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "eCommerce helpDesk-Commands Event-Based Email Resend Operation - Invalid transaction status",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "console.warn('DEV ENVIRONMENT REQUIRED: This API requires dev Azure Storage queues.');",
+              "console.warn('Environment checklist:');",
+              "console.warn('   • ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING = dev Azure Storage');",
+              "console.warn('   • TRANSACTION_NOTIFICATIONS_QUEUE_NAME = dev notification queue name');",
+              "console.warn('   • AZURE_QUEUE_NATIVE_CLIENT_ENABLED = true');",
+              "console.warn('See README.md for full dev environment setup instructions.');"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"eCommerce helpDesk-Commands Event-Based Email Resend Operation - Invalid transaction status - Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.title).to.be.eq(\"Cannot resend user receipt notification for transaction in state\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "description": "EVENT-BASED API - REQUIRES DEV ENVIRONMENT\n\nThis API sends events to Azure Storage queues and requires:\n• Dev Azure Storage connection string\n• Dev notification queue configuration\n• Transaction ID with invalid status for resend (e.g., ACTIVATED, CANCELED)\n\nSee README.md section 'Testing APIs with Dev Environment' for setup instructions.",
+        "method": "POST",
+        "header": [
+          {
+            "key": "Ocp-Apim-Subscription-Key",
+            "value": "{{API_SUBSCRIPTION_KEY}}",
+            "type": "text"
+          },
+          {
+            "key": "deployment",
+            "value": "{{DEPLOYMENT}}",
+            "type": "text"
+          },
+          {
+            "key": "X-User-Id",
+            "value": "{{X_USER_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "X-Forwarded-For",
+            "value": "{{X_FORWARDED_ID}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{HOSTNAME}}/commands/transactions/{{INVALID_STATUS_TRANSACTION_ID}}/resend-email",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "commands",
+            "transactions",
+            "{{INVALID_STATUS_TRANSACTION_ID}}",
+            "resend-email"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
