@@ -34,9 +34,24 @@ stages:
                 sonar.junit.reportPaths=./build/test-results/test
 
           - task: Gradle@3
+            displayName: 'Extract commons version'
+            inputs:
+              gradleWrapperFile: 'gradlew'
+              tasks: 'printCommonsVersion -q'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.17'
+            name: extractVersion
+
+          - script: |
+              COMMONS_VERSION=$(./gradlew -q printCommonsVersion)
+              chmod +x ./pagopa-ecommerce-commons-maven-install.sh
+              ./pagopa-ecommerce-commons-maven-install.sh $COMMONS_VERSION
+            displayName: 'Install ecommerce commons'
+
+          - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              tasks: 'build -PbuildCommons' # string. Required. Tasks. Default: build.
+              tasks: 'build' # string. Required. Tasks. Default: build.
               publishJUnitResults: true
               testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
               codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
@@ -62,9 +77,14 @@ stages:
             displayName: 'Publish Code Coverage on Azure Devops'
 
   - stage: IntegrationTest
+    dependsOn: []
     jobs:
       - job: make_integration_test
         steps:
+            - script: |
+                docker compose up mongo-ecommerce -d
+              displayName: 'Start MongoDB instance'
+
             - script: cp .env.example .env
               displayName: 'Setup env'
             - script: docker compose up -d

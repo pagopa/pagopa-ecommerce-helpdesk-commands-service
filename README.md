@@ -36,8 +36,12 @@ These are all environment variables needed by the application:
 | NODE_FORWARDER_READ_TIMEOUT       | Node forwarder HTTP api call read timeout in milliseconds                                                                                                                       | integer |         |
 | NODE_FORWARDER_CONNECTION_TIMEOUT | Node forwarder HTTP api call connection timeout in milliseconds                                                                                                                 | integer |         |
 | NODE_FORWARDER_API_KEY            | Node forwarder api key                                                                                                                                                          | string  |         |
-| NPG_GOOGLE_PAY_PSP_KEYS           | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
-| NPG_GOOGLE_PAY_PSP_LIST           | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
+| NPG_GOOGLE_PAY_PSP_KEYS                   | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
+| NPG_GOOGLE_PAY_PSP_LIST                   | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
+| AZURE_QUEUE_NATIVE_CLIENT_ENABLED         | Flag to choose if we have to use the azure SDK storage queue client or the Rest API client                                                                                      | string  |         |
+| ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING | Azure Storage connection string for transient storage queues                                                                                                                    | string  |         |
+| TRANSACTION_REFUND_QUEUE_NAME             | Name of the Azure Storage queue for transaction refund events                                                                                                                   | string  |         |
+| TRANSACTION_NOTIFICATIONS_QUEUE_NAME      | Name of the Azure Storage queue for transaction notification events                                                                                                             | string  |         |
 
 An example configuration of these environment variables is in the `.env.example` file.
 
@@ -68,6 +72,68 @@ After setting up the WSL environment, you can test the application by building i
 If you're experiencing issue with GraalVM not found like errors, be sure to use GraalVM for the project and try to enable automatic toolchain detection.
 Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM env "switching".
 
+### Install eCommerce commons library locally
+
+There is an `installLibs` task in the Gradle build file that takes care of properly fetching and
+building `ecommerce-commons`. It does so by executing a shell script that performs a repository clone, checks out to the version set in the
+build file, and builds the library with Maven using Java 17.
+
+If you want to build the `ecommerce-commons` library, you can run the build command with `-PbuildCommons`:
+
+```Shell
+$ ./gradlew build -PbuildCommons
+```
+
+Alternatively, you can run the installation task directly:
+
+```Shell
+$ ./gradlew installLibs -PbuildCommons
+```
+
+#### Configuration Properties
+
+These two properties in `build.gradle.kts` control the `ecommerce-commons` version and git reference:
+
+```kotlin
+val ecommerceCommonsVersion = "x.y.z" // ecommerce commons wanted pom version
+val ecommerceCommonsGitRef = ecommerceCommonsVersion // the branch/tag to be checked out
+```
+
+`ecommerceCommonsGitRef` has by default the same value as `ecommerceCommonsVersion`, so the version tagged
+with `"x.y.z"` will be checked out and installed locally.
+
+This value was left as a separate property because, during development phases, it can be changed to a feature branch,
+making the local build use a ref branch other than a tag for development purposes.
+
+#### Installation Process
+
+The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which:
+
+1. Clones the ecommerce-commons repository
+2. Checks out the specified version/branch
+3. Detects and uses Java 17 for building (required for commons compatibility)
+4. Runs `mvn install -DskipTests` to install the library to local Maven repository
+5. Cleans up temporary files
+
+#### Utility Tasks
+
+- **Print current commons version**: `./gradlew printCommonsVersion -q`
+- **Install commons only**: `./gradlew installLibs -PbuildCommons`
+
+#### Java Version Requirements
+
+- **eCommerce Commons**: Requires Java 17 for building
+- **Main Application**: Uses Java 21 for GraalVM native compilation
+
+The installation script automatically detects Java 17 from common locations or uses `JAVA_HOME_17` environment variable if set.
+
+#### Docker Build Integration
+
+The Docker build uses a multi-stage approach:
+1. **Commons stage**: Uses OpenJDK 17 to build and install ecommerce-commons
+2. **Main stage**: Uses GraalVM 21 to compile the application natively
+
+Running `docker compose up` automatically handles the commons installation without requiring manual intervention.
 
 #### Compile & Run
 To compile microservice to native executable you can use the following gradle task:
@@ -95,6 +161,13 @@ The following command should be used to start the mock server for local testing
 yarn json-server ./npg-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
 yarn json-server ./psp-server.json --routes ./routes.json --middlewares ./middleware.js --host=0.0.0.0
 ```
+
+#### Test Coverage
+To generate test coverage reports, run:
+```shell
+gradle jacocoTestReport
+```
+The coverage report will be generated at `build/reports/jacoco/test/html/index.html`. Open this file in a browser to view detailed coverage metrics.
 
 ## Docker
 

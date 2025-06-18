@@ -16,11 +16,13 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.16.1"
+version = "0.20.0"
 
 description = "pagopa-helpdeskcommands-service"
 
-sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+sourceSets {
+  main { java { srcDirs("${layout.buildDirectory.get().asFile.path}/generated/src/main/java") } }
+}
 
 springBoot {
   mainClass.set("it.pagopa.helpdeskcommands.HelpDeskCommandsApplicationKt")
@@ -29,10 +31,19 @@ springBoot {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-repositories { mavenCentral() }
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
 
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
+
+object Deps {
+  const val azureSpringCloudDepsVersion = "5.22.0"
+  const val mongoReactiveVersion = "3.5.0"
+  const val ecommerceCommonsVersion = "1.37.2"
+}
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -45,12 +56,15 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   // mongodb
-  // implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation(
+    "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:${Deps.mongoReactiveVersion}"
+  )
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("io.projectreactor:reactor-test")
@@ -99,7 +113,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("helpdeskcommands-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/v1/openapi.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.helpdeskcommands.api")
   modelPackage.set("it.pagopa.generated.helpdeskcommands.model")
   generateApiTests.set(false)
@@ -129,7 +143,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("redirect-api-v1") {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/client/openapi/redirect/redirect-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.ecommerce.redirect.v1.api")
   modelPackage.set("it.pagopa.generated.ecommerce.redirect.v1.dto")
   generateApiTests.set(false)
@@ -159,7 +173,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("red
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg-api") {
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   apiPackage.set("it.pagopa.generated.npg.api")
   modelPackage.set("it.pagopa.generated.npg.model")
   generateApiTests.set(false)
@@ -192,7 +206,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   library.set("webclient")
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -217,9 +231,29 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
+tasks.register<Exec>("installLibs") {
+  description = "Installs the commons library for this project."
+  group = "commons"
+  val buildCommons = providers.gradleProperty("buildCommons")
+  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
+  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", Deps.ecommerceCommonsVersion)
+}
+
 tasks.withType<KotlinCompile> {
-  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
+  dependsOn(
+    "helpdeskcommands-v1",
+    "npg-api",
+    "node-forwarder-api-v1",
+    "redirect-api-v1",
+    "installLibs"
+  )
   // kotlinOptions.jvmTarget = "21"
+}
+
+tasks.register("printCommonsVersion") {
+  description = "Prints the referenced commons library version."
+  group = "commons"
+  doLast { print(Deps.ecommerceCommonsVersion) }
 }
 
 tasks.test {
@@ -253,6 +287,13 @@ graalvmNative {
           languageVersion = JavaLanguageVersion.of(21)
           vendor.set(JvmVendorSpec.GRAAL_VM)
         }
+      /*
+      Add --strict-image-heap to prevent class initialization issues during native image building.
+      This flag ensures problematic classes (like XML processors) are properly initialized at runtime
+      rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
+      */
+      buildArgs.add("--strict-image-heap")
+      buildArgs.add("-H:+AddAllCharsets")
     }
   }
 
