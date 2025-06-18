@@ -66,7 +66,7 @@ class AzureApiQueueClient {
                     .retrieve()
                     .bodyToMono(String::class.java)
             }
-            .doOnSuccess { response -> logger.info("Direct HTTP message sent successfully") }
+            .doOnSuccess { _ -> logger.info("Direct HTTP message sent successfully") }
             .doOnError { error ->
                 logger.error(
                     "Direct HTTP message send failed with Storage Account Key: ${error.message}",
