@@ -84,7 +84,6 @@ stages:
             - script: |
                 docker compose up mongo-ecommerce -d
               displayName: 'Start MongoDB instance'
-
             - script: cp .env.example .env
               displayName: 'Setup env'
             - script: docker compose up -d
