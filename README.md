@@ -401,14 +401,24 @@ curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION
 
 ### Using Postman Collections
 
+#### Local Environment Testing (CI/CD Compatible)
 1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
+3. **Contains**: 6 APIs compatible with local Docker environment
+4. **Used by**: CI/CD integration tests
+
+#### Event-Based API Testing (Manual Only)
+1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.event-based.json`
 2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
 3. **Set variables**:
    - `HOSTNAME`: `http://localhost:8080` (your local running app)
-   - Transaction IDs: Use real transaction IDs from dev database
+   - `REFUNDABLE_TRANSACTION_ID`: Use real transaction ID from dev database
    - Authentication headers as required
 
-4. **Run tests**: Execute the refund and resend email operations
+4. **Contains**: 6 event-based APIs (2 success + 4 error scenarios)
+5. **Requirements**: Dev environment with real Azure Storage queues
+
+**Note**: Event-based APIs require dev environment connectivity and are NOT included in automated CI testing.
 
 ## Contributors 👥
 
