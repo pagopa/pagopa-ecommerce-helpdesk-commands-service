@@ -132,7 +132,7 @@ stages:
           - script: yarn global add newman
             displayName: 'newman installation'
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
-            displayName: 'Run helpdesk-commands api test (ecommerce-local)'
+            displayName: 'Run helpdesk-commands API test (ecommerce-local)'
             continueOnError: false
           - task: PublishTestResults@2
             inputs:
