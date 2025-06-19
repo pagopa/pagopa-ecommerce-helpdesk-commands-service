@@ -454,34 +454,6 @@ class TransactionEventServiceTest {
     }
 
     @Test
-    fun `resendUserReceiptNotification should throw InvalidTransactionStatusException for transaction not in a valid state`() {
-        // Given
-        val mockTransaction = Mockito.mock<BaseTransaction>()
-        whenever(mockTransaction.status).thenReturn(TransactionStatusDto.CLOSED)
-
-        val transactionEventServiceSpy = spy(transactionEventService)
-        doReturn(Mono.just(mockTransaction))
-            .whenever(transactionEventServiceSpy)
-            .getTransaction(transactionIdString)
-
-        // When
-        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
-
-        // Then
-        StepVerifier.create(result)
-            .expectErrorMatches { error ->
-                error is InvalidTransactionStatusException &&
-                    error.message?.contains(
-                        "Cannot resend user receipt notification for transaction in state: CLOSED"
-                    ) == true
-            }
-            .verify()
-
-        verify(userReceiptEventStoreRepository, never()).save(any())
-        verify(transactionsViewRepository, never()).save(any())
-    }
-
-    @Test
     fun `resendUserReceiptNotification should handle error when saving new event`() {
         // Given
         val mockTransaction = Mockito.mock(BaseTransaction::class.java)
@@ -916,6 +888,34 @@ class TransactionEventServiceTest {
         verify(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
         verify(userReceiptEventStoreRepository).save(any())
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should throw InvalidTransactionStatusException for transaction not in a valid state`() {
+        // Given
+        val mockTransaction = Mockito.mock<BaseTransaction>()
+        whenever(mockTransaction.status).thenReturn(TransactionStatusDto.CLOSED)
+
+        val transactionEventServiceSpy = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .whenever(transactionEventServiceSpy)
+            .getTransaction(transactionIdString)
+
+        // When
+        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
+
+        // Then
+        StepVerifier.create(result)
+            .expectErrorMatches { error ->
+                error is InvalidTransactionStatusException &&
+                    error.message?.contains(
+                        "Cannot resend user receipt notification for transaction in state: CLOSED"
+                    ) == true
+            }
+            .verify()
+
+        verify(userReceiptEventStoreRepository, never()).save(any())
+        verify(transactionsViewRepository, never()).save(any())
     }
 
     @Test
