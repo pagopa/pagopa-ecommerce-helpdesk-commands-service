@@ -387,7 +387,7 @@ curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION
 
 **Resend Transaction Email:**
 ```bash
-curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/resend-email \
+curl -X POST http://localhost:8080/commands/transactions/{NOTIFICATION_RESEND_TRANSACTION_ID}/resend-email \
 --header 'Ocp-Apim-Subscription-Key: default-key' \
 --header 'deployment: green' \
 --header 'X-User-Id: user-id' \
@@ -407,18 +407,20 @@ curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION
 3. **Contains**: 6 APIs compatible with local Docker environment
 4. **Used by**: CI/CD integration tests
 
-#### Event-Based API Testing (Manual Only)
+#### Event-Based API Testing
 1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.event-based.json`
 2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
 3. **Set variables**:
    - `HOSTNAME`: `http://localhost:8080` (your local running app)
-   - `REFUNDABLE_TRANSACTION_ID`: Use real transaction ID from dev database
+   - `TRANSACTION_ID`: Use `REFUNDABLE_TRANSACTION_ID`/`NOTIFICATION_RESEND_TRANSACTION_ID` from `api-tests/env/helpdeskcommands_dev.env.json` or real transaction ID from dev database
    - Authentication headers as required
 
-4. **Contains**: 6 event-based APIs (2 success + 4 error scenarios)
+4. **Contains**: 4 event-based APIs (2 success + 2 error/not found scenarios)
 5. **Requirements**: Dev environment with real Azure Storage queues
 
 **Note**: Event-based APIs require dev environment connectivity and are NOT included in automated CI testing.
+They are included in automated testing after deploying to DEV and UAT environments (`api-tests/v1/helpdeskcommands.api.tests.dev.json`
+and `api-tests/v1/helpdeskcommands.api.tests.uat.json` are used in those cases).
 
 ## Contributors 👥
 
