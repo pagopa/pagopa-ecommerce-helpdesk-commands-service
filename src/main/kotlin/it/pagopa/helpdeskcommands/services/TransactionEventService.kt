@@ -218,11 +218,16 @@ class TransactionEventService(
         )
 
         // Define the set of valid states for resending notifications
-        // Right now we are just handling the "notification requested" state because of limitations
-        // in the consumer logic, and the expired event.
+        // Right now we are just handling states that have the required information
+        // to build the event.
         // A refinement could review the logic.
         val admissibleStates =
-            listOf(TransactionStatusDto.NOTIFICATION_REQUESTED, TransactionStatusDto.EXPIRED)
+            listOf(
+                TransactionStatusDto.NOTIFICATION_REQUESTED,
+                TransactionStatusDto.EXPIRED,
+                TransactionStatusDto.NOTIFICATION_ERROR,
+                TransactionStatusDto.NOTIFIED_OK
+            )
 
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction.status in admissibleStates) {
