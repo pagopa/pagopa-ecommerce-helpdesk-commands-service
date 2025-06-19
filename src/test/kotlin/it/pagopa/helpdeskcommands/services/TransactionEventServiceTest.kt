@@ -28,6 +28,7 @@ import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.helpdeskcommands.client.NodeForwarderClient
 import it.pagopa.helpdeskcommands.client.NpgClient
 import it.pagopa.helpdeskcommands.config.WebClientConfig
+import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
@@ -887,5 +888,58 @@ class TransactionEventServiceTest {
         verify(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
         verify(userReceiptEventStoreRepository).save(any())
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should throw InvalidTransactionStatusException for transaction not in a valid state`() {
+        // Given
+        val mockTransaction = Mockito.mock<BaseTransaction>()
+        whenever(mockTransaction.status).thenReturn(TransactionStatusDto.CLOSED)
+
+        val transactionEventServiceSpy = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .whenever(transactionEventServiceSpy)
+            .getTransaction(transactionIdString)
+
+        // When
+        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
+
+        // Then
+        StepVerifier.create(result)
+            .expectErrorMatches { error ->
+                error is InvalidTransactionStatusException &&
+                    error.message?.contains(
+                        "Cannot resend user receipt notification for transaction in state: CLOSED"
+                    ) == true
+            }
+            .verify()
+
+        verify(userReceiptEventStoreRepository, never()).save(any())
+        verify(transactionsViewRepository, never()).save(any())
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should return error when transaction in wrong state`() {
+        // Given
+        val mockTransaction = Mockito.mock(BaseTransaction::class.java)
+
+        doReturn(TransactionStatusDto.CLOSED).`when`(mockTransaction).status // Wrong state
+
+        val transactionEventServiceSpy = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionEventServiceSpy)
+            .getTransaction(transactionIdString)
+
+        // When
+        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
+
+        // Then
+        StepVerifier.create(result)
+            .expectError(InvalidTransactionStatusException::class.java)
+            .verify()
+
+        verify(userReceiptEventStoreRepository, never())
+            .findByTransactionIdOrderByCreationDateAsc(any())
+        verify(userReceiptEventStoreRepository, never()).save(any())
     }
 }
