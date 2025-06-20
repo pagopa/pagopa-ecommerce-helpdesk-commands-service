@@ -40,7 +40,6 @@ val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
 
 object Deps {
-  const val azureSpringCloudDepsVersion = "5.22.0"
   const val mongoReactiveVersion = "3.5.0"
   const val ecommerceCommonsVersion = "1.37.2"
 }
