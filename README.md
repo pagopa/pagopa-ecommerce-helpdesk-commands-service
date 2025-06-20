@@ -232,17 +232,22 @@ Run integration tests using the local Docker Compose setup:
    ```
 
 ### eCommerce-Local Integration Testing
-The service is also integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
+The service is integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
 
-**Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that runs tests in the full ecommerce environment using Traefik routing and centralized infrastructure.
-
-**Service URLs in ecommerce-local**:
-- **Helpdesk Commands**: `http://pagopa-ecommerce-traefik/helpdesk-commands-service`
-- **Health Check**: `http://localhost:8087/actuator/health/liveness`
+**Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that:
+- Dynamically sets the service branch using `ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA` 
+- Extracts the ecommerce-commons version dynamically using `./gradlew -q printCommonsVersion`
+- Runs tests in the full ecommerce environment
 
 **Polling Tests**: Integration tests include transaction state polling to verify:
-- Refund operations: `CLOSED` → `REFUND_REQUESTED`
-- Notification operations: `NOTIFICATION_ERROR` → `TRANSACTION_USER_RECEIPT_REQUESTED_EVENT`
+- Refund operations: Transaction state transitions through Azure Storage Queues and Event Dispatcher
+- Email resend operations: Notification request processing via queue-based messaging
+
+**Dependencies**: The service depends on:
+- `storage` (Azurite) - for Azure Storage Queue emulation
+- `mongo` - for transaction state persistence  
+- `pagopa-npg-mock`, `pagopa-psp-mock` - for payment gateway mocking
+- `pagopa-ecommerce-event-dispatcher-service` - for queue message processing
 
 #### Tips
 The main issue with native image is related to Java Reflection.

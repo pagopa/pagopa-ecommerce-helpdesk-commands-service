@@ -124,7 +124,7 @@ stages:
               docker compose up storage -d
               sleep 10
               docker compose run --rm azurite-init
-              docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service mongo redis pagopa-pdv-mock pagopa-npg-mock pagopa-node-mock pagopa-psp-mock traefik pagopa-notifications-service -d
+              docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service mongo redis pagopa-pdv-mock pagopa-npg-mock pagopa-node-mock pagopa-psp-mock pagopa-notifications-service -d
             displayName: 'Run app with docker-compose'
           - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
