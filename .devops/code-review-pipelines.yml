@@ -6,6 +6,14 @@ trigger: none
 pool:
   vmImage: ubuntu-latest
 
+resources:
+  repositories:
+    - repository: pagopaEcommerceLocal
+      type: github
+      name: pagopa/pagopa-ecommerce-local
+      ref: CHK-4172-add-commands-integration-tests
+      endpoint: 'io-azure-devops-github-ro'
+
 stages:
   - stage: BuildEndUnitTest
     jobs:
@@ -101,3 +109,33 @@ stages:
                 testResultsFormat: 'JUnit'
                 testResultsFiles: '**/*-TEST.xml'
                 searchFolder: '$(System.DefaultWorkingDirectory)'
+
+  - stage: IntegrationTestEcommerceLocal
+    dependsOn: []
+    jobs:
+      - job: make_integration_test_ecommerce_local
+        steps:
+          - checkout: pagopaEcommerceLocal
+          - script: |
+              echo "##[debug] Change placeholder for helpdesk-commands-service set branch: $(BRANCH_NAME)"
+              sed -i "s/^ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=.*$/ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=$(BRANCH_NAME)/" .env
+            displayName: 'Change helpdesk-commands branch name ecommerce-local .env'
+          - script: |
+              docker compose up storage -d
+              sleep 10
+              docker compose run --rm azurite-init
+              docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service mongo redis pagopa-npg-mock pagopa-notifications-service -d
+            displayName: 'Run app with docker-compose'
+          - script: |
+              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
+            displayName: 'Health check helpdesk-commands-service'
+          - script: yarn global add newman
+            displayName: 'newman installation'
+          - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
+            displayName: 'Run helpdesk-commands API tests (ecommerce-local)'
+            continueOnError: false
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-TEST.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)'

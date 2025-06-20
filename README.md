@@ -214,6 +214,40 @@ docker-compose up
 
 The docker-compose up command will build the image and start the containers.
 
+## Integration Testing
+
+This service supports two integration testing approaches:
+
+### Local Integration Testing (Docker Compose)
+Run integration tests using the local Docker Compose setup:
+
+1. Start the local environment:
+   ```shell
+   docker-compose up
+   ```
+
+2. Run the Postman collection:
+   ```shell
+   newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json
+   ```
+
+### eCommerce-Local Integration Testing
+The service is integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
+
+**Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that:
+- Dynamically sets the service branch using `ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA` 
+- Extracts the ecommerce-commons version dynamically using `./gradlew -q printCommonsVersion`
+- Runs tests in the full ecommerce environment
+
+**Polling Tests**: Integration tests include transaction state polling to verify:
+- Refund operations: Transaction state transitions through Azure Storage Queues and Event Dispatcher
+- Email resend operations: Notification request processing via queue-based messaging
+
+**Dependencies**: The service depends on:
+- `storage` (Azurite) - for Azure Storage Queue emulation
+- `mongo` - for transaction state persistence  
+- `pagopa-npg-mock`, `pagopa-psp-mock` - for payment gateway mocking
+- `pagopa-ecommerce-event-dispatcher-service` - for queue message processing
 
 #### Tips
 The main issue with native image is related to Java Reflection.

@@ -226,7 +226,8 @@ class TransactionEventService(
                 TransactionStatusDto.NOTIFICATION_REQUESTED,
                 TransactionStatusDto.EXPIRED,
                 TransactionStatusDto.NOTIFICATION_ERROR,
-                TransactionStatusDto.NOTIFIED_OK
+                TransactionStatusDto.NOTIFIED_OK,
+                TransactionStatusDto.NOTIFIED_KO,
             )
 
         return getTransaction(transactionId).flatMap { transaction ->
