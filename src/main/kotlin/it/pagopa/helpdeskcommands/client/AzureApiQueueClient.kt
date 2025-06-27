@@ -108,7 +108,7 @@ class AzureApiQueueClient {
 
                 val stringToSign =
                     "$method\n" + // VERB
-                    "\n" + // Content-Encoding (empty)
+                        "\n" + // Content-Encoding (empty)
                         "\n" + // Content-Language (empty)
                         "$contentLength\n" + // Content-Length
                         "\n" + // Content-MD5 (empty)
