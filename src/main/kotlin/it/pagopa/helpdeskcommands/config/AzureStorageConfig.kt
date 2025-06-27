@@ -281,8 +281,11 @@ class AzureStorageConfig(
         val mockResult = SendMessageResult()
         return object : Response<SendMessageResult> {
             override fun getStatusCode(): Int = 201
+
             override fun getHeaders(): HttpHeaders = HttpHeaders()
+
             override fun getRequest(): HttpRequest? = null
+
             override fun getValue(): SendMessageResult = mockResult
         }
     }

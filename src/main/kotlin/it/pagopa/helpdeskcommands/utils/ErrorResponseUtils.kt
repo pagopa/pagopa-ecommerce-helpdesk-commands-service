@@ -31,7 +31,6 @@ object ErrorResponseUtils {
                     .readValue(err.responseBodyAsByteArray, ClientErrorDto::class.java)
                     .errors
             else -> emptyList()
-        }?.mapNotNull { "[${it.code}] ${it.description}" }
-            ?: emptyList()
+        }?.mapNotNull { "[${it.code}] ${it.description}" } ?: emptyList()
     }
 }
