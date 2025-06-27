@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "2.1.20"
-  kotlin("plugin.spring") version "2.1.20"
+  kotlin("jvm") version "2.2.0"
+  kotlin("plugin.spring") version "2.2.0"
   id("java")
   id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.6"
@@ -91,12 +91,12 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     toggleOffOn()
     targetExclude("build/**/*")
-    ktfmt().kotlinlangStyle()
+    ktfmt("0.55").kotlinlangStyle()
   }
   kotlinGradle {
     toggleOffOn()
     targetExclude("build/**/*.kts")
-    ktfmt().googleStyle()
+    ktfmt("0.55").googleStyle()
   }
   java {
     target("**/*.java")
