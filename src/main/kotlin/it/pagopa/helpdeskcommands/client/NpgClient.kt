@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono
 @Component
 class NpgClient(
     @Autowired private val npgWebClient: PaymentServicesApi,
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: ObjectMapper
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -44,7 +44,7 @@ class NpgClient(
         operationId: String,
         idempotenceKey: UUID,
         grandTotal: BigDecimal,
-        description: String?,
+        description: String?
     ): Mono<RefundResponseDto> {
         return npgWebClient
             .pspApiV1OperationsOperationIdRefundsPost(
@@ -55,14 +55,14 @@ class NpgClient(
                 RefundRequestDto()
                     .amount(grandTotal.toString())
                     .currency(PaymentConstants.EUR_CURRENCY)
-                    .description(description),
+                    .description(description)
             )
             .doOnError(WebClientResponseException::class.java) {
                 logger.error(
                     "Error communicating with NPG-refund for correlationId [{}] - response: [{}]",
                     correlationId,
                     it.responseBodyAsString,
-                    it,
+                    it
                 )
             }
             .onErrorMap { error -> exceptionToNpgResponseException(error) }
@@ -80,51 +80,51 @@ class NpgClient(
                     description =
                         "Invalid error response from NPG with status code ${err.statusCode}",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors = emptyList(),
+                    errors = emptyList()
                 )
             }
         }
         return NpgClientException(
             "Unexpected error while invoke method for refund: ${err.message}",
             HttpStatus.INTERNAL_SERVER_ERROR,
-            errors = emptyList(),
+            errors = emptyList()
         )
     }
 
     private fun mapNpgException(
         statusCode: HttpStatusCode,
-        errors: List<String>,
+        errors: List<String>
     ): NpgClientException =
         when (statusCode) {
             HttpStatus.BAD_REQUEST ->
                 NpgClientException(
                     description = "Bad request",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-                    errors,
+                    errors
                 )
             HttpStatus.UNAUTHORIZED ->
                 NpgClientException(
                     description = "Misconfigured NPG api key",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-                    errors,
+                    errors
                 )
             HttpStatus.INTERNAL_SERVER_ERROR ->
                 NpgClientException(
                     description = "NPG internal server error",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors,
+                    errors
                 )
             HttpStatus.NOT_FOUND ->
                 NpgClientException(
                     description = "NPG transaction not found",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors,
+                    errors
                 )
             else ->
                 NpgClientException(
                     description = "NPG server error: $statusCode",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors,
+                    errors
                 )
         }
 }

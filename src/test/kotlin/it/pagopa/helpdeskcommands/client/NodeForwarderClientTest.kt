@@ -44,7 +44,7 @@ class NodeForwarderClientTest {
         System.out.printf(
             "Mock web server listening on %s:%s%n",
             mockWebServer!!.hostName,
-            mockWebServer!!.port,
+            mockWebServer!!.port
         )
     }
 
@@ -75,7 +75,7 @@ class NodeForwarderClientTest {
                 RefundResponseDto()
                     .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
                     .outcome(RefundOutcomeDto.OK),
-                Optional.of(requestId),
+                Optional.of(requestId)
             )
         BDDMockito.given(
                 proxyApi.forwardWithHttpInfo(
@@ -83,7 +83,7 @@ class NodeForwarderClientTest {
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
-                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any()
                 )
             )
             .willReturn(
@@ -101,7 +101,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectNext(expectedResponse)
@@ -112,7 +112,7 @@ class NodeForwarderClientTest {
                 expectedPortHeader,
                 expectedPathRequest,
                 requestId,
-                expectedPayload,
+                expectedPayload
             )
     }
 
@@ -136,7 +136,7 @@ class NodeForwarderClientTest {
                 RefundResponseDto()
                     .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
                     .outcome(RefundOutcomeDto.OK),
-                Optional.of(requestId),
+                Optional.of(requestId)
             )
         BDDMockito.given(
                 proxyApi.forwardWithHttpInfo(
@@ -144,7 +144,7 @@ class NodeForwarderClientTest {
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
-                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any()
                 )
             )
             .willReturn(
@@ -162,7 +162,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectNext(expectedResponse)
@@ -173,7 +173,7 @@ class NodeForwarderClientTest {
                 expectedPortHeader,
                 expectedPathRequest,
                 requestId,
-                expectedPayload,
+                expectedPayload
             )
     }
 
@@ -197,7 +197,7 @@ class NodeForwarderClientTest {
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
                     ArgumentMatchers.any(),
-                    ArgumentMatchers.any(),
+                    ArgumentMatchers.any()
                 )
             )
             .willReturn(
@@ -211,7 +211,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectErrorMatches { ex: Throwable ->
@@ -234,7 +234,7 @@ class NodeForwarderClientTest {
                 expectedPortHeader,
                 expectedPathRequest,
                 requestId,
-                "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"idPSPTransaction\":\"5f521592f3d84ffa8d8f68651da91144\",\"action\":\"refund\"}",
+                "{\"idTransaction\":\"ecf06892c9e04ae39626dfdfda631b94\",\"idPSPTransaction\":\"5f521592f3d84ffa8d8f68651da91144\",\"action\":\"refund\"}"
             )
     }
 
@@ -249,7 +249,7 @@ class NodeForwarderClientTest {
                 apiKey,
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
-                10000,
+                10000
             )
         val testRequest =
             RefundRequestDto()
@@ -270,7 +270,7 @@ class NodeForwarderClientTest {
                 RefundResponseDto()
                     .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
                     .outcome(RefundOutcomeDto.OK),
-                Optional.of(requestId),
+                Optional.of(requestId)
             )
         // test
         StepVerifier.create(
@@ -297,7 +297,7 @@ class NodeForwarderClientTest {
                 "apiKey",
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
-                10000,
+                10000
             )
         val testRequest =
             RefundRequestDto()
@@ -317,7 +317,7 @@ class NodeForwarderClientTest {
                 RefundResponseDto()
                     .idTransaction("ecf06892c9e04ae39626dfdfda631b94")
                     .outcome(RefundOutcomeDto.OK),
-                Optional.empty(),
+                Optional.empty()
             )
         // test
         StepVerifier.create(
@@ -336,7 +336,7 @@ class NodeForwarderClientTest {
                 "apiKey",
                 """http://${mockWebServer!!.hostName}:${mockWebServer!!.port}""",
                 10000,
-                10000,
+                10000
             )
         val testRequest =
             RefundRequestDto()
@@ -382,7 +382,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectErrorMatches { ex ->
@@ -414,7 +414,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectErrorMatches { ex ->
@@ -431,7 +431,7 @@ class NodeForwarderClientTest {
     fun `should map NodeForwarder exceptions correctly`(
         statusCode: HttpStatus,
         expectedDescription: String,
-        expectedHttpStatusCode: HttpStatus,
+        expectedHttpStatusCode: HttpStatus
     ) {
         val requestId = UUID.randomUUID().toString()
         val testRequest =
@@ -449,7 +449,7 @@ class NodeForwarderClientTest {
                 statusCode.reasonPhrase,
                 HttpHeaders.EMPTY,
                 responseBody.toByteArray(),
-                null,
+                null
             )
         Mockito.`when`(proxyApi.forwardWithHttpInfo(any(), any(), any(), any(), any()))
             .thenReturn(Mono.error(exception))
@@ -460,7 +460,7 @@ class NodeForwarderClientTest {
                     testRequest,
                     proxyTo,
                     requestId,
-                    RefundResponseDto::class.java,
+                    RefundResponseDto::class.java
                 )
             )
             .expectErrorMatches { ex ->
@@ -480,28 +480,28 @@ class NodeForwarderClientTest {
                 Arguments.of(
                     HttpStatus.BAD_REQUEST,
                     "Bad request to Node Forwarder",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.INTERNAL_SERVER_ERROR
                 ),
                 Arguments.of(
                     HttpStatus.UNAUTHORIZED,
                     "Misconfigured Node Forwarder API key",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.INTERNAL_SERVER_ERROR
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Node Forwarder internal server error",
-                    HttpStatus.BAD_GATEWAY,
+                    HttpStatus.BAD_GATEWAY
                 ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
                     "Node Forwarder resource not found",
-                    HttpStatus.BAD_GATEWAY,
+                    HttpStatus.BAD_GATEWAY
                 ),
                 Arguments.of(
                     HttpStatus.FORBIDDEN,
                     "Node Forwarder server error: 403 FORBIDDEN",
-                    HttpStatus.BAD_GATEWAY,
-                ),
+                    HttpStatus.BAD_GATEWAY
+                )
             )
         }
     }

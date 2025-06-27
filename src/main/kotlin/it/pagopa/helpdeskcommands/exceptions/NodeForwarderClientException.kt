@@ -12,6 +12,6 @@ class NodeForwarderClientException(
         RestApiException(
             httpStatus = httpStatusCode,
             description = if (errors.isEmpty()) "Not available" else errors.joinToString(". "),
-            title = "Forwarder Invocation exception - $description",
+            title = "Forwarder Invocation exception - $description"
         )
 }

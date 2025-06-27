@@ -41,7 +41,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -49,7 +49,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -58,7 +58,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -67,7 +67,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -79,7 +79,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -89,7 +89,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -101,7 +101,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -111,7 +111,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -121,7 +121,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -131,7 +131,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             // all TransactionEvent subclasses (21 total) required for TransactionEventTypeResolver
@@ -142,7 +142,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -154,7 +154,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -166,7 +166,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -178,7 +178,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -188,7 +188,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -198,7 +198,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -208,7 +208,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -219,7 +219,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -229,7 +229,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -239,7 +239,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -249,7 +249,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -259,7 +259,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -269,7 +269,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -279,7 +279,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -290,7 +290,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -301,7 +301,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -313,7 +313,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -323,7 +323,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -331,7 +331,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -341,7 +341,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -350,7 +350,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
@@ -360,7 +360,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
         }
     }
@@ -376,7 +376,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             registerType(
@@ -384,13 +384,13 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
 
             registerType(
                 org.springframework.core.type.StandardAnnotationMetadata::class.java,
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS
             )
 
             registerType(
@@ -398,7 +398,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,
-                MemberCategory.PUBLIC_FIELDS,
+                MemberCategory.PUBLIC_FIELDS
             )
         }
 
@@ -424,7 +424,7 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
                 MemberCategory.DECLARED_FIELDS,
                 MemberCategory.PUBLIC_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
-                MemberCategory.INVOKE_PUBLIC_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS
             )
 
             // register specific field access for static maps

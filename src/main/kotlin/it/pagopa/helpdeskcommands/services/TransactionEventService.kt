@@ -41,7 +41,7 @@ class TransactionEventService(
     @Autowired private val transactionsViewRepository: TransactionsViewRepository,
     @Autowired
     private val userReceiptEventStoreRepository:
-        TransactionsEventStoreRepository<TransactionUserReceiptData>,
+        TransactionsEventStoreRepository<TransactionUserReceiptData>
 ) : TransactionEventServiceInterface {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -54,7 +54,7 @@ class TransactionEventService(
             .sendMessageWithResponse(
                 queueEvent,
                 Duration.ZERO,
-                Duration.ofSeconds(transientQueueTTLSeconds),
+                Duration.ofSeconds(transientQueueTTLSeconds)
             )
             .doOnSuccess { logger.info("Refund message event sent successfully") }
             .doOnError { e ->
@@ -73,7 +73,7 @@ class TransactionEventService(
             .sendMessageWithResponse(
                 queueEvent,
                 Duration.ZERO,
-                Duration.ofSeconds(transientQueueTTLSeconds),
+                Duration.ofSeconds(transientQueueTTLSeconds)
             )
             .doOnSuccess { logger.info("Notification message event sent successfully") }
             .doOnError { e ->
@@ -111,7 +111,7 @@ class TransactionEventService(
                 // Transaction already has a refund requested
                 logger.warn(
                     "Transaction [{}] already has a refund requested",
-                    transaction.transactionId.value(),
+                    transaction.transactionId.value()
                 )
             }
             createAndPersistRefundRequestEvent(transaction)
@@ -135,7 +135,7 @@ class TransactionEventService(
                 transaction,
                 refundRequestedEvent,
                 transactionsRefundedEventStoreRepository,
-                transactionsViewRepository,
+                transactionsViewRepository
             )
             .map { refundRequestedEvent }
     }
@@ -146,7 +146,7 @@ class TransactionEventService(
 
     fun <T> reduceEvents(
         events: Flux<TransactionEvent<T>>,
-        emptyTransaction: EmptyTransaction,
+        emptyTransaction: EmptyTransaction
     ): Mono<BaseTransaction> =
         events
             .reduce(emptyTransaction, it.pagopa.ecommerce.commons.domain.v2.Transaction::applyEvent)
@@ -165,15 +165,15 @@ class TransactionEventService(
      */
     private fun createRefundRequestedEvent(
         transaction: BaseTransaction,
-        authorizationData: TransactionGatewayAuthorizationData?,
+        authorizationData: TransactionGatewayAuthorizationData?
     ): TransactionRefundRequestedEvent {
         return TransactionRefundRequestedEvent(
             transaction.transactionId.value(),
             TransactionRefundRequestedData(
                 authorizationData,
                 transaction.status,
-                TransactionRefundRequestedData.RefundTrigger.MANUAL,
-            ),
+                TransactionRefundRequestedData.RefundTrigger.MANUAL
+            )
         )
     }
 
@@ -182,7 +182,7 @@ class TransactionEventService(
         refundRequestedEvent: TransactionRefundRequestedEvent,
         transactionsEventStoreRepository:
             TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-        transactionsViewRepository: TransactionsViewRepository,
+        transactionsViewRepository: TransactionsViewRepository
     ): Mono<BaseTransaction?> {
         return transactionsEventStoreRepository
             .save(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
@@ -214,7 +214,7 @@ class TransactionEventService(
     ): Mono<TransactionUserReceiptRequestedEvent> {
         logger.info(
             "Attempting to resend user receipt notification for transaction ID: [{}]",
-            transactionId,
+            transactionId
         )
 
         // Define the set of valid states for resending notifications
@@ -249,7 +249,7 @@ class TransactionEventService(
                         if (latestRequestedEvent != null) {
                             logger.info(
                                 "Found existing user receipt event for transaction ID: [{}], creating new event",
-                                transactionId,
+                                transactionId
                             )
 
                             val newEventData =
@@ -257,7 +257,7 @@ class TransactionEventService(
                                     latestRequestedEvent.data.responseOutcome,
                                     latestRequestedEvent.data.language,
                                     latestRequestedEvent.data.paymentDate,
-                                    TransactionUserReceiptData.NotificationTrigger.MANUAL,
+                                    TransactionUserReceiptData.NotificationTrigger.MANUAL
                                 )
 
                             // Create a NEW event with the same data but a new ID and current
@@ -281,7 +281,7 @@ class TransactionEventService(
                                     logger.info(
                                         "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
                                         newEvent.id,
-                                        transactionId,
+                                        transactionId
                                     )
                                 }
                                 .doOnError { e ->
@@ -289,14 +289,14 @@ class TransactionEventService(
                                         "Error saving new user receipt event for transaction ID: [{}]: {}",
                                         transactionId,
                                         e.message,
-                                        e,
+                                        e
                                     )
                                 }
                                 .thenReturn(newEvent)
                         } else {
                             logger.error(
                                 "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}]",
-                                transactionId,
+                                transactionId
                             )
                             Mono.error(
                                 IllegalStateException(
@@ -310,7 +310,7 @@ class TransactionEventService(
                 logger.error(
                     "Transaction [{}] is not in a valid state for resending notification, current state: {}",
                     transactionId,
-                    transaction.status,
+                    transaction.status
                 )
                 Mono.error(
                     InvalidTransactionStatusException(

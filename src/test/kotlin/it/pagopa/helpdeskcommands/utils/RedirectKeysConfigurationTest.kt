@@ -21,14 +21,14 @@ class RedirectionKeysConfigTest {
         pspId: String?,
         paymentMethodId: String?,
         expectedResult:
-            Either<RedirectConfigurationException, URI>, // not just URI, to cover both cases
+            Either<RedirectConfigurationException, URI> // not just URI, to cover both cases
     ) {
         val redirectUrlMapping =
             mapOf(
                 "CHECKOUT-psp1-RBPR" to "http://localhost:8096/redirections1/CHECKOUT",
                 "IO-psp1-RBPR" to "http://localhost:8096/redirections1/IO",
                 "psp2-RBPB" to "http://localhost:8096/redirections2",
-                "RBPS" to "http://localhost:8096/redirections3",
+                "RBPS" to "http://localhost:8096/redirections3"
             )
         val codeTypeList = setOf("CHECKOUT-psp1-RBPR", "IO-psp1-RBPR", "psp2-RBPB", "RBPS")
 
@@ -55,7 +55,7 @@ class RedirectionKeysConfigTest {
                 "CHECKOUT-psp1-RBPR" to "http://localhost:8096/redirections1/CHECKOUT",
                 "IO-psp1-RBPR" to "http://localhost:8096/redirections1/IO",
                 "psp2-RBPB" to "http://localhost:8096/redirections2",
-                "RBPS" to "http://localhost:8096/redirections3",
+                "RBPS" to "http://localhost:8096/redirections3"
             )
         val codeTypeList = setOf("CHECKOUT-psp1-RBPR", "IO-psp1-RBPR", "psp2-RBPB", "RBPS")
         val touchpoint = "CHECKOUT"
@@ -70,7 +70,7 @@ class RedirectionKeysConfigTest {
             "Error parsing Redirect PSP BACKEND_URLS configuration, cause: " +
                 "Missing key for redirect return url with following search parameters: " +
                 "touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentMethodId]",
-            (result as Either.Left<Throwable>).value.message,
+            (result as Either.Left<Throwable>).value.message
         )
     }
 
@@ -89,7 +89,7 @@ class RedirectionKeysConfigTest {
             "Error parsing Redirect PSP BACKEND_URLS configuration, cause: " +
                 "Misconfigured redirect.pspUrlMapping, " +
                 "the following redirect payment type code b.e. URIs are not configured: [key1]",
-            e.message,
+            e.message
         )
     }
 
@@ -101,26 +101,26 @@ class RedirectionKeysConfigTest {
                     "CHECKOUT",
                     "psp1",
                     "RBPR",
-                    Either.Right(URI("http://localhost:8096/redirections1/CHECKOUT")),
+                    Either.Right(URI("http://localhost:8096/redirections1/CHECKOUT"))
                 ),
                 Arguments.of(
                     "IO",
                     "psp1",
                     "RBPR",
-                    Either.Right(URI("http://localhost:8096/redirections1/IO")),
+                    Either.Right(URI("http://localhost:8096/redirections1/IO"))
                 ),
                 Arguments.of(
                     "ANYPOINT",
                     "psp2",
                     "RBPB",
-                    Either.Right(URI("http://localhost:8096/redirections2")),
+                    Either.Right(URI("http://localhost:8096/redirections2"))
                 ),
                 Arguments.of(
                     "ANYPOINT",
                     "ANYPSP",
                     "RBPS",
-                    Either.Right(URI("http://localhost:8096/redirections3")),
-                ),
+                    Either.Right(URI("http://localhost:8096/redirections3"))
+                )
             )
     }
 }

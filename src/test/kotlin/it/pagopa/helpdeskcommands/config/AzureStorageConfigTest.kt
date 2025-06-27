@@ -136,7 +136,7 @@ class AzureStorageConfigTest {
         val result =
             jsonSerializer.deserialize(
                 inputStream,
-                object : TypeReference<Map<String, String>>() {},
+                object : TypeReference<Map<String, String>>() {}
             )
 
         assertNotNull(result)
@@ -152,7 +152,7 @@ class AzureStorageConfigTest {
         StepVerifier.create(
                 jsonSerializer.deserializeAsync(
                     inputStream,
-                    object : TypeReference<Map<String, String>>() {},
+                    object : TypeReference<Map<String, String>>() {}
                 )
             )
             .assertNext { result ->
@@ -170,7 +170,7 @@ class AzureStorageConfigTest {
             azureStorageConfigNativeEnabled.transactionRefundQueueAsyncClient(
                 queueConfig,
                 jsonSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         assertNotNull(client)
@@ -184,7 +184,7 @@ class AzureStorageConfigTest {
             azureStorageConfigNativeEnabled.transactionNotificationQueueAsyncClient(
                 queueConfig,
                 jsonSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         assertNotNull(client)
@@ -198,7 +198,7 @@ class AzureStorageConfigTest {
             azureStorageConfigNativeDisabled.transactionRefundQueueAsyncClient(
                 queueConfig,
                 jsonSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         assertNotNull(client)
@@ -218,7 +218,7 @@ class AzureStorageConfigTest {
             azureStorageConfigNativeEnabled.transactionRefundQueueAsyncClient(
                 queueConfig,
                 jsonSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         val event = createTestQueueEvent()
@@ -246,7 +246,7 @@ class AzureStorageConfigTest {
             azureStorageConfigNativeEnabled.transactionRefundQueueAsyncClient(
                 queueConfig,
                 jsonSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         val event = createTestQueueEvent()
@@ -270,7 +270,7 @@ class AzureStorageConfigTest {
             config.transactionRefundQueueAsyncClient(
                 queueConfig,
                 mockBadSerializer,
-                azureApiQueueClient,
+                azureApiQueueClient
             )
 
         val event = createTestQueueEvent()
@@ -288,7 +288,7 @@ class AzureStorageConfigTest {
             TransactionRefundRequestedData(
                 null,
                 TransactionStatusDto.CLOSED,
-                TransactionRefundRequestedData.RefundTrigger.MANUAL,
+                TransactionRefundRequestedData.RefundTrigger.MANUAL
             )
         val refundRequestedEvent =
             TransactionRefundRequestedEvent(transactionId, refundRequestedData)

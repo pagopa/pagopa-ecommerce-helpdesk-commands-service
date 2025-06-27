@@ -25,7 +25,7 @@ class TransactionIdTest {
         assertEquals(
             "Invalid transaction id: [${INVALID_TRANSACTION_ID_STRING}]. " +
                 "Transaction id must be 32 chars length",
-            exception.message,
+            exception.message
         )
     }
 }

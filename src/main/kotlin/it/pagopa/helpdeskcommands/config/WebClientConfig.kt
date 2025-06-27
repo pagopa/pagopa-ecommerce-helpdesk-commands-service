@@ -30,7 +30,7 @@ class WebClientConfig {
         ServerErrorDto::class,
         ClientErrorDto::class,
         RedirectRefundRequestDto::class,
-        RedirectRefundResponseDto::class,
+        RedirectRefundResponseDto::class
     )
     fun npgWebClient(
         @Value("\${npg.uri}") baseUrl: String,
@@ -39,7 +39,7 @@ class WebClientConfig {
         @Value("\${npg.tcp.keepAlive.enabled}") tcpKeepAliveEnabled: Boolean,
         @Value("\${npg.tcp.keepAlive.idle}") tcpKeepAliveIdle: Int,
         @Value("\${npg.tcp.keepAlive.intvl}") tcpKeepAliveIntvl: Int,
-        @Value("\${npg.tcp.keepAlive.cnt}") tcpKeepAliveCnt: Int,
+        @Value("\${npg.tcp.keepAlive.cnt}") tcpKeepAliveCnt: Int
     ): PaymentServicesApi {
         val httpClient =
             HttpClient.create()
@@ -68,7 +68,7 @@ class WebClientConfig {
         @Value("\${node.forwarder.apiKey}") apiKey: String,
         @Value("\${node.forwarder.url}") backendUrl: String,
         @Value("\${node.forwarder.readTimeout}") readTimeout: Int,
-        @Value("\${node.forwarder.connectionTimeout}") connectionTimeout: Int,
+        @Value("\${node.forwarder.connectionTimeout}") connectionTimeout: Int
     ): NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto> {
         return NodeForwarderClient(apiKey, backendUrl, readTimeout, connectionTimeout)
     }

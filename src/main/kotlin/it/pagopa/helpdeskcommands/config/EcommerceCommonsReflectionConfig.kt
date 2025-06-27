@@ -27,7 +27,7 @@ class EcommerceDocumentsRuntimeHintsRegistrar : RuntimeHintsRegistrar {
                 BaseTransactionEvent::class.java,
                 BaseTransactionView::class.java,
                 PaymentNotice::class.java,
-                PaymentTransferInformation::class.java,
+                PaymentTransferInformation::class.java
             )
 
         val packagesToRegister =
@@ -43,7 +43,7 @@ class EcommerceDocumentsRuntimeHintsRegistrar : RuntimeHintsRegistrar {
                     classToRegister,
                     MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                     MemberCategory.INVOKE_PUBLIC_METHODS,
-                    MemberCategory.DECLARED_FIELDS,
+                    MemberCategory.DECLARED_FIELDS
                 )
         }
 
@@ -51,7 +51,7 @@ class EcommerceDocumentsRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             registerClassesFromPackage(
                 packagesToRegister,
                 hints,
-                classLoader ?: ClassLoader.getSystemClassLoader(),
+                classLoader ?: ClassLoader.getSystemClassLoader()
             )
         }
     }
@@ -59,7 +59,7 @@ class EcommerceDocumentsRuntimeHintsRegistrar : RuntimeHintsRegistrar {
     private fun registerClassesFromPackage(
         packageName: String,
         hints: RuntimeHints,
-        classLoader: ClassLoader,
+        classLoader: ClassLoader
     ) {
         val resolver = PathMatchingResourcePatternResolver(classLoader)
         val metadataReaderFactory = CachingMetadataReaderFactory(resolver)
@@ -87,7 +87,7 @@ class EcommerceDocumentsRuntimeHintsRegistrar : RuntimeHintsRegistrar {
                                 clazz,
                                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                                 MemberCategory.INVOKE_PUBLIC_METHODS,
-                                MemberCategory.DECLARED_FIELDS,
+                                MemberCategory.DECLARED_FIELDS
                             )
                     }
                 } catch (e: Exception) {

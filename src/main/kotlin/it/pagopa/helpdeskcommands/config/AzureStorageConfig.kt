@@ -58,7 +58,7 @@ class AzureStorageConfig(
 
         override fun <T> deserializeAsync(
             stream: InputStream,
-            typeReference: TypeReference<T>,
+            typeReference: TypeReference<T>
         ): Mono<T> {
             return delegate.deserializeAsync(stream, typeReference)
         }
@@ -125,7 +125,7 @@ class AzureStorageConfig(
         TransactionUserReceiptData::class,
         QueueStorageException::class,
         ClassPathScanningCandidateComponentProvider::class,
-        AssignableTypeFilter::class,
+        AssignableTypeFilter::class
     )
     fun jsonSerializerV2(): JsonSerializer {
         logger.info("Creating JsonSerializer for Azure Storage Queue with custom V2 mixin")
@@ -133,7 +133,7 @@ class AzureStorageConfig(
             StrictJsonSerializerProvider()
                 .addMixIn(
                     QueueEvent::class.java,
-                    QueueEventMixInClassFieldDiscriminator::class.java,
+                    QueueEventMixInClassFieldDiscriminator::class.java
                 )
 
         val baseSerializer = provider.createInstance()
@@ -148,7 +148,7 @@ class AzureStorageConfig(
         azureQueueClient: AzureQueueAsyncClient,
         jsonSerializer: JsonSerializer,
         azureApiQueueClient: AzureApiQueueClient,
-        queueConfig: QueueConfig,
+        queueConfig: QueueConfig
     ): QueueAsyncClient {
         logger.info("Using client based on isNativeClientEnabled = {}", isNativeClientEnabled)
         return if (isNativeClientEnabled) {
@@ -156,7 +156,7 @@ class AzureStorageConfig(
                 override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
                     event: QueueEvent<T>,
                     visibilityTimeout: Duration?,
-                    timeToLive: Duration?,
+                    timeToLive: Duration?
                 ): Mono<Response<SendMessageResult>> {
                     return try {
                         val jsonBytes = jsonSerializer.serializeToBytes(event)
@@ -173,7 +173,7 @@ class AzureStorageConfig(
                                     queueName,
                                     jsonString,
                                     credentials.accountName,
-                                    credentials.accountKey,
+                                    credentials.accountKey
                                 )
                             }
                             .map { response -> createMockSendMessageResponse() }
@@ -200,7 +200,7 @@ class AzureStorageConfig(
     fun transactionRefundQueueAsyncClient(
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
-        azureApiQueueClient: AzureApiQueueClient,
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val queueName = queueConfig.transactionRefundQueueName
         return buildQueueAsyncClient(
@@ -208,7 +208,7 @@ class AzureStorageConfig(
             queueName,
             jsonSerializerV2,
             queueConfig,
-            azureApiQueueClient,
+            azureApiQueueClient
         )
     }
 
@@ -224,7 +224,7 @@ class AzureStorageConfig(
     fun transactionNotificationQueueAsyncClient(
         queueConfig: QueueConfig,
         jsonSerializerV2: JsonSerializer,
-        azureApiQueueClient: AzureApiQueueClient,
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val queueName = queueConfig.transactionNotificationRequestedQueueName
         return buildQueueAsyncClient(
@@ -232,7 +232,7 @@ class AzureStorageConfig(
             queueName,
             jsonSerializerV2,
             queueConfig,
-            azureApiQueueClient,
+            azureApiQueueClient
         )
     }
 
@@ -249,7 +249,7 @@ class AzureStorageConfig(
         queueName: String,
         jsonSerializer: JsonSerializer,
         queueConfig: QueueConfig,
-        azureApiQueueClient: AzureApiQueueClient,
+        azureApiQueueClient: AzureApiQueueClient
     ): QueueAsyncClient {
         val azureQueueClient = createAzureQueueClient(storageConnectionString, queueName)
         val queueAsyncClient =
@@ -257,7 +257,7 @@ class AzureStorageConfig(
                 azureQueueClient,
                 jsonSerializer,
                 azureApiQueueClient,
-                queueConfig,
+                queueConfig
             )
         return queueAsyncClient
     }
@@ -268,7 +268,7 @@ class AzureStorageConfig(
      */
     private fun createAzureQueueClient(
         connectionString: String,
-        queueName: String,
+        queueName: String
     ): AzureQueueAsyncClient {
         return QueueClientBuilder()
             .connectionString(connectionString)

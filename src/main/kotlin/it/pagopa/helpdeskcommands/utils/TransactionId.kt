@@ -28,7 +28,7 @@ class TransactionId(transactionId: String) {
                     trimmedUUIDString.substring(8, 12),
                     trimmedUUIDString.substring(12, 16),
                     trimmedUUIDString.substring(16, 20),
-                    trimmedUUIDString.substring(20, 32),
+                    trimmedUUIDString.substring(20, 32)
                 )
             return UUID.fromString(uuidtring)
         }

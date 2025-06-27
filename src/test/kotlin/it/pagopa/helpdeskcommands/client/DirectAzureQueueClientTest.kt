@@ -42,18 +42,18 @@ class DirectAzureQueueClientTest {
             Stream.of(
                 Arguments.of(
                     INVALID_CONNECTION_STRING_NO_ACCOUNT,
-                    "Invalid Azure Storage connection string",
+                    "Invalid Azure Storage connection string"
                 ),
                 Arguments.of(
                     INVALID_CONNECTION_STRING_NO_KEY,
-                    "Invalid Azure Storage connection string",
+                    "Invalid Azure Storage connection string"
                 ),
                 Arguments.of(
                     MALFORMED_CONNECTION_STRING,
-                    "Invalid Azure Storage connection string",
+                    "Invalid Azure Storage connection string"
                 ),
                 Arguments.of("", "Invalid Azure Storage connection string"),
-                Arguments.of("AccountName=test", "Invalid Azure Storage connection string"),
+                Arguments.of("AccountName=test", "Invalid Azure Storage connection string")
             )
 
         @JvmStatic
@@ -64,7 +64,7 @@ class DirectAzureQueueClientTest {
                 Arguments.of(HttpStatus.FORBIDDEN, "Forbidden"),
                 Arguments.of(HttpStatus.NOT_FOUND, "Not Found"),
                 Arguments.of(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"),
-                Arguments.of(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable"),
+                Arguments.of(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable")
             )
     }
 
@@ -95,7 +95,7 @@ class DirectAzureQueueClientTest {
     @MethodSource("invalidConnectionStrings")
     fun `should throw exception for invalid connection strings`(
         connectionString: String,
-        expectedErrorMessage: String,
+        expectedErrorMessage: String
     ) {
         val exception =
             assertThrows<IllegalArgumentException> {
@@ -135,7 +135,7 @@ class DirectAzureQueueClientTest {
                     queueName = TEST_QUEUE_NAME,
                     message = TEST_MESSAGE,
                     storageAccount = TEST_STORAGE_ACCOUNT,
-                    storageKey = TEST_STORAGE_KEY,
+                    storageKey = TEST_STORAGE_KEY
                 )
             )
             .expectNext(expectedResponse)
@@ -190,7 +190,7 @@ class DirectAzureQueueClientTest {
                     queueName = TEST_QUEUE_NAME,
                     message = TEST_MESSAGE,
                     storageAccount = TEST_STORAGE_ACCOUNT,
-                    storageKey = TEST_STORAGE_KEY,
+                    storageKey = TEST_STORAGE_KEY
                 )
             )
             .expectError(WebClientResponseException::class.java)
@@ -209,7 +209,7 @@ class DirectAzureQueueClientTest {
                     queueName = TEST_QUEUE_NAME,
                     message = TEST_MESSAGE,
                     storageAccount = TEST_STORAGE_ACCOUNT,
-                    storageKey = invalidStorageKey,
+                    storageKey = invalidStorageKey
                 )
             )
             .expectError(IllegalStateException::class.java)
@@ -236,7 +236,7 @@ class DirectAzureQueueClientTest {
                     queueName = TEST_QUEUE_NAME,
                     message = "",
                     storageAccount = TEST_STORAGE_ACCOUNT,
-                    storageKey = TEST_STORAGE_KEY,
+                    storageKey = TEST_STORAGE_KEY
                 )
             )
             .expectNextCount(1)
@@ -265,7 +265,7 @@ class DirectAzureQueueClientTest {
                     queueName = TEST_QUEUE_NAME,
                     message = largeMessage,
                     storageAccount = TEST_STORAGE_ACCOUNT,
-                    storageKey = TEST_STORAGE_KEY,
+                    storageKey = TEST_STORAGE_KEY
                 )
             )
             .expectNextCount(1)
@@ -294,7 +294,7 @@ class DirectAzureQueueClientTest {
                     queueName = customQueueName,
                     message = TEST_MESSAGE,
                     storageAccount = customStorageAccount,
-                    storageKey = TEST_STORAGE_KEY,
+                    storageKey = TEST_STORAGE_KEY
                 )
             )
             .expectNextCount(1)

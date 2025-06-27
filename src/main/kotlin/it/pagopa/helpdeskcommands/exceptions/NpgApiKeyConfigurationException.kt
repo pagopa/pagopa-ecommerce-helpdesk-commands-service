@@ -6,7 +6,7 @@ class NpgApiKeyConfigurationException : RuntimeException {
 
     constructor(
         message: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod
     ) : super(
         "Error parsing NPG PSP api keys configuration for payment method: [$paymentMethod], cause: $message"
     )

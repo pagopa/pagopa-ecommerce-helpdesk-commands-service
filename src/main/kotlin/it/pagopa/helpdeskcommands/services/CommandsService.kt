@@ -28,7 +28,7 @@ class CommandsService(
     @Autowired private val redirectKeysConfiguration: RedirectKeysConfiguration,
     @Autowired
     private val nodeForwarderClient:
-        NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto>,
+        NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto>
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -38,7 +38,7 @@ class CommandsService(
         touchpoint: String,
         pspTransactionId: String,
         paymentTypeCode: String,
-        pspId: String,
+        pspId: String
     ): Mono<RefundRedirectResponseDto> {
         return redirectKeysConfiguration
             .getRedirectUrlForPsp(touchpoint, pspId, paymentTypeCode)
@@ -55,7 +55,7 @@ class CommandsService(
                                     .idTransaction(transactionId.value()),
                             proxyTo = uri,
                             requestId = transactionId.value(),
-                            responseClass = RedirectRefundResponseDto::class.java,
+                            responseClass = RedirectRefundResponseDto::class.java
                         )
                         .map {
                             RefundRedirectResponseDto()
@@ -65,7 +65,7 @@ class CommandsService(
                         .doOnNext { response ->
                             logger.info(
                                 "Redirect refund processed correctly for transaction with id: [{}]",
-                                response.idTransaction,
+                                response.idTransaction
                             )
                         }
                         .doOnError(NodeForwarderClientException::class.java) { exception ->
@@ -75,10 +75,10 @@ class CommandsService(
                                 pspId,
                                 pspTransactionId,
                                 paymentTypeCode,
-                                exception,
+                                exception
                             )
                         }
-                },
+                }
             )
     }
 
@@ -88,7 +88,7 @@ class CommandsService(
         amount: BigDecimal,
         pspId: String,
         correlationId: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod
     ): Mono<RefundResponseDto> {
         return npgApiKeyConfiguration[paymentMethod, pspId].fold(
             { ex -> Mono.error(ex) },
@@ -101,7 +101,7 @@ class CommandsService(
                     operationId,
                     amount,
                     pspId,
-                    correlationId,
+                    correlationId
                 )
                 npgClient
                     .refundPayment(
@@ -111,17 +111,17 @@ class CommandsService(
                         grandTotal = amount,
                         apikey = apiKey,
                         description =
-                            "Refund request for transactionId ${transactionId.uuid} and operationId $operationId",
+                            "Refund request for transactionId ${transactionId.uuid} and operationId $operationId"
                     )
                     .doOnError(NpgClientException::class.java) { exception: NpgClientException ->
                         logger.error(
                             "Exception performing NPG refund for transactionId: [{}] and operationId: [{}]",
                             transactionId.value(),
                             operationId,
-                            exception,
+                            exception
                         )
                     }
-            },
+            }
         )
     }
 }

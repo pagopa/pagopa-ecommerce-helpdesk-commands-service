@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.ResponseStatus
 class RefundNotAllowedException(
     transactionID: TransactionId,
     errorMessage: String = "N/A",
-    cause: Throwable? = null,
+    cause: Throwable? = null
 ) :
     RuntimeException(
         "Transaction with id ${transactionID.value()} cannot be refunded. Reason: $errorMessage",
-        cause,
+        cause
     )

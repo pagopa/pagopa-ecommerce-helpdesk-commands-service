@@ -134,7 +134,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("hel
       "useJakartaEe" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
-      "enumPropertyNaming" to "UPPERCASE",
+      "enumPropertyNaming" to "UPPERCASE"
     )
   )
 }
@@ -164,7 +164,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("red
       "useJakartaEe" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
-      "enumPropertyNaming" to "UPPERCASE",
+      "enumPropertyNaming" to "UPPERCASE"
     )
   )
 }
@@ -193,7 +193,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("npg
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false",
+      "generateSupportingFiles" to "false"
     )
   )
 }
@@ -222,7 +222,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false",
+      "generateSupportingFiles" to "false"
     )
   )
   modelPackage.set("it.pagopa.generated.nodeforwarder.v1.dto")
@@ -244,7 +244,7 @@ tasks.withType<KotlinCompile> {
     "npg-api",
     "node-forwarder-api-v1",
     "redirect-api-v1",
-    "installLibs",
+    "installLibs"
   )
   // kotlinOptions.jvmTarget = "21"
 }
