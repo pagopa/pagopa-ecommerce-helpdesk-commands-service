@@ -24,7 +24,9 @@ class RedirectKeysConfiguration(
         // URI.create throws IllegalArgumentException that will prevent module load for
         // invalid PSP URI configuration
         pspUrlMapping.forEach { (pspId: String?, uri: String?) ->
-            redirectUriMap[pspId] = uri.let { URI.create(it) }!!
+            if (pspId != null && uri != null) {
+                redirectUriMap[pspId] = URI.create(uri)
+            }
         }
         val missingKeys =
             paymentTypeCodeList
