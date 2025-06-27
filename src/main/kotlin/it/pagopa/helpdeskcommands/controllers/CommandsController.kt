@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 @RestController("CommandsController")
 class CommandsController(
     @Autowired private val commandsService: CommandsService,
-    @Autowired private val transactionEventService: TransactionEventService
+    @Autowired private val transactionEventService: TransactionEventService,
 ) : CommandsApi {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -25,7 +25,7 @@ class CommandsController(
         xUserId: String,
         xForwardedFor: String,
         refundRedirectRequestDto: Mono<RefundRedirectRequestDto>,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange?,
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
@@ -34,7 +34,7 @@ class CommandsController(
                 xUserId,
                 requestDto.idTransaction,
                 requestDto.idPSPTransaction,
-                xForwardedFor
+                xForwardedFor,
             )
             commandsService
                 .requestRedirectRefund(
@@ -42,7 +42,7 @@ class CommandsController(
                     touchpoint = requestDto.touchpoint,
                     pspTransactionId = requestDto.idPSPTransaction,
                     paymentTypeCode = requestDto.paymentTypeCode,
-                    pspId = requestDto.pspId
+                    pspId = requestDto.pspId,
                 )
                 .map {
                     ResponseEntity.ok(
@@ -58,14 +58,14 @@ class CommandsController(
         xUserId: String,
         xForwardedFor: String,
         refundTransactionRequestDto: Mono<RefundTransactionRequestDto>,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange?,
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap {
             logger.info(
                 "Refund transaction for userId: [{}], transactionId: [{}] from IP: [{}]",
                 xUserId,
                 it.transactionId,
-                xForwardedFor
+                xForwardedFor,
             )
             commandsService
                 .requestNpgRefund(
@@ -74,7 +74,7 @@ class CommandsController(
                     correlationId = it.correlationId,
                     paymentMethod = PaymentMethod.fromServiceName(it.paymentMethodName),
                     pspId = it.pspId,
-                    amount = it.amount.toBigDecimal()
+                    amount = it.amount.toBigDecimal(),
                 )
                 .map {
                     ResponseEntity.ok(
@@ -102,7 +102,7 @@ class CommandsController(
         transactionId: String?,
         xUserId: @NotNull String?,
         xForwardedFor: @NotNull String?,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange?,
     ): Mono<ResponseEntity<Void?>> {
         if (transactionId.isNullOrBlank()) {
             return Mono.just(ResponseEntity.badRequest().build())
@@ -112,7 +112,7 @@ class CommandsController(
             "Refund request received for transaction [{}] from user [{}] with IP [{}]",
             transactionId,
             xUserId,
-            xForwardedFor
+            xForwardedFor,
         )
 
         return transactionEventService.createRefundRequestEvent(transactionId).flatMap { event ->
@@ -122,7 +122,7 @@ class CommandsController(
                     logger.info(
                         "Refund successfully requested for transaction [{}], event ID: [{}]",
                         transactionId,
-                        event?.id
+                        event?.id,
                     )
                 }
                 .then(Mono.just(ResponseEntity.accepted().build()))
@@ -146,7 +146,7 @@ class CommandsController(
         transactionId: String?,
         xUserId: @NotNull String?,
         xForwardedFor: @NotNull String?,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange?,
     ): Mono<ResponseEntity<Void>> {
         // Validate required transactionId
         if (transactionId.isNullOrBlank()) {
@@ -161,7 +161,7 @@ class CommandsController(
                     logger.info(
                         "Successfully resent user receipt notification for transaction ID: [{}], event ID: [{}]",
                         transactionId,
-                        event?.id
+                        event?.id,
                     )
                 }
                 .doOnError { e ->

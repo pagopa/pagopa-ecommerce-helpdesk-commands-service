@@ -22,7 +22,7 @@ class PaymentMethodTest {
 
         assertEquals(
             "Invalid payment method service name: '$invalidPaymentMethod'",
-            exception.message
+            exception.message,
         )
     }
 }

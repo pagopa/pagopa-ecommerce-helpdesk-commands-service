@@ -49,7 +49,7 @@ class CommandsServiceTest {
                 tcpKeepAliveEnabled = true,
                 tcpKeepAliveIdle = 300,
                 tcpKeepAliveIntvl = 60,
-                tcpKeepAliveCnt = 8
+                tcpKeepAliveCnt = 8,
             )
     private val npgClient: NpgClient = spy(NpgClient(npgWebClient, ObjectMapper()))
 
@@ -57,7 +57,7 @@ class CommandsServiceTest {
         NpgApiKeyConfiguration.Builder()
             .withMethodPspMapping(
                 PaymentMethod.CARDS,
-                NpgPspApiKeysConfig(mapOf(PSP_ID to PSP_KEY))
+                NpgPspApiKeysConfig(mapOf(PSP_ID to PSP_KEY)),
             )
             .build()
 
@@ -71,7 +71,7 @@ class CommandsServiceTest {
     private val redirectKeysConfiguration: RedirectKeysConfiguration =
         RedirectKeysConfiguration(
             mapOf("pspId-RPIC" to "http://redirect/RPIC"),
-            redirectBeAoiCallUriSet
+            redirectBeAoiCallUriSet,
         )
 
     private val commandsService: CommandsService =
@@ -79,7 +79,7 @@ class CommandsServiceTest {
             npgClient = npgClient,
             npgApiKeyConfiguration = npgApiKeyConfiguration,
             redirectKeysConfiguration = redirectKeysConfiguration,
-            nodeForwarderClient = nodeForwarderRedirectApiClient
+            nodeForwarderClient = nodeForwarderRedirectApiClient,
         )
 
     companion object {
@@ -120,27 +120,27 @@ class CommandsServiceTest {
                 Arguments.of(
                     HttpStatus.BAD_REQUEST,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT"
+                    "CHECKOUT",
                 ),
                 Arguments.of(
                     HttpStatus.UNAUTHORIZED,
                     NodeForwarderClientException::class.java,
-                    "IO"
+                    "IO",
                 ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT_CART"
+                    "CHECKOUT_CART",
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT"
+                    "CHECKOUT",
                 ),
                 Arguments.of(
                     HttpStatus.GATEWAY_TIMEOUT,
                     NodeForwarderClientException::class.java,
-                    "IO"
+                    "IO",
                 ),
                 Arguments.of(null, RuntimeException::class.java, "CHECKOUT_CART"),
             )
@@ -174,7 +174,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = PSP_ID,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .assertNext { assertEquals(operationId, it.operationId) }
@@ -186,7 +186,7 @@ class CommandsServiceTest {
                 eq(operationId),
                 eq(transactionId.uuid),
                 eq(amount),
-                any()
+                any(),
             )
     }
 
@@ -194,7 +194,7 @@ class CommandsServiceTest {
     @MethodSource("npgErrorsExpectedResponses")
     fun `should handle npg error response`(
         errorHttpStatusCode: HttpStatus,
-        expectedException: Class<out Throwable>
+        expectedException: Class<out Throwable>,
     ) {
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -221,7 +221,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = PSP_ID,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .expectError(expectedException)
@@ -233,7 +233,7 @@ class CommandsServiceTest {
                 eq(operationId),
                 eq(transactionId.uuid),
                 eq(amount),
-                any()
+                any(),
             )
     }
 
@@ -241,7 +241,7 @@ class CommandsServiceTest {
     @MethodSource("npgErrorsExpectedResponses")
     fun `should handle npg error response without error body`(
         errorHttpStatusCode: HttpStatus,
-        expectedException: Class<out Throwable>
+        expectedException: Class<out Throwable>,
     ) {
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -258,7 +258,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = PSP_ID,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .expectError(expectedException)
@@ -270,7 +270,7 @@ class CommandsServiceTest {
                 eq(operationId),
                 eq(transactionId.uuid),
                 eq(amount),
-                any()
+                any(),
             )
     }
 
@@ -282,7 +282,7 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -295,7 +295,7 @@ class CommandsServiceTest {
                     NpgClientException(
                         "Invalid error response from NPG with status code 500",
                         HttpStatus.BAD_GATEWAY,
-                        emptyList()
+                        emptyList(),
                     )
                 )
             )
@@ -308,7 +308,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = PSP_ID,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .expectError(NpgClientException::class.java)
@@ -320,7 +320,7 @@ class CommandsServiceTest {
                 eq(operationId),
                 eq(transactionId.uuid),
                 eq(amount),
-                any()
+                any(),
             )
     }
 
@@ -332,7 +332,7 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -345,7 +345,7 @@ class CommandsServiceTest {
                     NpgClientException(
                         "Invalid error response from NPG with status code 500",
                         HttpStatus.BAD_GATEWAY,
-                        emptyList()
+                        emptyList(),
                     )
                 )
             )
@@ -358,7 +358,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = PSP_ID,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .expectError(NpgClientException::class.java)
@@ -370,7 +370,7 @@ class CommandsServiceTest {
                 eq(operationId),
                 eq(transactionId.uuid),
                 eq(amount),
-                any()
+                any(),
             )
     }
 
@@ -382,7 +382,7 @@ class CommandsServiceTest {
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
                 redirectKeysConfiguration = redirectKeysConfiguration,
-                nodeForwarderClient = nodeForwarderRedirectApiClient
+                nodeForwarderClient = nodeForwarderRedirectApiClient,
             )
         val operationId = "operationID"
         val transactionId = TransactionId(TRANSACTION_ID_STRING)
@@ -399,7 +399,7 @@ class CommandsServiceTest {
                     amount = amount,
                     pspId = pspId,
                     correlationId = correlationId,
-                    paymentMethod = PaymentMethod.CARDS
+                    paymentMethod = PaymentMethod.CARDS,
                 )
             )
             .expectError(NpgApiKeyConfigurationException::class.java)
@@ -431,7 +431,7 @@ class CommandsServiceTest {
                 Mono.just(
                     NodeForwarderClient.NodeForwarderResponse(
                         redirectRefundResponseDto,
-                        Optional.empty()
+                        Optional.empty(),
                     )
                 )
             )
@@ -442,7 +442,7 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
+                    pspId = pspId,
                 )
             )
             .expectNext(redirectRefundResponse)
@@ -452,7 +452,7 @@ class CommandsServiceTest {
                 expectedRequest,
                 redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
                 transactionId,
-                RedirectRefundResponseDto::class.java
+                RedirectRefundResponseDto::class.java,
             )
     }
 
@@ -472,14 +472,14 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = "pspId"
+                    pspId = "pspId",
                 )
             )
             .expectErrorMatches {
                 assertTrue(it is RedirectConfigurationException)
                 assertEquals(
                     "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Missing key for redirect return url with following search parameters: touchpoint: [${touchpoint}] pspId: [pspId] paymentTypeCode: [MISSING]",
-                    it.message
+                    it.message,
                 )
                 true
             }
@@ -492,7 +492,7 @@ class CommandsServiceTest {
     fun `Should handle returned error performing redirect refund call`(
         httpErrorCode: HttpStatus?,
         expectedErrorClass: Class<Exception>,
-        touchpoint: String
+        touchpoint: String,
     ) {
         // pre-requisites
         val transactionId = TRANSACTION_ID_STRING
@@ -511,7 +511,7 @@ class CommandsServiceTest {
                         NodeForwarderClientException(
                             description = "Error performing refund",
                             httpStatusCode = httpErrorCode,
-                            errors = emptyList()
+                            errors = emptyList(),
                         )
                     } else {
                         RuntimeException("Error performing request")
@@ -525,7 +525,7 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
+                    pspId = pspId,
                 )
             )
             .expectError(expectedErrorClass)
@@ -535,7 +535,7 @@ class CommandsServiceTest {
                 expectedRequest,
                 redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
                 transactionId,
-                RedirectRefundResponseDto::class.java
+                RedirectRefundResponseDto::class.java,
             )
     }
 }

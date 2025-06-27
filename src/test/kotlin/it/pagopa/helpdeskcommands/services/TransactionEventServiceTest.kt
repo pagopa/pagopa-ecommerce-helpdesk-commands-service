@@ -88,7 +88,7 @@ class TransactionEventServiceTest {
                 tcpKeepAliveEnabled = true,
                 tcpKeepAliveIdle = 300,
                 tcpKeepAliveIntvl = 60,
-                tcpKeepAliveCnt = 8
+                tcpKeepAliveCnt = 8,
             )
     private val npgClient: NpgClient = spy(NpgClient(npgWebClient, ObjectMapper()))
 
@@ -130,7 +130,7 @@ class TransactionEventServiceTest {
                 transactionsEventStoreRepository = transactionsEventStoreRepository,
                 transactionsRefundedEventStoreRepository = transactionsRefundedEventStoreRepository,
                 transactionsViewRepository = transactionsViewRepository,
-                userReceiptEventStoreRepository = userReceiptEventStoreRepository
+                userReceiptEventStoreRepository = userReceiptEventStoreRepository,
             )
     }
 
@@ -172,27 +172,27 @@ class TransactionEventServiceTest {
                 Arguments.of(
                     HttpStatus.BAD_REQUEST,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT"
+                    "CHECKOUT",
                 ),
                 Arguments.of(
                     HttpStatus.UNAUTHORIZED,
                     NodeForwarderClientException::class.java,
-                    "IO"
+                    "IO",
                 ),
                 Arguments.of(
                     HttpStatus.NOT_FOUND,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT_CART"
+                    "CHECKOUT_CART",
                 ),
                 Arguments.of(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     NodeForwarderClientException::class.java,
-                    "CHECKOUT"
+                    "CHECKOUT",
                 ),
                 Arguments.of(
                     HttpStatus.GATEWAY_TIMEOUT,
                     NodeForwarderClientException::class.java,
-                    "IO"
+                    "IO",
                 ),
                 Arguments.of(null, RuntimeException::class.java, "CHECKOUT_CART"),
             )
@@ -207,8 +207,8 @@ class TransactionEventServiceTest {
                 TransactionRefundRequestedData(
                     null,
                     TransactionStatusDto.CLOSED,
-                    TransactionRefundRequestedData.RefundTrigger.MANUAL
-                )
+                    TransactionRefundRequestedData.RefundTrigger.MANUAL,
+                ),
             )
 
         val mockAzureResponse: AzureResponse<SendMessageResult> = mock()
@@ -218,7 +218,7 @@ class TransactionEventServiceTest {
                 refundQueueClient.sendMessageWithResponse(
                     any<QueueEvent<TransactionRefundRequestedEvent>>(),
                     eq(Duration.ZERO),
-                    eq(Duration.ofSeconds(transientQueueTTLSeconds))
+                    eq(Duration.ofSeconds(transientQueueTTLSeconds)),
                 )
             )
             .willReturn(Mono.just(mockAzureResponse))
@@ -230,7 +230,7 @@ class TransactionEventServiceTest {
             .sendMessageWithResponse(
                 queueEventCaptor.capture(),
                 eq(Duration.ZERO),
-                eq(Duration.ofSeconds(transientQueueTTLSeconds))
+                eq(Duration.ofSeconds(transientQueueTTLSeconds)),
             )
 
         val capturedQueueEvent = queueEventCaptor.firstValue
@@ -238,7 +238,7 @@ class TransactionEventServiceTest {
         assertEquals(
             null,
             capturedQueueEvent.tracingInfo,
-            "TracingInfo should be null in QueueEvent"
+            "TracingInfo should be null in QueueEvent",
         )
     }
 
@@ -251,15 +251,15 @@ class TransactionEventServiceTest {
                 TransactionRefundRequestedData(
                     null,
                     TransactionStatusDto.CLOSED,
-                    TransactionRefundRequestedData.RefundTrigger.MANUAL
-                )
+                    TransactionRefundRequestedData.RefundTrigger.MANUAL,
+                ),
             )
 
         given(
                 refundQueueClient.sendMessageWithResponse(
                     any<QueueEvent<TransactionRefundRequestedEvent>>(),
                     any<Duration>(),
-                    any<Duration>()
+                    any<Duration>(),
                 )
             )
             .willReturn(Mono.error(RuntimeException("Queue error")))
@@ -278,7 +278,7 @@ class TransactionEventServiceTest {
                 TransactionUserReceiptData.Outcome.OK,
                 "IT",
                 "2023-10-26T10:00:00",
-                TransactionUserReceiptData.NotificationTrigger.MANUAL
+                TransactionUserReceiptData.NotificationTrigger.MANUAL,
             )
 
         val notificationEvent = TransactionUserReceiptRequestedEvent(transactionId, userReceiptData)
@@ -290,7 +290,7 @@ class TransactionEventServiceTest {
                 notificationQueueClient.sendMessageWithResponse(
                     any<QueueEvent<TransactionUserReceiptRequestedEvent>>(),
                     eq(Duration.ZERO),
-                    eq(Duration.ofSeconds(transientQueueTTLSeconds))
+                    eq(Duration.ofSeconds(transientQueueTTLSeconds)),
                 )
             )
             .willReturn(Mono.just(mockAzureResponse))
@@ -304,7 +304,7 @@ class TransactionEventServiceTest {
             .sendMessageWithResponse(
                 queueEventCaptor.capture(),
                 eq(Duration.ZERO),
-                eq(Duration.ofSeconds(transientQueueTTLSeconds))
+                eq(Duration.ofSeconds(transientQueueTTLSeconds)),
             )
 
         val capturedQueueEvent = queueEventCaptor.firstValue
@@ -312,7 +312,7 @@ class TransactionEventServiceTest {
         assertEquals(
             null,
             capturedQueueEvent.tracingInfo,
-            "TracingInfo should be null in QueueEvent"
+            "TracingInfo should be null in QueueEvent",
         )
     }
 
@@ -325,7 +325,7 @@ class TransactionEventServiceTest {
                 TransactionUserReceiptData.Outcome.OK,
                 "IT",
                 "2023-10-26T10:00:00",
-                TransactionUserReceiptData.NotificationTrigger.MANUAL
+                TransactionUserReceiptData.NotificationTrigger.MANUAL,
             )
         val event = TransactionUserReceiptRequestedEvent(transactionId, userReceiptDataForError)
 
@@ -333,7 +333,7 @@ class TransactionEventServiceTest {
                 notificationQueueClient.sendMessageWithResponse(
                     any<QueueEvent<TransactionUserReceiptRequestedEvent>>(),
                     any<Duration>(),
-                    any<Duration>()
+                    any<Duration>(),
                 )
             )
             .willReturn(Mono.error(RuntimeException("Queue error")))
@@ -387,7 +387,7 @@ class TransactionEventServiceTest {
                 assertEquals(transactionIdString, event.transactionId)
                 assertEquals(
                     event.data.notificationTrigger,
-                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL,
                 )
                 assertNotEquals(existingUserReceiptEvent.id, event.id)
             }
@@ -442,7 +442,7 @@ class TransactionEventServiceTest {
                 assertEquals(transactionIdString, event.transactionId)
                 assertEquals(
                     event.data.notificationTrigger,
-                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL,
                 )
                 assertNotEquals(existingUserReceiptEvent.id, event.id)
             }
@@ -534,7 +534,7 @@ class TransactionEventServiceTest {
                 assertEquals(latestEvent.data.language, event.data.language)
                 assertEquals(
                     TransactionUserReceiptData.NotificationTrigger.MANUAL,
-                    event.data.notificationTrigger
+                    event.data.notificationTrigger,
                 )
             }
             .verifyComplete()
@@ -696,7 +696,7 @@ class TransactionEventServiceTest {
                 assertEquals(TransactionStatusDto.CLOSED, data.statusBeforeRefunded)
                 assertEquals(
                     TransactionRefundRequestedData.RefundTrigger.MANUAL,
-                    data.refundTrigger
+                    data.refundTrigger,
                 )
             }
             .verifyComplete()
@@ -799,7 +799,7 @@ class TransactionEventServiceTest {
                 TransactionAuthorizationRequestData.PaymentGateway.VPOS, // paymentGateway
                 "paymentMethodDescription123", // paymentMethodDescription
                 transactionData, // transactionGatewayAuthorizationRequestedData
-                null // idBundle (optional, can be null)
+                null, // idBundle (optional, can be null)
             )
 
         // Create the event with the mocked data
@@ -876,7 +876,7 @@ class TransactionEventServiceTest {
                 assertEquals(transactionIdString, event?.transactionId)
                 assertEquals(
                     TransactionUserReceiptData.NotificationTrigger.MANUAL,
-                    event?.data?.notificationTrigger
+                    event?.data?.notificationTrigger,
                 )
                 assertEquals(existingReceiptData.responseOutcome, event?.data?.responseOutcome)
                 assertEquals(existingReceiptData.language, event?.data?.language)

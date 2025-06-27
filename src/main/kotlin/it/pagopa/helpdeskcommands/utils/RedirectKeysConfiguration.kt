@@ -15,7 +15,7 @@ import java.util.stream.Collectors
  */
 class RedirectKeysConfiguration(
     pspUrlMapping: Map<String, String>,
-    paymentTypeCodeList: Set<String>
+    paymentTypeCodeList: Set<String>,
 ) {
     private val redirectBeApiCallUriMap: Map<String, URI>
 
@@ -37,7 +37,7 @@ class RedirectKeysConfiguration(
             throw RedirectConfigurationException(
                 "Misconfigured redirect.pspUrlMapping, " +
                     "the following redirect payment type code b.e. URIs are not configured: $missingKeys",
-                RedirectConfigurationType.BACKEND_URLS
+                RedirectConfigurationType.BACKEND_URLS,
             )
         }
         this.redirectBeApiCallUriMap = Collections.unmodifiableMap(redirectUriMap)
@@ -55,7 +55,7 @@ class RedirectKeysConfiguration(
     fun getRedirectUrlForPsp(
         touchpoint: String,
         pspId: String,
-        paymentTypeCode: String
+        paymentTypeCode: String,
     ): Either<RedirectConfigurationException, URI> {
         /*
          * Search for the key touchpoint-paymentTypeCode-pspId in the redirectUrlMap. If
@@ -69,7 +69,7 @@ class RedirectKeysConfiguration(
                 RedirectConfigurationException(
                     "Missing key for redirect return url with following search parameters: " +
                         "touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentTypeCode]",
-                    RedirectConfigurationType.BACKEND_URLS
+                    RedirectConfigurationType.BACKEND_URLS,
                 )
             )
     }

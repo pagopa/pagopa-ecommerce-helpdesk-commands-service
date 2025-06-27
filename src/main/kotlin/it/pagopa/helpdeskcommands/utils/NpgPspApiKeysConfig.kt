@@ -35,21 +35,21 @@ class NpgPspApiKeysConfig(private val configuration: Map<String, String> = mutab
             jsonSecretConfiguration: String,
             pspToHandle: Set<String>,
             paymentMethod: PaymentMethod,
-            objectMapper: ObjectMapper
+            objectMapper: ObjectMapper,
         ): Either<NpgApiKeyConfigurationException, NpgPspApiKeysConfig> {
             try {
                 val expectedKeys: MutableSet<String> = HashSet(pspToHandle)
                 val apiKeys: Map<String, String> =
                     objectMapper.readValue(
                         jsonSecretConfiguration,
-                        object : TypeReference<HashMap<String, String>>() {}
+                        object : TypeReference<HashMap<String, String>>() {},
                     )
                 val configuredKeys = apiKeys.keys
                 expectedKeys.removeAll(configuredKeys)
                 if (!expectedKeys.isEmpty()) {
                     return NpgApiKeyConfigurationException(
                             "Misconfigured api keys. Missing keys: $expectedKeys",
-                            paymentMethod
+                            paymentMethod,
                         )
                         .left()
                 }
@@ -59,7 +59,7 @@ class NpgPspApiKeysConfig(private val configuration: Map<String, String> = mutab
                 // logging in case of wrong configured json string object
                 return NpgApiKeyConfigurationException(
                         "Invalid json configuration map",
-                        paymentMethod
+                        paymentMethod,
                     )
                     .left()
             }

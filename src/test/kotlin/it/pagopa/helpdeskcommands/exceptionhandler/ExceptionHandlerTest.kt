@@ -22,16 +22,16 @@ class ExceptionHandlerTest {
                 RestApiException(
                     httpStatus = HttpStatus.UNAUTHORIZED,
                     title = "title",
-                    description = "description"
+                    description = "description",
                 )
             )
         assertEquals(
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.UNAUTHORIZED,
                 title = "title",
-                description = "description"
+                description = "description",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
     }
@@ -42,7 +42,7 @@ class ExceptionHandlerTest {
             NpgClientException(
                 httpStatusCode = HttpStatus.UNAUTHORIZED,
                 description = "Api error",
-                errors = listOf("[123] Error description")
+                errors = listOf("[123] Error description"),
             )
         assertEquals("Api error", exception.description)
         exception.errors.forEach { assertEquals("[123] Error description", it) }
@@ -52,9 +52,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.UNAUTHORIZED,
                 title = "Npg Invocation exception - Api error",
-                description = "[123] Error description"
+                description = "[123] Error description",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
     }
@@ -65,16 +65,16 @@ class ExceptionHandlerTest {
             NpgClientException(
                 httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                 description = "Generic error",
-                errors = emptyList()
+                errors = emptyList(),
             )
         val response = exceptionHandler.handleException(exception)
         assertEquals(
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Npg Invocation exception - Generic error",
-                description = "Not available"
+                description = "Not available",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
@@ -88,9 +88,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Input request is not valid",
-                description = "Invalid request"
+                description = "Invalid request",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
@@ -104,9 +104,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Exception retrieving apikey",
-                description = "Cannot retrieve api key for payment method: [CARDS]"
+                description = "Cannot retrieve api key for payment method: [CARDS]",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
@@ -122,9 +122,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Exception retrieving configuration type",
-                description = "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]"
+                description = "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
@@ -137,9 +137,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = "An internal error occurred processing the request"
+                description = "An internal error occurred processing the request",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
@@ -158,9 +158,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = expectedMessage
+                description = expectedMessage,
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
@@ -177,9 +177,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = expectedMessage
+                description = expectedMessage,
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
@@ -196,9 +196,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = expectedMessage
+                description = expectedMessage,
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
@@ -215,9 +215,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_GATEWAY,
                 title = "Forwarder Invocation exception - Error communicating with node forwarder",
-                description = "Timeout occurred. Invalid response"
+                description = "Timeout occurred. Invalid response",
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.BAD_GATEWAY, response.statusCode)
     }
@@ -232,9 +232,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.NOT_FOUND,
                 title = "Transaction not found",
-                description = TRANSACTION_ID
+                description = TRANSACTION_ID,
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
     }
@@ -249,9 +249,9 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
                 title = "Invalid transaction status",
-                description = TRANSACTION_ID
+                description = TRANSACTION_ID,
             ),
-            response.body
+            response.body,
         )
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.statusCode)
     }

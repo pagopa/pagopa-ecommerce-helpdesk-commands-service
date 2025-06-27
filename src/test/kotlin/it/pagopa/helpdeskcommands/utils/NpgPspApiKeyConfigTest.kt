@@ -36,7 +36,7 @@ class NpgPspApiKeyConfigTest {
                 pspConfigurationJson,
                 pspToHandle,
                 PaymentMethod.CARDS,
-                OBJECT_MAPPER
+                OBJECT_MAPPER,
             )
 
         assertTrue(pspConfiguration.isRight())
@@ -50,13 +50,13 @@ class NpgPspApiKeyConfigTest {
                 "{",
                 pspToHandle,
                 PaymentMethod.CARDS,
-                OBJECT_MAPPER
+                OBJECT_MAPPER,
             )
         assertTrue(pspConfiguration.isLeft())
         assertEquals(
             "Error parsing NPG PSP api keys configuration for payment method: [CARDS], " +
                 "cause: Invalid json configuration map",
-            pspConfiguration.leftOrNull()?.message
+            pspConfiguration.leftOrNull()?.message,
         )
     }
 
@@ -69,13 +69,13 @@ class NpgPspApiKeyConfigTest {
                 pspConfigurationJson,
                 psps,
                 PaymentMethod.CARDS,
-                OBJECT_MAPPER
+                OBJECT_MAPPER,
             )
         assertTrue(pspConfiguration.isLeft())
         assertEquals(
             "Error parsing NPG PSP api keys configuration for payment method: [CARDS], " +
                 "cause: Misconfigured api keys. Missing keys: [psp4]",
-            pspConfiguration.leftOrNull()?.message
+            pspConfiguration.leftOrNull()?.message,
         )
     }
 
@@ -86,13 +86,13 @@ class NpgPspApiKeyConfigTest {
                 pspConfigurationJson,
                 pspToHandle,
                 PaymentMethod.CARDS,
-                OBJECT_MAPPER
+                OBJECT_MAPPER,
             )
 
         assertTrue(pspConfiguration.isRight())
         Assertions.assertInstanceOf(
             NpgApiKeyMissingPspRequestedException::class.java,
-            pspConfiguration.getOrNull()?.get("missingPSP")?.leftOrNull()
+            pspConfiguration.getOrNull()?.get("missingPSP")?.leftOrNull(),
         )
     }
 }

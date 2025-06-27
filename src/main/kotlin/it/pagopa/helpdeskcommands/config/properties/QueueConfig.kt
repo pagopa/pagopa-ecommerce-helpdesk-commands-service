@@ -7,5 +7,5 @@ data class QueueConfig(
     val storageConnectionString: String,
     val transactionRefundQueueName: String,
     val transactionNotificationRequestedQueueName: String,
-    val ttlSeconds: Long = 3600
+    val ttlSeconds: Long = 3600,
 )

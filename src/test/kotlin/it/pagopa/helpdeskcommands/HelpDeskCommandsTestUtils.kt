@@ -40,7 +40,7 @@ object HelpDeskCommandsTestUtils {
     fun buildProblemJson(
         httpStatus: HttpStatus,
         title: String,
-        description: String
+        description: String,
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 
     /**
@@ -53,7 +53,7 @@ object HelpDeskCommandsTestUtils {
             TransactionRefundRequestedData(
                 null,
                 TransactionStatusDto.CLOSED,
-                TransactionRefundRequestedData.RefundTrigger.MANUAL
+                TransactionRefundRequestedData.RefundTrigger.MANUAL,
             )
 
         return TransactionRefundRequestedEvent(TRANSACTION_ID, refundData)

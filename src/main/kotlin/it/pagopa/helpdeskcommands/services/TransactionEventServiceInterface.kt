@@ -13,6 +13,7 @@ interface TransactionEventServiceInterface {
      * @return Mono that completes when the message is queued successfully
      */
     fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void>
+
     /**
      * Sends a notification request event to the transaction notification queue for processing by
      * the dedicated service.

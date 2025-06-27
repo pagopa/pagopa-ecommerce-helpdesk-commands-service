@@ -19,7 +19,7 @@ object ErrorResponseUtils {
     @Throws(IOException::class)
     fun parseResponseErrors(
         err: WebClientResponseException,
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
     ): List<String> {
         return when (err.statusCode.value()) {
             INTERNAL_SERVER_ERROR.code() ->

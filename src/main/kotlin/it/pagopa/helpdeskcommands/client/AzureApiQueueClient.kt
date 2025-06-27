@@ -30,7 +30,7 @@ class AzureApiQueueClient {
         queueName: String,
         message: String,
         storageAccount: String,
-        storageKey: String
+        storageKey: String,
     ): Mono<String> {
         logger.info("Sending message via direct HTTP with Storage Account Key authentication")
 
@@ -46,7 +46,7 @@ class AzureApiQueueClient {
                         timestamp = timestamp,
                         queueName = queueName,
                         storageAccount = storageAccount,
-                        storageKey = storageKey
+                        storageKey = storageKey,
                     )
                     .map { authHeader -> timestamp to authHeader }
             }
@@ -70,7 +70,7 @@ class AzureApiQueueClient {
             .doOnError { error ->
                 logger.error(
                     "Direct HTTP message send failed with Storage Account Key: ${error.message}",
-                    error
+                    error,
                 )
             }
     }
@@ -97,7 +97,7 @@ class AzureApiQueueClient {
         timestamp: String,
         queueName: String,
         storageAccount: String,
-        storageKey: String
+        storageKey: String,
     ): Mono<String> {
         return Mono.fromCallable {
                 // build canonical string for SharedKey

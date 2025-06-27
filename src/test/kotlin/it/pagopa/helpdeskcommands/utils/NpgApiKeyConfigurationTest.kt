@@ -13,11 +13,11 @@ class NpgApiKeyConfigurationTest {
         NpgApiKeyConfiguration.Builder()
             .withMethodPspMapping(
                 PaymentMethod.PAYPAL,
-                NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
+                NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key")),
             )
             .withMethodPspMapping(
                 PaymentMethod.CARDS,
-                NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-cards-api-key"))
+                NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-cards-api-key")),
             )
             .build()
 
@@ -39,17 +39,17 @@ class NpgApiKeyConfigurationTest {
                 NpgApiKeyConfiguration.Builder()
                     .withMethodPspMapping(
                         PaymentMethod.PAYPAL,
-                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
+                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key")),
                     )
                     .withMethodPspMapping(
                         PaymentMethod.PAYPAL,
-                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key"))
+                        NpgPspApiKeysConfig(mapOf(PSP_ID to "pspId1-paypal-api-key")),
                     )
                     .build()
             }
         assertEquals(
             "Api key mapping already registered for payment method: [${PaymentMethod.PAYPAL.serviceName}]",
-            exception.message
+            exception.message,
         )
     }
 
@@ -62,7 +62,7 @@ class NpgApiKeyConfigurationTest {
         // assertions
         assertEquals(
             "Cannot retrieve api key for payment method: [${PaymentMethod.PAYPAL.serviceName}]. Cause: Requested API key for PSP: [missingPspId]. Available PSPs: [pspId1]",
-            paypalApiKey.leftOrNull()?.message
+            paypalApiKey.leftOrNull()?.message,
         )
     }
 
@@ -76,7 +76,7 @@ class NpgApiKeyConfigurationTest {
         // assertions
         assertEquals(
             "Invalid configuration detected! Payment methods api key mapping cannot be null or empty",
-            exception.message
+            exception.message,
         )
     }
 }

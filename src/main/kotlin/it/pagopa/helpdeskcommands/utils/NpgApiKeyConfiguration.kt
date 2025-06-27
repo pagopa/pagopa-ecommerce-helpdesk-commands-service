@@ -22,7 +22,7 @@ class NpgApiKeyConfiguration(
 
         fun withMethodPspMapping(
             paymentMethod: PaymentMethod,
-            npgPspApiKeysConfig: NpgPspApiKeysConfig
+            npgPspApiKeysConfig: NpgPspApiKeysConfig,
         ) = apply {
             if (methodsApiKeyMapping.containsKey(paymentMethod)) {
                 throw NpgApiKeyConfigurationException(
@@ -57,7 +57,7 @@ class NpgApiKeyConfiguration(
      */
     fun getApiKeyForPaymentMethod(
         paymentMethod: PaymentMethod,
-        pspId: String
+        pspId: String,
     ): Either<NpgApiKeyConfigurationException, String> {
         var result: Either<NpgApiKeyConfigurationException, String> =
             NpgApiKeyConfigurationException(

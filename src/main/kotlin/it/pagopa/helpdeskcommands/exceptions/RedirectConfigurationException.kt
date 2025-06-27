@@ -5,7 +5,7 @@ class RedirectConfigurationException : RuntimeException {
 
     constructor(
         errorCause: String,
-        configurationType: RedirectConfigurationType
+        configurationType: RedirectConfigurationType,
     ) : super("Error parsing Redirect PSP $configurationType configuration, cause: $errorCause")
 
     constructor(errorCause: String) : super(errorCause)

@@ -54,7 +54,7 @@ class TransactionEventResolverNativeConfig {
             TransactionUserReceiptAddRetriedEvent::class.java to
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptAddRetriedEvent",
             TransactionUserReceiptRequestedEvent::class.java to
-                "it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent"
+                "it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent",
         )
 
     @PostConstruct

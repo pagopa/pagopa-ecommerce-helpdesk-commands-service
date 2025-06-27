@@ -26,12 +26,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgCardsApiKeys(
         @Value("\${npg.authorization.cards.keys}") apiKeys: String,
-        @Value("\${npg.authorization.cards.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.cards.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.CARDS
+            paymentMethod = PaymentMethod.CARDS,
         )
 
     /**
@@ -46,12 +46,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgPaypalApiKeys(
         @Value("\${npg.authorization.paypal.keys}") apiKeys: String,
-        @Value("\${npg.authorization.paypal.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.paypal.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.PAYPAL
+            paymentMethod = PaymentMethod.PAYPAL,
         )
 
     /**
@@ -66,12 +66,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgBancomatPayApiKeys(
         @Value("\${npg.authorization.bancomatpay.keys}") apiKeys: String,
-        @Value("\${npg.authorization.bancomatpay.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.bancomatpay.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.BANCOMATPAY
+            paymentMethod = PaymentMethod.BANCOMATPAY,
         )
 
     /**
@@ -86,12 +86,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgMyBankApiKeys(
         @Value("\${npg.authorization.mybank.keys}") apiKeys: String,
-        @Value("\${npg.authorization.mybank.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.mybank.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.MYBANK
+            paymentMethod = PaymentMethod.MYBANK,
         )
 
     /**
@@ -106,12 +106,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgApplePayApiKeys(
         @Value("\${npg.authorization.applepay.keys}") apiKeys: String,
-        @Value("\${npg.authorization.applepay.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.applepay.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.APPLEPAY
+            paymentMethod = PaymentMethod.APPLEPAY,
         )
 
     /**
@@ -126,12 +126,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgSatispayApiKeys(
         @Value("\${npg.authorization.satispay.keys}") apiKeys: String,
-        @Value("\${npg.authorization.satispay.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.satispay.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.SATISPAY
+            paymentMethod = PaymentMethod.SATISPAY,
         )
 
     /**
@@ -146,12 +146,12 @@ class NpgPspsApiKeyConfigBuilder {
     @Bean
     fun npgGooglePayApiKeys(
         @Value("\${npg.authorization.googlepay.keys}") apiKeys: String,
-        @Value("\${npg.authorization.googlepay.pspList}") pspToHandle: Set<String>
+        @Value("\${npg.authorization.googlepay.pspList}") pspToHandle: Set<String>,
     ): NpgPspApiKeysConfig =
         parsePspApiKeyConfiguration(
             apiKeys = apiKeys,
             pspToHandle = pspToHandle,
-            paymentMethod = PaymentMethod.GOOGLEPAY
+            paymentMethod = PaymentMethod.GOOGLEPAY,
         )
 
     @Bean
@@ -177,13 +177,13 @@ class NpgPspsApiKeyConfigBuilder {
     private fun parsePspApiKeyConfiguration(
         apiKeys: String,
         pspToHandle: Set<String>,
-        paymentMethod: PaymentMethod
+        paymentMethod: PaymentMethod,
     ) =
         NpgPspApiKeysConfig.parseApiKeyConfiguration(
                 apiKeys,
                 pspToHandle,
                 paymentMethod,
-                objectMapper
+                objectMapper,
             )
             .fold({ throw it }, { it })
 }

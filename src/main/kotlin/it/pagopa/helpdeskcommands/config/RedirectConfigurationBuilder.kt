@@ -27,7 +27,7 @@ class RedirectConfigurationBuilder {
     @Bean
     fun redirectBeApiCallUriConf(
         @Value("#{\${redirect.pspUrlMapping}}") pspUrlMapping: Map<String, String>,
-        @Value("\${redirect.paymentTypeCodes}") paymentTypeCodes: Set<String>
+        @Value("\${redirect.paymentTypeCodes}") paymentTypeCodes: Set<String>,
     ): RedirectKeysConfiguration {
         // URI.create throws IllegalArgumentException that will prevent module load for
         // invalid PSP URI configuration

@@ -84,7 +84,7 @@ class NodeForwarderClient<T, R> {
         apiKey: String,
         backendUrl: String,
         readTimeout: Int,
-        connectionTimeout: Int
+        connectionTimeout: Int,
     ): ProxyApi {
         val httpClient =
             HttpClient.create()
@@ -120,7 +120,7 @@ class NodeForwarderClient<T, R> {
         request: T,
         proxyTo: URI,
         requestId: String?,
-        responseClass: Class<R>?
+        responseClass: Class<R>?,
     ): Mono<NodeForwarderResponse<R>> {
         Objects.requireNonNull(request)
         Objects.requireNonNull(proxyTo)
@@ -141,7 +141,7 @@ class NodeForwarderClient<T, R> {
             hostName,
             port,
             path,
-            requestId
+            requestId,
         )
         return proxyApiClient
             .forwardWithHttpInfo(hostName, port, path, requestId, requestPayload)
@@ -150,7 +150,7 @@ class NodeForwarderClient<T, R> {
                     Mono.just(
                         NodeForwarderResponse(
                             objectMapper.readValue(response.body, responseClass),
-                            Optional.ofNullable(response.headers.getFirst(REQUEST_ID_HEADER_VALUE))
+                            Optional.ofNullable(response.headers.getFirst(REQUEST_ID_HEADER_VALUE)),
                         )
                     )
                 } catch (e: JsonProcessingException) {
@@ -161,7 +161,7 @@ class NodeForwarderClient<T, R> {
                 logger.error(
                     "Error communicating with Node forwarder\nError response code: [{}], body: [{}]",
                     it.statusCode,
-                    it.responseBodyAsString
+                    it.responseBodyAsString,
                 )
             }
             .onErrorMap { error -> exceptionToNodeForwarderClientException(error) }
@@ -186,14 +186,14 @@ class NodeForwarderClient<T, R> {
                     description =
                         "Invalid error response from forwarder with status code ${err.statusCode}",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors = emptyList()
+                    errors = emptyList(),
                 )
             }
         }
         return NodeForwarderClientException(
             description = "Unexpected error while invoking proxyRequest: ${err.message}",
             httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-            errors = emptyList()
+            errors = emptyList(),
         )
     }
 
@@ -206,38 +206,38 @@ class NodeForwarderClient<T, R> {
      */
     private fun mapNodeForwarderException(
         statusCode: HttpStatusCode,
-        errors: List<String>
+        errors: List<String>,
     ): NodeForwarderClientException =
         when (statusCode) {
             HttpStatus.BAD_REQUEST ->
                 NodeForwarderClientException(
                     description = "Bad request to Node Forwarder",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-                    errors = errors
+                    errors = errors,
                 )
             HttpStatus.UNAUTHORIZED ->
                 NodeForwarderClientException(
                     description = "Misconfigured Node Forwarder API key",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-                    errors = errors
+                    errors = errors,
                 )
             HttpStatus.INTERNAL_SERVER_ERROR ->
                 NodeForwarderClientException(
                     description = "Node Forwarder internal server error",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors = errors
+                    errors = errors,
                 )
             HttpStatus.NOT_FOUND ->
                 NodeForwarderClientException(
                     description = "Node Forwarder resource not found",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors = errors
+                    errors = errors,
                 )
             else ->
                 NodeForwarderClientException(
                     description = "Node Forwarder server error: $statusCode",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    errors = errors
+                    errors = errors,
                 )
         }
 
