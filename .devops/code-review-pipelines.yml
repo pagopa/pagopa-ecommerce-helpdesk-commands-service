@@ -111,7 +111,7 @@ stages:
                 searchFolder: '$(System.DefaultWorkingDirectory)'
 
   - stage: IntegrationTestEcommerceLocal
-    dependsOn: []
+    dependsOn: [IntegrationTest]
     jobs:
       - job: make_integration_test_ecommerce_local
         steps:
