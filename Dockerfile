@@ -6,6 +6,9 @@ RUN apk add --no-cache findutils git
 ENV JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
 ENV PATH=$JAVA_HOME/bin:$PATH
 
+# Memory optimization for Maven builds
+ENV MAVEN_OPTS="-Xmx4g -XX:+UseG1GC"
+
 COPY . .
 RUN chmod +x ./gradlew
 RUN chmod +x ./pagopa-ecommerce-commons-maven-install.sh
