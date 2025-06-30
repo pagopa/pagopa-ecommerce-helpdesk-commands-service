@@ -296,7 +296,6 @@ graalvmNative {
 
       // Memory optimization for build performance (addresses GC pressure)
       buildArgs.add("-J-Xmx6g")
-      buildArgs.add("--gc=G1")
 
       // Runtime memory configuration for the native image
       buildArgs.add("-H:MaxHeapSize=512m")
