@@ -13,7 +13,7 @@ RUN ./gradlew installLibs -PbuildCommons
 
 FROM ghcr.io/graalvm/native-image-community:21.0.2@sha256:faed0fd6809b138254bdd6c7046e56894f4d9566ecbc7b0952aab43e65e16e0e AS builder
 WORKDIR /workspace/app
-RUN apk add --no-cache findutils git
+RUN microdnf install -y findutils git
 
 COPY . .
 COPY --from=commons-builder /root/.m2 /root/.m2
