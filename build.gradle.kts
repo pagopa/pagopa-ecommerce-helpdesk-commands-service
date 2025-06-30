@@ -91,12 +91,12 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     toggleOffOn()
     targetExclude("build/**/*")
-    ktfmt("0.55").kotlinlangStyle()
+    ktfmt().kotlinlangStyle()
   }
   kotlinGradle {
     toggleOffOn()
     targetExclude("build/**/*.kts")
-    ktfmt("0.55").googleStyle()
+    ktfmt().googleStyle()
   }
   java {
     target("**/*.java")

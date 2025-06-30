@@ -35,8 +35,7 @@ class RedirectKeysConfiguration(
                 .collect(Collectors.toSet())
         if (missingKeys.isNotEmpty()) {
             throw RedirectConfigurationException(
-                "Misconfigured redirect.pspUrlMapping, " +
-                    "the following redirect payment type code b.e. URIs are not configured: $missingKeys",
+                "Misconfigured redirect.pspUrlMapping, the following redirect payment type code b.e. URIs are not configured: $missingKeys",
                 RedirectConfigurationType.BACKEND_URLS
             )
         }
@@ -67,8 +66,7 @@ class RedirectKeysConfiguration(
         return searchResult?.right()
             ?: Either.Left(
                 RedirectConfigurationException(
-                    "Missing key for redirect return url with following search parameters: " +
-                        "touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentTypeCode]",
+                    "Missing key for redirect return url with following search parameters: touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentTypeCode]",
                     RedirectConfigurationType.BACKEND_URLS
                 )
             )

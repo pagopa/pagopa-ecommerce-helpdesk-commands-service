@@ -29,8 +29,7 @@ class CommandsController(
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
-                "Received refund redirect request for userId: [{}], transactionId: [{}}, idPSPTransaction: [{}], " +
-                    "from IP: [{}]",
+                "Received refund redirect request for userId: [{}], transactionId: [{}}, idPSPTransaction: [{}], from IP: [{}]",
                 xUserId,
                 requestDto.idTransaction,
                 requestDto.idPSPTransaction,

@@ -67,9 +67,7 @@ class RedirectionKeysConfigTest {
             redirectionKeysConfig.getRedirectUrlForPsp(touchpoint, pspId, paymentMethodId)
         assertTrue(result.isLeft())
         assertEquals(
-            "Error parsing Redirect PSP BACKEND_URLS configuration, cause: " +
-                "Missing key for redirect return url with following search parameters: " +
-                "touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentMethodId]",
+            "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Missing key for redirect return url with following search parameters: touchpoint: [$touchpoint] pspId: [$pspId] paymentTypeCode: [$paymentMethodId]",
             (result as Either.Left<Throwable>).value.message
         )
     }
@@ -86,9 +84,7 @@ class RedirectionKeysConfigTest {
             }
 
         assertEquals(
-            "Error parsing Redirect PSP BACKEND_URLS configuration, cause: " +
-                "Misconfigured redirect.pspUrlMapping, " +
-                "the following redirect payment type code b.e. URIs are not configured: [key1]",
+            "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Misconfigured redirect.pspUrlMapping, the following redirect payment type code b.e. URIs are not configured: [key1]",
             e.message
         )
     }

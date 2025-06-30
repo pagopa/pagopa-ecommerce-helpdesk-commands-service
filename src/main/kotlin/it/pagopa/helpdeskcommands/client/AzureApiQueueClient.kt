@@ -107,21 +107,7 @@ class AzureApiQueueClient {
                 val canonicalizedResource = "/$storageAccount/$queueName/messages"
 
                 val stringToSign =
-                    "$method\n" + // VERB
-                        "\n" + // Content-Encoding (empty)
-                        "\n" + // Content-Language (empty)
-                        "$contentLength\n" + // Content-Length
-                        "\n" + // Content-MD5 (empty)
-                        "$contentType\n" + // Content-Type
-                        "\n" + // Date (empty because we use x-ms-date)
-                        "\n" + // If-Modified-Since (empty)
-                        "\n" + // If-Match (empty)
-                        "\n" + // If-None-Match (empty)
-                        "\n" + // If-Unmodified-Since (empty)
-                        "\n" + // Range (empty)
-                        canonicalizedHeaders +
-                        "\n" + // CanonicalizedHeaders + newline
-                        canonicalizedResource // CanonicalizedResource
+                    "$method\n\n\n$contentLength\n\n$contentType\n\n\n\n\n\n\n$canonicalizedHeaders\n$canonicalizedResource"
 
                 val keyBytes = Base64.getDecoder().decode(storageKey)
                 val mac = Mac.getInstance("HmacSHA256")

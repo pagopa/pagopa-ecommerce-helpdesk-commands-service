@@ -314,8 +314,7 @@ class TransactionEventService(
                 )
                 Mono.error(
                     InvalidTransactionStatusException(
-                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. " +
-                            "Transaction must be one of ${admissibleStates.joinToString(",")}"
+                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. Transaction must be one of ${admissibleStates.joinToString(",")}"
                     )
                 )
             }
