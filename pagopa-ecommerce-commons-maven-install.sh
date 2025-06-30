@@ -10,6 +10,9 @@ mkdir $checkoutFolder
 # Linux/Azure optimized Java 21 detection
 detect_and_setup_java21() {
     echo "Detecting Java 21 for Linux/Azure environment..."
+    echo "Current environment: $(uname -a)"
+    echo "Current JAVA_HOME: ${JAVA_HOME:-not set}"
+    echo "Current PATH: $PATH"
     
     # Method 1: Check if JAVA_HOME is already set to Java 21
     if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
@@ -23,13 +26,46 @@ detect_and_setup_java21() {
     # Method 2: Check system java
     if command -v java >/dev/null 2>&1; then
         SYSTEM_JAVA_VERSION=$(java -version 2>&1 | head -n1 | cut -d'"' -f2 | cut -d'.' -f1)
+        echo "System Java version detected: $SYSTEM_JAVA_VERSION"
         if [ "$SYSTEM_JAVA_VERSION" = "21" ]; then
             echo "System Java 21 detected"
             return 0
         fi
     fi
     
-    # Method 3: Azure Pipeline hosted toolcache (priority for CI/CD)
+    # Method 2.5: Find all java executables and test them
+    echo "Searching for all Java executables..."
+    for java_exec in $(find /usr -name "java" -type f -executable 2>/dev/null); do
+        if [ -x "$java_exec" ]; then
+            FOUND_VERSION=$("$java_exec" -version 2>&1 | head -n1 | cut -d'"' -f2 | cut -d'.' -f1 2>/dev/null || echo "unknown")
+            echo "Found Java at $java_exec: version $FOUND_VERSION"
+            if [ "$FOUND_VERSION" = "21" ]; then
+                export JAVA_HOME=$(dirname $(dirname "$java_exec"))
+                export PATH="$JAVA_HOME/bin:$PATH"
+                echo "Java 21 found via filesystem search: $JAVA_HOME"
+                return 0
+            fi
+        fi
+    done
+    
+    # Method 3: Docker/Container Java paths (Amazon Corretto, Alpine)
+    for docker_java_path in \
+        "/usr/lib/jvm/java-21-amazon-corretto/bin/java" \
+        "/usr/lib/jvm/default-jvm/bin/java" \
+        "/opt/java/openjdk/bin/java"; do
+        
+        if [ -x "$docker_java_path" ]; then
+            JAVA_VERSION=$("$docker_java_path" -version 2>&1 | head -n1 | cut -d'"' -f2 | cut -d'.' -f1)
+            if [ "$JAVA_VERSION" = "21" ]; then
+                export JAVA_HOME=$(dirname $(dirname "$docker_java_path"))
+                export PATH="$JAVA_HOME/bin:$PATH"
+                echo "Java 21 found in Docker container: $JAVA_HOME"
+                return 0
+            fi
+        fi
+    done
+    
+    # Method 4: Azure Pipeline hosted toolcache (priority for CI/CD)
     for azure_java_path in \
         "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21*/x64/bin/java" \
         "/opt/hostedtoolcache/jdk/21*/x64/bin/java" \
@@ -49,7 +85,7 @@ detect_and_setup_java21() {
         done
     done
     
-    # Method 4: Standard Linux Java 21 installation paths
+    # Method 5: Standard Linux Java 21 installation paths
     for java_path in \
         "/usr/lib/jvm/java-21-openjdk/bin/java" \
         "/usr/lib/jvm/java-21-openjdk-amd64/bin/java" \
