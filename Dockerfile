@@ -1,7 +1,7 @@
 FROM amazoncorretto:21-alpine@sha256:6a98c4402708fe8d16e946b4b5bac396379ec5104c1661e2a27b2b45cf9e2d16 AS commons-builder
 
 WORKDIR /workspace/app
-RUN microdnf install -y findutils git
+RUN apk add --no-cache findutils git
 
 ENV JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
 ENV PATH=$JAVA_HOME/bin:$PATH
@@ -13,7 +13,7 @@ RUN ./gradlew installLibs -PbuildCommons
 
 FROM ghcr.io/graalvm/native-image-community:21.0.2@sha256:faed0fd6809b138254bdd6c7046e56894f4d9566ecbc7b0952aab43e65e16e0e AS builder
 WORKDIR /workspace/app
-RUN microdnf install -y findutils git
+RUN apk add --no-cache findutils git
 
 COPY . .
 COPY --from=commons-builder /root/.m2 /root/.m2
