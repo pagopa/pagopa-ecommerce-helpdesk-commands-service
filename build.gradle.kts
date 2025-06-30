@@ -41,7 +41,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "1.37.2"
+  const val ecommerceCommonsVersion = "3.0.0"
 }
 
 dependencies {
