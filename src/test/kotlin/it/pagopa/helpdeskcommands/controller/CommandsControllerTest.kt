@@ -343,7 +343,7 @@ class CommandsControllerTest {
     fun `should return 401 when invalid api key is send into request`(apiKey: String?) {
         val userId = UUID.randomUUID().toString()
         val refundEvent = HelpDeskCommandsTestUtils.createMockRefundEvent()
-        //test
+        // test
         webClient
             .post()
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
