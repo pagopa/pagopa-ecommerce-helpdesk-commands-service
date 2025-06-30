@@ -121,6 +121,7 @@ microservice-chart:
     MONGO_WAITING_QUEUE_MS: "2000"
     MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
     MONGO_REPLICA_SET_OPTION: "&replicaSet=globaldb"
+    SECURITY_API_KEYS_SECURED_PATHS: "/commands"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     NPG_CARDS_PSP_KEYS: npg-cards-psp-keys
@@ -134,6 +135,8 @@ microservice-chart:
     REDIRECT_URL_MAPPING: redirect-url-mapping
     ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING: ecommerce-storage-transient-connection-string
     MONGO_PASSWORD: mongo-ecommerce-password
+    SECURITY_API_KEYS_PRIMARY: ecommerce-helpdesk-command-service-primary-api-key
+    SECURITY_API_KEYS_SECONDARY: ecommerce-helpdesk-command-service-secondary-api-key
   keyvault:
     name: "pagopa-p-ecommerce-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
