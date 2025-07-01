@@ -11,7 +11,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: CHK-4267-inject-api-key-into-tests
+      ref: main
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
