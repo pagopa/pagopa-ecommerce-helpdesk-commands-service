@@ -97,31 +97,7 @@ stages:
             - script: docker compose up -d
               displayName: 'Run app with docker-compose'
             - script: |
-                echo "Waiting for MongoDB to be ready..."
-                timeout 120 bash -c 'until docker compose exec mongo-ecommerce mongosh --quiet --eval "db.adminCommand(\"ping\")" 2>/dev/null; do echo "Waiting for MongoDB..."; sleep 2; done'
-                echo "MongoDB is ready!"
-                echo "Checking Docker containers status..."
-                docker compose ps
-                echo "Checking port connectivity..."
-                netstat -tlnp | grep :8087 || echo "Port 8087 not found"
-                echo "Checking if container port is accessible..."
-                sleep 5  # Give a moment for the service to fully start
-              displayName: 'Wait for MongoDB and check connectivity'
-            - script: |
-                echo "Checking container logs before health check..."
-                docker compose logs pagopa-ecommerce-helpdesk-commands-service --tail=50 || true
-                echo "Testing actuator endpoints..."
-                curl -v http://localhost:8087/actuator || true
-                echo "Testing health endpoint..."
-                curl -v http://localhost:8087/actuator/health || true
-                echo "Testing liveness endpoint..."
-                timeout 30 curl -v http://localhost:8087/actuator/health/liveness || true
-                echo "Testing curl with response details..."
-                curl -s -o /tmp/health_response.txt -w "HTTP Status: %{http_code}\nTime: %{time_total}s\n" http://localhost:8087/actuator/health/liveness || true
-                echo "Health response content:"
-                cat /tmp/health_response.txt || true
-                echo "Starting health check loop with basic health endpoint..."
-                timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)" != "200" ]]; do echo "Health check attempt - Status: $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)"; sleep 5; done' || exit 1
+                timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)" != "200" ]]; do sleep 5; done' || exit 1
               displayName: 'Health check'
             - script: yarn global add newman
               displayName: 'newman installation'
@@ -151,8 +127,6 @@ stages:
               docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service mongo redis pagopa-npg-mock pagopa-notifications-service -d
             displayName: 'Run app with docker-compose'
           - script: |
-              echo "Checking helpdesk-commands-service container logs before health check..."
-              docker compose logs pagopa-ecommerce-helpdesk-commands-service --tail=50 || true
               timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
             displayName: 'Health check helpdesk-commands-service'
           - script: yarn global add newman
