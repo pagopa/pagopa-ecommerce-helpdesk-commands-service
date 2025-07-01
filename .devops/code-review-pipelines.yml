@@ -110,14 +110,18 @@ stages:
             - script: |
                 echo "Checking container logs before health check..."
                 docker compose logs pagopa-ecommerce-helpdesk-commands-service --tail=50 || true
-                echo "Testing direct curl to health endpoint..."
-                curl -v http://localhost:8087/actuator/health/liveness || true
+                echo "Testing actuator endpoints..."
+                curl -v http://localhost:8087/actuator || true
+                echo "Testing health endpoint..."
+                curl -v http://localhost:8087/actuator/health || true
+                echo "Testing liveness endpoint..."
+                timeout 30 curl -v http://localhost:8087/actuator/health/liveness || true
                 echo "Testing curl with response details..."
                 curl -s -o /tmp/health_response.txt -w "HTTP Status: %{http_code}\nTime: %{time_total}s\n" http://localhost:8087/actuator/health/liveness || true
                 echo "Health response content:"
                 cat /tmp/health_response.txt || true
-                echo "Starting health check loop..."
-                timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do echo "Health check attempt - Status: $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)"; sleep 5; done' || exit 1
+                echo "Starting health check loop with basic health endpoint..."
+                timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)" != "200" ]]; do echo "Health check attempt - Status: $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)"; sleep 5; done' || exit 1
               displayName: 'Health check'
             - script: yarn global add newman
               displayName: 'newman installation'
