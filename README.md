@@ -64,6 +64,9 @@ These are all environment variables needed by the application:
 | MONGO_SERVER_SELECTION_TIMEOUT_MS             | Server selection timeout in milliseconds for MongoDB                                                                                                                            | integer | 2000       |
 | MONGO_WAITING_QUEUE_MS                        | Waiting queue timeout in milliseconds for MongoDB                                                                                                                               | integer | 2000       |
 | MONGO_HEARTBEAT_FREQUENCY_MS                  | Heartbeat frequency in milliseconds for MongoDB                                                                                                                                 | integer | 5000       |
+| SECURITY_API_KEYS_SECURED_PATHS               | Comma-separated list of secured API paths                                                                                                                                       | string  |            |
+| SECURITY_API_KEYS_PRIMARY                     | Secured api primary key                                                                                                                                                         | string  |            |
+| SECURITY_API_KEYS_SECONDARY                   | Secured api secondary key                                                                                                                                                       | string  |            |
 
 An example configuration of these environment variables is in the `.env.example` file.
 

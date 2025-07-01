@@ -14,6 +14,9 @@ import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.times
@@ -68,6 +71,7 @@ class CommandsControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId)
             .header("X-Forwarded-For", sourceIP)
+            .header("x-api-key", "primary-key")
             .bodyValue(HelpDeskCommandsTestUtils.CREATE_REFUND_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()
@@ -92,6 +96,7 @@ class CommandsControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId)
             .header("X-Forwarded-For", sourceIP)
+            .header("x-api-key", "primary-key")
             .bodyValue(HelpDeskCommandsTestUtils.CREATE_REFUND_REDIRECT_REQUEST)
             .exchange()
             .expectStatus()
@@ -109,6 +114,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .is5xxServerError
@@ -123,6 +129,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .is5xxServerError
@@ -143,6 +150,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isAccepted
@@ -163,6 +171,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
@@ -186,6 +195,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -200,6 +210,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/ /refund") // Invalid transaction ID (space)
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isBadRequest
@@ -217,6 +228,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -238,6 +250,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isAccepted
@@ -259,6 +272,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
@@ -280,6 +294,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -298,6 +313,7 @@ class CommandsControllerTest {
             .uri("/commands/transactions/ /resend-email") // Invalid transaction ID (space)
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isBadRequest
@@ -315,8 +331,30 @@ class CommandsControllerTest {
             .uri("/commands/transactions/$VALID_TRANSACTION_ID/resend-email")
             .header("x-user-id", userId)
             .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["invalidKey"])
+    @NullSource
+    fun `should return 401 when invalid api key is send into request`(apiKey: String?) {
+        val userId = UUID.randomUUID().toString()
+        val refundEvent = HelpDeskCommandsTestUtils.createMockRefundEvent()
+        // test
+        webClient
+            .post()
+            .uri("/commands/transactions/$VALID_TRANSACTION_ID/refund")
+            .header("x-user-id", userId)
+            .header("X-Forwarded-For", SOURCE_IP)
+            .header("x-api-key", apiKey)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized
+
+        verify(transactionEventService, times(0)).createRefundRequestEvent(any())
+        verify(transactionEventService, times(0)).sendRefundRequestedEvent(any())
     }
 }
