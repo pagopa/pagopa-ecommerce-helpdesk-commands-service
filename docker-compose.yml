@@ -9,7 +9,7 @@ services:
     env_file:
       - ./.env
     ports:
-      - "8080:8080"
+      - "8087:8080"
     networks:
       - pagopa-ecommerce-net
   pagopa-npg-mock:
