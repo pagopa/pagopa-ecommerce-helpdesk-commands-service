@@ -293,11 +293,6 @@ graalvmNative {
       */
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
-
-      buildArgs.add("--no-fallback")
-      buildArgs.add("-H:+ReportExceptionStackTraces")
-      // Use economy mode for less memory usage
-      buildArgs.add("-march=compatibility")
     }
   }
 
