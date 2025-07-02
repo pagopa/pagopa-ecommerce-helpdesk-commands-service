@@ -109,9 +109,11 @@ stages:
                 timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8096/)" != "200" ]]; do echo "Waiting for PSP mock..."; sleep 5; done' || echo "PSP mock health check timeout - continuing"
               displayName: 'Wait for mock services'
             - script: |
+                echo "##[debug] Checking application container logs before health check..."
+                docker logs pagopa-ecommerce-helpdesk-commands-service --tail 20
                 echo "##[debug] Starting health check for main application..."
                 echo "##[debug] Application should be available at localhost:8080/actuator/health/liveness"
-                timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check... (HTTP $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness 2>/dev/null || echo "connection failed"))"; sleep 10; done' || (echo "##[error] Health check failed after 5 minutes" && exit 1)
+                timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check... (HTTP $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness 2>/dev/null || echo "connection failed"))"; docker logs pagopa-ecommerce-helpdesk-commands-service --tail 5; sleep 10; done' || (echo "##[error] Health check failed after 5 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
                 echo "##[debug] Health check successful!"
               displayName: 'Health check with extended timeout and logging'
             - script: yarn global add newman
