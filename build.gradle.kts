@@ -294,8 +294,10 @@ graalvmNative {
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
 
-      // Memory optimization for build performance (addresses GC pressure)
-      buildArgs.add("-J-Xmx6g")
+      buildArgs.add("--no-fallback")
+      buildArgs.add("-H:+ReportExceptionStackTraces")
+      // Use economy mode for less memory usage
+      buildArgs.add("-march=compatibility")
     }
   }
 

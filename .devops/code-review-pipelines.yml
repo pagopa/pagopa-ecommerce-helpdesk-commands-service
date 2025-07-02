@@ -97,7 +97,7 @@ stages:
             - script: docker compose up -d
               displayName: 'Run app with docker-compose'
             - script: |
-                timeout 600 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health)" != "200" ]]; do sleep 5; done' || exit 1
+                timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
               displayName: 'Health check'
             - script: yarn global add newman
               displayName: 'newman installation'
