@@ -95,7 +95,7 @@ stages:
                 echo "##[debug] Starting MongoDB instance first"
                 docker compose up mongo-ecommerce -d
                 echo "##[debug] Waiting for MongoDB to be ready..."
-                timeout 120 bash -c 'while [[ "$(docker compose ps mongo-ecommerce --format json | jq -r ".[0].Health")" != "healthy" ]]; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
+                timeout 120 bash -c 'while ! docker compose exec -T mongo-ecommerce mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
               displayName: 'Start and verify MongoDB instance'
             - script: |
                 echo "##[debug] Starting all services with docker-compose"
