@@ -9,6 +9,76 @@ This service leverages Kotlin's native compilation to achieve optimal performanc
 - Kotlin
 - Spring Boot (native)
 
+## Quick Start - Testing Local APIs
+
+Get the service running quickly to test the basic APIs:
+
+### Prerequisites
+- Java 21 (GraalVM recommended)
+- Gradle 8.2+
+- Docker Desktop
+
+### 4-Step Setup
+
+1. **Build the project and install dependencies:**
+   ```bash
+   ./gradlew installLibs -PbuildCommons && ./gradlew build
+   ```
+
+2. **Start required services:**
+   ```bash
+   docker-compose up mongo-ecommerce pagopa-npg-mock pagopa-psp-mock -d
+   ```
+
+3. **Start the application:**
+   ```bash
+   export $(grep -v '^#' .env.local.spring | xargs) && gradle bootRun
+   ```
+
+4. **Test with Postman:**
+   - Import collection: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+   - Import environment: `api-tests/env/helpdeskcommands_local.env.json`
+   - Run the collection against `http://localhost:8080`
+
+### API Authentication
+
+All `/commands/*` endpoints require API key authentication using the `x-api-key` header. The valid API keys are configured in the environment variables:
+- `SECURITY_API_KEYS_PRIMARY=primary-key` (default)
+- `SECURITY_API_KEYS_SECONDARY=secondary-key` (alternative)
+
+### Quick API Test with cURL
+
+Test the health endpoint:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Test a refund operation (example transaction ID):
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/refund \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+Test a resend email operation:
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/resend-email \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+### Environment Files
+
+Choose the appropriate environment file based on your testing approach:
+
+- **`.env.example`**: Template with all variables for Docker Compose testing (container hostnames)
+- **`.env.local.spring`**: Ready-to-use for Spring Boot JVM testing (localhost services)
+- **`.env.dev`**: User-created from `.env.example` for dev environment (contains secrets, not in repo)
+
 ### Environment variables
 
 These are all environment variables needed by the application:
@@ -229,10 +299,7 @@ Run integration tests using the local Docker Compose setup:
    docker-compose up
    ```
 
-2. Run the Postman collection:
-   ```shell
-   newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json
-   ```
+2. Run tests using the Postman collections (see "Using Postman Collections" section below)
 
 ### eCommerce-Local Integration Testing
 The service is integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
@@ -403,10 +470,10 @@ cp .env.example .env.dev
 
 ```bash
 # Start the application with dev environment
-export $(grep -v '^#' .env.local | xargs) && gradle bootRun
+export $(grep -v '^#' .env.dev | xargs) && gradle bootRun
 
 # For native compilation (production-like testing)
-export $(grep -v '^#' .env.local | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
+export $(grep -v '^#' .env.dev | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
 ```
 
 ### Testing with curl
@@ -416,7 +483,7 @@ Use real transaction IDs from the dev database:
 **Request Transaction Refund:**
 ```bash
 curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/refund \
---header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'x-api-key: primary-key' \
 --header 'deployment: green' \
 --header 'X-User-Id: user-id' \
 --header 'X-Forwarded-For: 192.168.0.1'
@@ -425,7 +492,7 @@ curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION
 **Resend Transaction Email:**
 ```bash
 curl -X POST http://localhost:8080/commands/transactions/{NOTIFICATION_RESEND_TRANSACTION_ID}/resend-email \
---header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'x-api-key: primary-key' \
 --header 'deployment: green' \
 --header 'X-User-Id: user-id' \
 --header 'X-Forwarded-For: 192.168.0.1'
