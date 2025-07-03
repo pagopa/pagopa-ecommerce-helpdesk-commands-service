@@ -54,8 +54,7 @@ class NpgPspApiKeyConfigTest {
             )
         assertTrue(pspConfiguration.isLeft())
         assertEquals(
-            "Error parsing NPG PSP api keys configuration for payment method: [CARDS], " +
-                "cause: Invalid json configuration map",
+            "Error parsing NPG PSP api keys configuration for payment method: [CARDS], cause: Invalid json configuration map",
             pspConfiguration.leftOrNull()?.message
         )
     }
@@ -73,8 +72,7 @@ class NpgPspApiKeyConfigTest {
             )
         assertTrue(pspConfiguration.isLeft())
         assertEquals(
-            "Error parsing NPG PSP api keys configuration for payment method: [CARDS], " +
-                "cause: Misconfigured api keys. Missing keys: [psp4]",
+            "Error parsing NPG PSP api keys configuration for payment method: [CARDS], cause: Misconfigured api keys. Missing keys: [psp4]",
             pspConfiguration.leftOrNull()?.message
         )
     }

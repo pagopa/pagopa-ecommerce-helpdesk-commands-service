@@ -74,10 +74,10 @@ class TransactionEventResolverNativeConfig {
 
             @Suppress("UNCHECKED_CAST")
             val classToPathMap =
-                classToPathField.get(null) as MutableMap<Class<out TransactionEvent<*>>, String>
+                classToPathField[null] as MutableMap<Class<out TransactionEvent<*>>, String>
             @Suppress("UNCHECKED_CAST")
             val pathToClassMap =
-                pathToClassField.get(null) as MutableMap<String, Class<out TransactionEvent<*>>>
+                pathToClassField[null] as MutableMap<String, Class<out TransactionEvent<*>>>
 
             classToPathMap.clear()
             pathToClassMap.clear()

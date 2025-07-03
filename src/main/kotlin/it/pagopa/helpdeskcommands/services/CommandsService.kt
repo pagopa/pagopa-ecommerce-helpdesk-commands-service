@@ -94,8 +94,7 @@ class CommandsService(
             { ex -> Mono.error(ex) },
             { apiKey ->
                 logger.info(
-                    "Performing NPG refund for transaction with id: [{}] and paymentMethod: [{}]. " +
-                        "OperationId: [{}], amount: [{}], pspId: [{}], correlationId: [{}]",
+                    "Performing NPG refund for transaction with id: [{}] and paymentMethod: [{}]. OperationId: [{}], amount: [{}], pspId: [{}], correlationId: [{}]",
                     transactionId.value(),
                     paymentMethod,
                     operationId,

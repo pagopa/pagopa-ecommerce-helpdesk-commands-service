@@ -46,6 +46,7 @@ class TransactionEventService(
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
+    @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
         logger.info("Sending refund message event for transaction: {}", event.transactionId)
 
@@ -63,6 +64,7 @@ class TransactionEventService(
             .then()
     }
 
+    @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendNotificationRequestedEvent(
         event: TransactionUserReceiptRequestedEvent
     ): Mono<Void> {
@@ -314,8 +316,7 @@ class TransactionEventService(
                 )
                 Mono.error(
                     InvalidTransactionStatusException(
-                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. " +
-                            "Transaction must be one of ${admissibleStates.joinToString(",")}"
+                        "Cannot resend user receipt notification for transaction in state: ${transaction.status}. Transaction must be one of ${admissibleStates.joinToString(",")}"
                     )
                 )
             }

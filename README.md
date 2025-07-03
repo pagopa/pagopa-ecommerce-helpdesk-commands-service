@@ -9,6 +9,76 @@ This service leverages Kotlin's native compilation to achieve optimal performanc
 - Kotlin
 - Spring Boot (native)
 
+## Quick Start - Testing Local APIs
+
+Get the service running quickly to test the basic APIs:
+
+### Prerequisites
+- Java 21 (GraalVM recommended)
+- Gradle 8.2+
+- Docker Desktop
+
+### 4-Step Setup
+
+1. **Build the project and install dependencies:**
+   ```bash
+   ./gradlew installLibs -PbuildCommons && ./gradlew build
+   ```
+
+2. **Start required services:**
+   ```bash
+   docker-compose up mongo-ecommerce pagopa-npg-mock pagopa-psp-mock -d
+   ```
+
+3. **Start the application:**
+   ```bash
+   export $(grep -v '^#' .env.local.spring | xargs) && gradle bootRun
+   ```
+
+4. **Test with Postman:**
+   - Import collection: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+   - Import environment: `api-tests/env/helpdeskcommands_local.env.json`
+   - Run the collection against `http://localhost:8080`
+
+### API Authentication
+
+All `/commands/*` endpoints require API key authentication using the `x-api-key` header. The valid API keys are configured in the environment variables:
+- `SECURITY_API_KEYS_PRIMARY=primary-key` (default)
+- `SECURITY_API_KEYS_SECONDARY=secondary-key` (alternative)
+
+### Quick API Test with cURL
+
+Test the health endpoint:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Test a refund operation (example transaction ID):
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/refund \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+Test a resend email operation:
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/resend-email \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+### Environment Files
+
+Choose the appropriate environment file based on your testing approach:
+
+- **`.env.example`**: Template with all variables for Docker Compose testing (container hostnames)
+- **`.env.local.spring`**: Ready-to-use for Spring Boot JVM testing (localhost services)
+- **`.env.dev`**: User-created from `.env.example` for dev environment (contains secrets, not in repo)
+
 ### Environment variables
 
 These are all environment variables needed by the application:
@@ -101,7 +171,7 @@ Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM en
 
 There is an `installLibs` task in the Gradle build file that takes care of properly fetching and
 building `ecommerce-commons`. It does so by executing a shell script that performs a repository clone, checks out to the version set in the
-build file, and builds the library with Maven using Java 17.
+build file, and builds the library with Maven using Java 21.
 
 If you want to build the `ecommerce-commons` library, you can run the build command with `-PbuildCommons`:
 
@@ -136,7 +206,7 @@ The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which
 
 1. Clones the ecommerce-commons repository
 2. Checks out the specified version/branch
-3. Detects and uses Java 17 for building (required for commons compatibility)
+3. Detects and uses Java 21 for building (required for commons compatibility)
 4. Runs `mvn install -DskipTests` to install the library to local Maven repository
 5. Cleans up temporary files
 
@@ -147,15 +217,15 @@ The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which
 
 #### Java Version Requirements
 
-- **eCommerce Commons**: Requires Java 17 for building
+- **eCommerce Commons**: Requires Java 21 for building
 - **Main Application**: Uses Java 21 for GraalVM native compilation
 
-The installation script automatically detects Java 17 from common locations or uses `JAVA_HOME_17` environment variable if set.
+The installation script automatically detects Java 21 from common locations or uses the current `JAVA_HOME` environment variable if set to Java 21.
 
 #### Docker Build Integration
 
 The Docker build uses a multi-stage approach:
-1. **Commons stage**: Uses OpenJDK 17 to build and install ecommerce-commons
+1. **Commons stage**: Uses OpenJDK 21 to build and install ecommerce-commons
 2. **Main stage**: Uses GraalVM 21 to compile the application natively
 
 Running `docker compose up` automatically handles the commons installation without requiring manual intervention.
@@ -229,10 +299,7 @@ Run integration tests using the local Docker Compose setup:
    docker-compose up
    ```
 
-2. Run the Postman collection:
-   ```shell
-   newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json
-   ```
+2. Run tests using the Postman collections (see "Using Postman Collections" section below)
 
 ### eCommerce-Local Integration Testing
 The service is integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
@@ -403,10 +470,10 @@ cp .env.example .env.dev
 
 ```bash
 # Start the application with dev environment
-export $(grep -v '^#' .env.local | xargs) && gradle bootRun
+export $(grep -v '^#' .env.dev | xargs) && gradle bootRun
 
 # For native compilation (production-like testing)
-export $(grep -v '^#' .env.local | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
+export $(grep -v '^#' .env.dev | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
 ```
 
 ### Testing with curl
@@ -416,7 +483,7 @@ Use real transaction IDs from the dev database:
 **Request Transaction Refund:**
 ```bash
 curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/refund \
---header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'x-api-key: primary-key' \
 --header 'deployment: green' \
 --header 'X-User-Id: user-id' \
 --header 'X-Forwarded-For: 192.168.0.1'
@@ -425,7 +492,7 @@ curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION
 **Resend Transaction Email:**
 ```bash
 curl -X POST http://localhost:8080/commands/transactions/{NOTIFICATION_RESEND_TRANSACTION_ID}/resend-email \
---header 'Ocp-Apim-Subscription-Key: default-key' \
+--header 'x-api-key: primary-key' \
 --header 'deployment: green' \
 --header 'X-User-Id: user-id' \
 --header 'X-Forwarded-For: 192.168.0.1'

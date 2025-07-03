@@ -69,6 +69,7 @@ class AzureStorageConfig(
             stream.write(modifiedJson.toByteArray(Charsets.UTF_8))
         }
 
+        @Suppress("kotlin:S6508") // Overriding Java interface requires Mono<Void>
         override fun serializeAsync(stream: OutputStream, value: Any): Mono<Void> {
             return Mono.fromRunnable { serialize(stream, value) }
         }
@@ -176,7 +177,7 @@ class AzureStorageConfig(
                                     credentials.accountKey
                                 )
                             }
-                            .map { response -> createMockSendMessageResponse() }
+                            .map { _ -> createMockSendMessageResponse() }
                     } catch (e: Exception) {
                         logger.error("Azure API queue HTTP client error: {}", e.message)
                         Mono.error(e)
@@ -281,8 +282,11 @@ class AzureStorageConfig(
         val mockResult = SendMessageResult()
         return object : Response<SendMessageResult> {
             override fun getStatusCode(): Int = 201
+
             override fun getHeaders(): HttpHeaders = HttpHeaders()
+
             override fun getRequest(): HttpRequest? = null
+
             override fun getValue(): SendMessageResult = mockResult
         }
     }
