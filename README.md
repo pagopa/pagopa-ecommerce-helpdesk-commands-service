@@ -101,7 +101,7 @@ Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM en
 
 There is an `installLibs` task in the Gradle build file that takes care of properly fetching and
 building `ecommerce-commons`. It does so by executing a shell script that performs a repository clone, checks out to the version set in the
-build file, and builds the library with Maven using Java 17.
+build file, and builds the library with Maven using Java 21.
 
 If you want to build the `ecommerce-commons` library, you can run the build command with `-PbuildCommons`:
 
@@ -136,7 +136,7 @@ The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which
 
 1. Clones the ecommerce-commons repository
 2. Checks out the specified version/branch
-3. Detects and uses Java 17 for building (required for commons compatibility)
+3. Detects and uses Java 21 for building (required for commons compatibility)
 4. Runs `mvn install -DskipTests` to install the library to local Maven repository
 5. Cleans up temporary files
 
@@ -147,15 +147,15 @@ The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which
 
 #### Java Version Requirements
 
-- **eCommerce Commons**: Requires Java 17 for building
+- **eCommerce Commons**: Requires Java 21 for building
 - **Main Application**: Uses Java 21 for GraalVM native compilation
 
-The installation script automatically detects Java 17 from common locations or uses `JAVA_HOME_17` environment variable if set.
+The installation script automatically detects Java 21 from common locations or uses the current `JAVA_HOME` environment variable if set to Java 21.
 
 #### Docker Build Integration
 
 The Docker build uses a multi-stage approach:
-1. **Commons stage**: Uses OpenJDK 17 to build and install ecommerce-commons
+1. **Commons stage**: Uses OpenJDK 21 to build and install ecommerce-commons
 2. **Main stage**: Uses GraalVM 21 to compile the application natively
 
 Running `docker compose up` automatically handles the commons installation without requiring manual intervention.
