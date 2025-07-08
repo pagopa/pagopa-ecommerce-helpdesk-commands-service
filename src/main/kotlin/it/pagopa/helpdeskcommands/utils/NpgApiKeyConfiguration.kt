@@ -31,6 +31,7 @@ class NpgApiKeyConfiguration(
             }
             methodsApiKeyMapping.put(paymentMethod, npgPspApiKeysConfig)
         }
+
         fun build() = NpgApiKeyConfiguration(methodsApiKeyMapping)
     }
 

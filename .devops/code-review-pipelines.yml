@@ -47,7 +47,7 @@ stages:
               gradleWrapperFile: 'gradlew'
               tasks: 'printCommonsVersion -q'
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.17'
+              jdkVersionOption: '1.21'
             name: extractVersion
 
           - script: |
@@ -65,7 +65,7 @@ stages:
               codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
               codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
               javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
-              jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
+              jdkVersionOption: '1.21' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
               sonarQubeRunAnalysis: true
 
           - task: SonarCloudPublish@3
@@ -89,16 +89,33 @@ stages:
     jobs:
       - job: make_integration_test
         steps:
-            - script: |
-                docker compose up mongo-ecommerce -d
-              displayName: 'Start MongoDB instance'
             - script: cp .env.example .env
               displayName: 'Setup env'
-            - script: docker compose up -d
+            - script: |
+                echo "##[debug] Starting MongoDB instance first"
+                docker compose up mongo-ecommerce -d
+                echo "##[debug] Waiting for MongoDB to be ready..."
+                timeout 120 bash -c 'while ! docker compose exec -T mongo-ecommerce mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
+              displayName: 'Start and verify MongoDB instance'
+            - script: |
+                echo "##[debug] Starting all services with docker-compose"
+                docker compose up -d
+                echo "##[debug] Services started, checking container status..."
+                docker compose ps
               displayName: 'Run app with docker-compose'
             - script: |
-                timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
-              displayName: 'Health check'
+                echo "##[debug] Waiting for mock services to be ready..."
+                timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000/)" != "200" ]]; do echo "Waiting for NPG mock..."; sleep 5; done' || echo "NPG mock health check timeout - continuing"
+                timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8096/)" != "200" ]]; do echo "Waiting for PSP mock..."; sleep 5; done' || echo "PSP mock health check timeout - continuing"
+              displayName: 'Wait for mock services'
+            - script: |
+                echo "##[debug] Checking application container logs before health check..."
+                docker logs pagopa-ecommerce-helpdesk-commands-service --tail 20
+                echo "##[debug] Starting health check for main application..."
+                echo "##[debug] Application should be available at localhost:8080/actuator/health/liveness"
+                timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check... (HTTP $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness 2>/dev/null || echo "connection failed"))"; docker logs pagopa-ecommerce-helpdesk-commands-service --tail 5; sleep 10; done' || (echo "##[error] Health check failed after 5 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
+                echo "##[debug] Health check successful!"
+              displayName: 'Health check with extended timeout and logging'
             - script: yarn global add newman
               displayName: 'newman installation'
             - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
@@ -109,6 +126,16 @@ stages:
                 testResultsFormat: 'JUnit'
                 testResultsFiles: '**/*-TEST.xml'
                 searchFolder: '$(System.DefaultWorkingDirectory)'
+            - script: |
+                echo "##[debug] Printing logs for all running containers on failure:"
+                for container in $(docker ps -q); do
+                  name=$(docker inspect --format='{{.Name}}' $container | sed 's/^\/\(.*\)/\1/')
+                  echo "===== Logs for $name ====="
+                  docker logs $container --tail 50
+                  echo "===== End of logs for $name ====="
+                done
+              condition: failed()
+              displayName: 'Print Docker container logs on failure'
 
   - stage: IntegrationTestEcommerceLocal
     dependsOn: []

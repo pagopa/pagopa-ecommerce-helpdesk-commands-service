@@ -1,14 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.spring") version "1.9.24"
+  kotlin("jvm") version "2.2.0"
+  kotlin("plugin.spring") version "2.2.0"
   id("java")
-  id("org.springframework.boot") version "3.3.2"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.6"
-  id("org.openapi.generator") version "6.3.0"
+  id("org.openapi.generator") version "7.8.0"
   id("org.graalvm.buildtools.native") version "0.10.2"
-  id("com.diffplug.spotless") version "6.18.0"
+  id("com.diffplug.spotless") version "6.25.0"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   id("org.sonarqube") version "4.2.0.3129"
   jacoco
@@ -41,7 +41,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "1.37.2"
+  const val ecommerceCommonsVersion = "3.0.0"
 }
 
 dependencies {
