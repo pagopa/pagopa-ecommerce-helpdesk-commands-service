@@ -11,7 +11,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: CHK-4303-update-commands-docker-image
+      ref: main
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
