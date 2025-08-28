@@ -180,13 +180,21 @@ Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM en
 
 ### eCommerce Commons Library
 
-The service uses the `pagopa-ecommerce-commons` library which is now distributed via GitHub Packages. The library version is configured in `build.gradle.kts`:
+The service uses the `pagopa-ecommerce-commons` library which is now distributed via GitHub Packages. The library version is configured in `build.gradle.kts`.
+These two properties in `build.gradle.kts` control the `ecommerce-commons` version and git reference:
 
 ```kotlin
 object Deps {
-  const val ecommerceCommonsVersion = "3.0.2"
+  const val ecommerceCommonsVersion = "3.0.2" // ecommerce commons wanted pom version
+  const val ecommerceCommonsGitRef = ecommerceCommonsVersion // the branch/tag to be checked out
 }
 ```
+
+`ecommerceCommonsGitRef` has by default the same value as `ecommerceCommonsVersion`, so the version tagged
+with `"x.y.z"` will be checked out and installed locally.
+
+This value was left as a separate property because, during development phases, it can be changed to a feature branch,
+making the local build use a ref branch other than a tag for development purposes.
 
 The library is automatically downloaded from GitHub Packages during the build process using the configured GitHub token.
 
