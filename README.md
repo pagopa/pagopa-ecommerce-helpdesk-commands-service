@@ -17,12 +17,24 @@ Get the service running quickly to test the basic APIs:
 - Java 21 (GraalVM recommended)
 - Gradle 8.2+
 - Docker Desktop
+- GitHub personal access token with `packages:read` permission
+
+### GitHub Token Setup
+
+To access the `pagopa-ecommerce-commons` library from GitHub Packages, you need to set up authentication:
+
+1. Create a GitHub personal access token with `packages:read` permission
+2. Set the token as an environment variable:
+
+```shell
+export GITHUB_TOKEN=your_github_token_with_packages_read_permission
+```
 
 ### 4-Step Setup
 
-1. **Build the project and install dependencies:**
+1. **Build the project:**
    ```bash
-   ./gradlew installLibs -PbuildCommons && ./gradlew build
+   ./gradlew build
    ```
 
 2. **Start required services:**
@@ -166,68 +178,17 @@ After setting up the WSL environment, you can test the application by building i
 If you're experiencing issue with GraalVM not found like errors, be sure to use GraalVM for the project and try to enable automatic toolchain detection.
 Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM env "switching".
 
-### Install eCommerce commons library locally
+### eCommerce Commons Library
 
-There is an `installLibs` task in the Gradle build file that takes care of properly fetching and
-building `ecommerce-commons`. It does so by executing a shell script that performs a repository clone, checks out to the version set in the
-build file, and builds the library with Maven using Java 21.
-
-If you want to build the `ecommerce-commons` library, you can run the build command with `-PbuildCommons`:
-
-```Shell
-$ ./gradlew build -PbuildCommons
-```
-
-Alternatively, you can run the installation task directly:
-
-```Shell
-$ ./gradlew installLibs -PbuildCommons
-```
-
-#### Configuration Properties
-
-These two properties in `build.gradle.kts` control the `ecommerce-commons` version and git reference:
+The service uses the `pagopa-ecommerce-commons` library which is now distributed via GitHub Packages. The library version is configured in `build.gradle.kts`:
 
 ```kotlin
-val ecommerceCommonsVersion = "x.y.z" // ecommerce commons wanted pom version
-val ecommerceCommonsGitRef = ecommerceCommonsVersion // the branch/tag to be checked out
+object Deps {
+  const val ecommerceCommonsVersion = "3.0.2"
+}
 ```
 
-`ecommerceCommonsGitRef` has by default the same value as `ecommerceCommonsVersion`, so the version tagged
-with `"x.y.z"` will be checked out and installed locally.
-
-This value was left as a separate property because, during development phases, it can be changed to a feature branch,
-making the local build use a ref branch other than a tag for development purposes.
-
-#### Installation Process
-
-The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which:
-
-1. Clones the ecommerce-commons repository
-2. Checks out the specified version/branch
-3. Detects and uses Java 21 for building (required for commons compatibility)
-4. Runs `mvn install -DskipTests` to install the library to local Maven repository
-5. Cleans up temporary files
-
-#### Utility Tasks
-
-- **Print current commons version**: `./gradlew printCommonsVersion -q`
-- **Install commons only**: `./gradlew installLibs -PbuildCommons`
-
-#### Java Version Requirements
-
-- **eCommerce Commons**: Requires Java 21 for building
-- **Main Application**: Uses Java 21 for GraalVM native compilation
-
-The installation script automatically detects Java 21 from common locations or uses the current `JAVA_HOME` environment variable if set to Java 21.
-
-#### Docker Build Integration
-
-The Docker build uses a multi-stage approach:
-1. **Commons stage**: Uses OpenJDK 21 to build and install ecommerce-commons
-2. **Main stage**: Uses GraalVM 21 to compile the application natively
-
-Running `docker compose up` automatically handles the commons installation without requiring manual intervention.
+The library is automatically downloaded from GitHub Packages during the build process using the configured GitHub token.
 
 You also need one of:
  - an azurite instance running locally
@@ -281,7 +242,8 @@ You can find more info at the following link: https://docs.docker.com/desktop/ws
 After setting up Docker, you can use the command:
 
 ```shell
-docker-compose up
+export GITHUB_TOKEN=your_github_token_with_packages_read_permission
+docker-compose up --build
 ```
 
 The docker-compose up command will build the image and start the containers.
