@@ -33,7 +33,14 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories {
   mavenCentral()
-  mavenLocal()
+  maven {
+    name = "GitHubPackages"
+    url = uri("https://maven.pkg.github.com/pagopa/pagopa-ecommerce-commons")
+    credentials {
+      username = "token"
+      password = System.getenv("GITHUB_TOKEN")
+    }
+  }
 }
 
 val mockWebServerVersion = "4.12.0"
@@ -41,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.0.0"
+  const val ecommerceCommonsVersion = "3.0.2"
 }
 
 dependencies {
@@ -230,22 +237,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
-tasks.register<Exec>("installLibs") {
-  description = "Installs the commons library for this project."
-  group = "commons"
-  val buildCommons = providers.gradleProperty("buildCommons")
-  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
-  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", Deps.ecommerceCommonsVersion)
-}
-
 tasks.withType<KotlinCompile> {
-  dependsOn(
-    "helpdeskcommands-v1",
-    "npg-api",
-    "node-forwarder-api-v1",
-    "redirect-api-v1",
-    "installLibs"
-  )
+  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
   // kotlinOptions.jvmTarget = "21"
 }
 
