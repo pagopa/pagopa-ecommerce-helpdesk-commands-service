@@ -148,7 +148,7 @@ These are all environment variables needed by the application:
 | SECURITY_API_KEYS_SECURED_PATHS               | Comma-separated list of secured API paths                                                                                                                                       | string  |            |
 | SECURITY_API_KEYS_PRIMARY                     | Secured api primary key                                                                                                                                                         | string  |            |
 | SECURITY_API_KEYS_SECONDARY                   | Secured api secondary key                                                                                                                                                       | string  |            |
-
+| GITHUB_TOKEN                                  | GitHub Personal Access Token with packages:read permission for accessing pagopa-ecommerce-commons from GitHub Packages                                                          | string  |            |
 An example configuration of these environment variables is in the `.env.example` file.
 
 It is recommended to create a new .env file by copying the example one, using the following command (make sure you are in the .env.example folder):
@@ -275,7 +275,6 @@ The service is integrated into the [pagopa-ecommerce-local](https://github.com/p
 
 **Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that:
 - Dynamically sets the service branch using `ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA` 
-- Extracts the ecommerce-commons version dynamically using `./gradlew -q printCommonsVersion`
 - Runs tests in the full ecommerce environment
 
 **Polling Tests**: Integration tests include transaction state polling to verify:
