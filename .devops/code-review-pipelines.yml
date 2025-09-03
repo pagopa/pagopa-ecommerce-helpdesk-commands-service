@@ -11,7 +11,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: main
+      ref: CHK-4392-ecommerce-commons-gh-package
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
@@ -42,21 +42,6 @@ stages:
                 sonar.junit.reportPaths=./build/test-results/test
 
           - task: Gradle@3
-            displayName: 'Extract commons version'
-            inputs:
-              gradleWrapperFile: 'gradlew'
-              tasks: 'printCommonsVersion -q'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.21'
-            name: extractVersion
-
-          - script: |
-              COMMONS_VERSION=$(./gradlew -q printCommonsVersion)
-              chmod +x ./pagopa-ecommerce-commons-maven-install.sh
-              ./pagopa-ecommerce-commons-maven-install.sh $COMMONS_VERSION
-            displayName: 'Install ecommerce commons'
-
-          - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
               tasks: 'build' # string. Required. Tasks. Default: build.
@@ -67,6 +52,8 @@ stages:
               javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
               jdkVersionOption: '1.21' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
               sonarQubeRunAnalysis: true
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
 
           - task: SonarCloudPublish@3
             displayName: 'Publish SonarCloud results on build summary'
@@ -153,6 +140,8 @@ stages:
               docker compose run --rm azurite-init
               docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service mongo redis pagopa-npg-mock pagopa-notifications-service -d
             displayName: 'Run app with docker-compose'
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
           - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
             displayName: 'Health check helpdesk-commands-service'
