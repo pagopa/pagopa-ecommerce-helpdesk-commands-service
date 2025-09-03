@@ -88,7 +88,7 @@ kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 kotlin { jvmToolchain(21) }
 
 // Dependency locking - lock all dependencies
-// dependencyLocking { lockAllConfigurations() }
+dependencyLocking { lockAllConfigurations() }
 
 tasks.create("applySemanticVersionPlugin") {
   dependsOn("prepareKotlinBuildScriptModel")
