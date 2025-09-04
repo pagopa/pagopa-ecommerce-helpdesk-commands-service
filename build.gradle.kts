@@ -243,12 +243,6 @@ tasks.withType<KotlinCompile> {
   // kotlinOptions.jvmTarget = "21"
 }
 
-tasks.register("printCommonsVersion") {
-  description = "Prints the referenced commons library version."
-  group = "commons"
-  doLast { print(Deps.ecommerceCommonsVersion) }
-}
-
 tasks.test {
   useJUnitPlatform()
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
