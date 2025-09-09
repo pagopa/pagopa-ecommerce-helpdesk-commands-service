@@ -4,6 +4,8 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+      secrets:
+        - GITHUB_TOKEN
     env_file:
       - ./.env
     ports:
@@ -87,6 +89,10 @@ networks:
     driver: bridge
     driver_opts:
       com.docker.network.driver.mtu: 1450
+
+secrets:
+  GITHUB_TOKEN:
+    environment: GITHUB_TOKEN
 
 volumes:
   mongodb_data:
