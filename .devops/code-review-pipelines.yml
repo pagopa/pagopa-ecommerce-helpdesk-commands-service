@@ -90,8 +90,8 @@ stages:
                 echo "##[debug] Services started, checking container status..."
                 docker compose ps
               displayName: 'Run app with docker-compose'
-#              env:
-#                GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
+              env:
+                GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
             - script: |
                 echo "##[debug] Waiting for mock services to be ready..."
                 timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000/)" != "200" ]]; do echo "Waiting for NPG mock..."; sleep 5; done' || echo "NPG mock health check timeout - continuing"
