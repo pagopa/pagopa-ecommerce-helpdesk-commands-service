@@ -23,8 +23,12 @@ FROM ghcr.io/graalvm/native-image-community:21.0.2@sha256:faed0fd6809b138254bdd6
 WORKDIR /workspace/app
 RUN microdnf install -y findutils
 
-ENV NATIVE_IMAGE_OPTS="-H:+PrintGC -H:MaximumHeapSizePercent=80 -H:-SpawnIsolates -H:+ReportExceptionStackTraces"
-ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+#ENV NATIVE_IMAGE_OPTS="-H:+PrintGC -H:MaximumHeapSizePercent=80 -H:-SpawnIsolates -H:+ReportExceptionStackTraces"
+#ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+ENV NATIVE_IMAGE_OPTS="-Xmx3g -H:MaximumHeapSizePercent=50 -H:-SpawnIsolates -H:+ReportExceptionStackTraces -H:+ExitAfterRelocatableImageWrite"
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1 -Dorg.gradle.jvmargs=-Xmx1g"
+ENV JAVA_TOOL_OPTIONS="-Xmx2g -XX:MaxMetaspaceSize=500m -XX:+ExitOnOutOfMemoryError"
+
 
 COPY . .
 
@@ -33,7 +37,7 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
     GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) \
     ./gradlew :nativeCompile --no-daemon \
     -Porg.graalvm.nativeimage.imagecode=1 \
-    -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g" \
+    -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=500m" \
     -Dspring.aot.enabled=true
 
 FROM debian:stable-20240701-slim@sha256:f8bbfa052db81e5b8ac12e4a1d8310a85d1509d4d0d5579148059c0e8b717d4e
