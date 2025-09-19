@@ -281,6 +281,17 @@ graalvmNative {
       */
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
+
+      buildArgs.addAll(
+        listOf(
+          "--no-fallback",
+          "-H:MaxHeapSize=3g",
+          "-H:StackSize=4k",
+          "-H:+ReportExceptionStackTraces"
+        )
+      )
+
+      jvmArgs.addAll(listOf("-Xmx4g", "-Xms512m", "-Dsvm.maxThreads=1"))
     }
   }
 
