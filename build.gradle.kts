@@ -284,14 +284,21 @@ graalvmNative {
 
       buildArgs.addAll(
         listOf(
-          "--no-fallback",
-          "-H:MaxHeapSize=3g",
-          "-H:StackSize=4k",
-          "-H:+ReportExceptionStackTraces"
+          "--no-fallback", // avoid large fallback images
+          "-H:+ReportExceptionStackTraces", // better diagnostics on failures
+          "-R:MaxHeapSize=3g", // RUNTIME heap limit (instead of -H:MaxHeapSize)
+          // "--verbose"                        // enable if you need more logs
         )
       )
 
-      jvmArgs.addAll(listOf("-Xmx4g", "-Xms512m", "-Dsvm.maxThreads=1"))
+      jvmArgs.addAll(
+        listOf(
+          "-Xmx4g", // increase heap for native-image builder JVM
+          "-Xms512m", // initial heap size
+          "-XX:MaxMetaspaceSize=1g", // limit metaspace growth
+          "-Dsvm.maxThreads=1" // limit SVM threads on CI to reduce memory use
+        )
+      )
     }
   }
 
