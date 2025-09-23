@@ -7,7 +7,7 @@ plugins {
   id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.6"
   id("org.openapi.generator") version "7.8.0"
-  id("org.graalvm.buildtools.native") version "0.10.2"
+  id("org.graalvm.buildtools.native") version "0.11.0"
   id("com.diffplug.spotless") version "6.25.0"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   id("org.sonarqube") version "4.2.0.3129"
@@ -279,24 +279,13 @@ graalvmNative {
       This flag ensures problematic classes (like XML processors) are properly initialized at runtime
       rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
       */
-      buildArgs.add("--strict-image-heap")
-      buildArgs.add("-H:+AddAllCharsets")
-
       buildArgs.addAll(
         listOf(
-          "--no-fallback", // avoid large fallback images
-          "-H:+ReportExceptionStackTraces", // better diagnostics on failures
-          "-R:MaxHeapSize=3g", // RUNTIME heap limit (instead of -H:MaxHeapSize)
-          // "--verbose"                        // enable if you need more logs
-        )
-      )
-
-      jvmArgs.addAll(
-        listOf(
-          "-Xmx4g", // increase heap for native-image builder JVM
-          "-Xms512m", // initial heap size
-          "-XX:MaxMetaspaceSize=1g", // limit metaspace growth
-          "-Dsvm.maxThreads=1" // limit SVM threads on CI to reduce memory use
+          "-J-Xmx3g",
+          "-J-XX:ActiveProcessorCount=2",
+          "--strict-image-heap",
+          "-H:+AddAllCharsets",
+          "--no-fallback"
         )
       )
     }
