@@ -7,7 +7,7 @@ plugins {
   id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.6"
   id("org.openapi.generator") version "7.8.0"
-  id("org.graalvm.buildtools.native") version "0.11.0"
+  id("org.graalvm.buildtools.native") version "0.10.2"
   id("com.diffplug.spotless") version "6.25.0"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   id("org.sonarqube") version "4.2.0.3129"
@@ -279,15 +279,8 @@ graalvmNative {
       This flag ensures problematic classes (like XML processors) are properly initialized at runtime
       rather than build time. Required for GraalVM 21, became default in GraalVM 22+.
       */
-      buildArgs.addAll(
-        listOf(
-          "-J-Xmx3g",
-          "-J-XX:ActiveProcessorCount=2",
-          "--strict-image-heap",
-          "-H:+AddAllCharsets",
-          "--no-fallback"
-        )
-      )
+      buildArgs.add("--strict-image-heap")
+      buildArgs.add("-H:+AddAllCharsets")
     }
   }
 
