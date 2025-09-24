@@ -2,10 +2,11 @@ FROM ghcr.io/graalvm/native-image-community:21.0.2@sha256:faed0fd6809b138254bdd6
 WORKDIR /workspace/app
 RUN microdnf install -y git unzip findutils && microdnf clean all
 
+COPY . .
+
 RUN --mount=type=secret,id=GITHUB_TOKEN \
     GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) \
     ./gradlew dependencies --no-daemon
-COPY . .
 
 RUN --mount=type=secret,id=GITHUB_TOKEN \
     GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) \
