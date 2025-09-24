@@ -79,20 +79,15 @@ stages:
             - script: cp .env.example .env
               displayName: 'Setup env'
             - script: |
-                echo "##[debug] Starting storage services first"
-                docker compose up storage mongo-ecommerce -d
+                echo "##[debug] Starting mongo services first"
+                docker compose up mongo-ecommerce -d
                 echo "##[debug] Waiting for MongoDB to be ready..."
                 timeout 120 bash -c 'while ! docker compose exec -T mongo-ecommerce mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
-              displayName: 'Start and verify storage services'
-
-            - script: |
-                echo "##[debug] Running initialization scripts"
-                docker compose run --rm azurite-init
-              displayName: 'Initialize services'
+              displayName: 'Start and verify mongo services'
 
             - script: |
                 echo "##[debug] Starting all services with docker-compose"
-                docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-npg-mock psp-mock -d
+                docker compose up mock -d
                 echo "##[debug] Services started, checking container status..."
                 docker compose ps
               displayName: 'Run app with docker-compose'
