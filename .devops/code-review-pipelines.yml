@@ -103,6 +103,8 @@ stages:
               displayName: 'Run app with docker-compose'
               env:
                 GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
+                DOCKER_BUILDKIT: 1
+                BUILDKIT_PROGRESS: plain
 
             - script: |
                 echo "##[debug] Checking application container logs before health check..."

@@ -281,6 +281,7 @@ graalvmNative {
       */
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
+      buildArgs.add("-J-Xmx6g")
     }
   }
 
