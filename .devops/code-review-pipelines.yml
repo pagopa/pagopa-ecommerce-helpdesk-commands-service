@@ -87,7 +87,7 @@ stages:
 
             - script: |
                 echo "##[debug] Starting all services with docker-compose"
-                docker compose up mock -d
+                docker compose up -d
                 echo "##[debug] Services started, checking container status..."
                 docker compose ps
               displayName: 'Run app with docker-compose'
