@@ -48,8 +48,8 @@ stages:
               tasks: 'dependencies'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.21'
-              env:
-                GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
 
           - task: Gradle@3
             inputs:
