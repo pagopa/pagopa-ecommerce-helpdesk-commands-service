@@ -72,39 +72,41 @@ stages:
             displayName: 'Publish Code Coverage on Azure Devops'
 
   - stage: IntegrationTest
-    dependsOn: []
+    dependsOn: [ ]
     jobs:
       - job: make_integration_test
         steps:
             - script: cp .env.example .env
               displayName: 'Setup env'
             - script: |
-                echo "##[debug] Starting MongoDB instance first"
-                docker compose up mongo-ecommerce -d
+                echo "##[debug] Starting storage services first"
+                docker compose up storage mongo-ecommerce -d
                 echo "##[debug] Waiting for MongoDB to be ready..."
                 timeout 120 bash -c 'while ! docker compose exec -T mongo-ecommerce mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
-              displayName: 'Start and verify MongoDB instance'
+              displayName: 'Start and verify storage services'
+
+            - script: |
+                echo "##[debug] Running initialization scripts"
+                docker compose run --rm azurite-init
+              displayName: 'Initialize services'
+
             - script: |
                 echo "##[debug] Starting all services with docker-compose"
-                docker compose up -d
+                docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-npg-mock psp-mock -d
                 echo "##[debug] Services started, checking container status..."
                 docker compose ps
               displayName: 'Run app with docker-compose'
               env:
                 GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
-            - script: |
-                echo "##[debug] Waiting for mock services to be ready..."
-                timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000/)" != "200" ]]; do echo "Waiting for NPG mock..."; sleep 5; done' || echo "NPG mock health check timeout - continuing"
-                timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8096/)" != "200" ]]; do echo "Waiting for PSP mock..."; sleep 5; done' || echo "PSP mock health check timeout - continuing"
-              displayName: 'Wait for mock services'
+
             - script: |
                 echo "##[debug] Checking application container logs before health check..."
                 docker logs pagopa-ecommerce-helpdesk-commands-service --tail 20
                 echo "##[debug] Starting health check for main application..."
                 echo "##[debug] Application should be available at localhost:8080/actuator/health/liveness"
-                timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check... (HTTP $(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness 2>/dev/null || echo "connection failed"))"; docker logs pagopa-ecommerce-helpdesk-commands-service --tail 5; sleep 10; done' || (echo "##[error] Health check failed after 5 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
+                timeout 240 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check..."; sleep 10; done' || (echo "##[error] Health check failed after 4 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
                 echo "##[debug] Health check successful!"
-              displayName: 'Health check with extended timeout and logging'
+              displayName: 'Health check with timeout and logging'
             - script: yarn global add newman
               displayName: 'newman installation'
             - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
