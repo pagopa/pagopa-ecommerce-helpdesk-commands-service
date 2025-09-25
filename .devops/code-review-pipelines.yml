@@ -103,8 +103,8 @@ stages:
               displayName: 'Run app with docker-compose'
               env:
                 GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
-                DOCKER_BUILDKIT: 1
-                BUILDKIT_PROGRESS: plain
+                #DOCKER_BUILDKIT: 1
+                #BUILDKIT_PROGRESS: plain
 
             - script: |
                 echo "##[debug] Checking application container logs before health check..."
@@ -114,6 +114,27 @@ stages:
                 timeout 240 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check..."; sleep 10; done' || (echo "##[error] Health check failed after 4 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
                 echo "##[debug] Health check successful!"
               displayName: 'Health check with timeout and logging'
+            - script: |
+                echo "##[debug] Checking database configuration in services..."
+                
+                # Check transactions-service DB config
+                docker inspect pagopa-ecommerce-transactions-service --format='{{range .Config.Env}}{{if contains . "MONGO"}}{{.}}{{end}}{{end}}'
+                
+                # Check helpdesk-commands-service DB config
+                docker inspect pagopa-ecommerce-helpdesk-commands-service --format='{{range .Config.Env}}{{if contains . "MONGO"}}{{.}}{{end}}{{end}}'
+
+              displayName: 'Compare database configurations'
+              continueOnError: true
+            - script: |
+                echo "##[debug] Checking if transaction exists in MongoDB..."
+
+                # Check in transactions-view collection
+                docker compose exec -T mongo-ecommerce mongosh --eval "db = db.getSiblingDB('ecommerce'); db.getCollection('transactions-view').findOne({_id: '00000000000000000000000000000025'})" || echo "Transaction not found in transactions-view"
+
+                # Check in eventstore collection
+                docker compose exec -T mongo-ecommerce mongosh --eval "db = db.getSiblingDB('eventstore'); db.getCollection('eventstore').find({transactionId: '00000000000000000000000000000025'}).toArray()" || echo "Transaction events not found in eventstore"
+              displayName: 'Verify transaction data in MongoDB'
+              continueOnError: true
             - script: yarn global add newman
               displayName: 'newman installation'
             - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
