@@ -156,17 +156,8 @@ stages:
           - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
+              timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
             displayName: 'Health check helpdesk-commands-service'
-          - script: |
-              echo "##[debug] Checking if transaction exists in MongoDB..."
-
-              # Check in transactions-view collection
-              docker compose exec -T mongo mongosh --eval "db = db.getSiblingDB('ecommerce'); db.getCollection('transactions-view').findOne({_id: '00000000000000000000000000000025'})" || echo "Transaction not found in transactions-view"
-
-              # Check in eventstore collection
-              docker compose exec -T mongo mongosh --eval "db = db.getSiblingDB('eventstore'); db.getCollection('eventstore').find({transactionId: '00000000000000000000000000000025'}).toArray()" || echo "Transaction events not found in eventstore"
-            displayName: 'Verify transaction data in MongoDB'
-            continueOnError: true
           - script: yarn global add newman
             displayName: 'newman installation'
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
