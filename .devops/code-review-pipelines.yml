@@ -163,6 +163,16 @@ stages:
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
             displayName: 'Run helpdesk-commands API tests (ecommerce-local)'
             continueOnError: false
+          - script: |
+              echo "Printing logs for all running containers:"
+              for container in $(docker ps -q); do
+                name=$(docker inspect --format='{{.Name}}' $container | sed 's/^\/\(.*\)/\1/')
+                echo "===== Logs for $name ====="
+                docker logs $container
+                echo "===== End of logs for $name ====="
+              done
+            condition: always()
+            displayName: 'Print Docker container logs'
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: 'JUnit'
