@@ -149,7 +149,7 @@ stages:
               docker compose up storage mongo -d
               sleep 10
               docker compose run --rm azurite-init
-              docker compose up pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service redis pagopa-npg-mock pagopa-notifications-service -d
+              docker compose up traefik pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service redis pagopa-npg-mock pagopa-notifications-service -d
             displayName: 'Run app with docker-compose'
             env:
               GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
