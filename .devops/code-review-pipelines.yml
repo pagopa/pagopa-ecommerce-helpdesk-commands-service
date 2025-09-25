@@ -11,7 +11,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: b0c1d9e131f4728222bb1045a8b04adc388a46ce
+      ref: PIDM-947-helpdesk-commands-api-key
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
