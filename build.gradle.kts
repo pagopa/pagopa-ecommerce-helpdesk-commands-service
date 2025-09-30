@@ -16,7 +16,7 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.27.1"
+version = "0.27.2"
 
 description = "pagopa-helpdeskcommands-service"
 
@@ -281,6 +281,7 @@ graalvmNative {
       */
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
+      buildArgs.add("-J-Xmx6g")
     }
   }
 
