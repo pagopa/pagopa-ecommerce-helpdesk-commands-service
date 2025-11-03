@@ -32,8 +32,8 @@ import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
-import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
+import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
+import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.stream.Stream
