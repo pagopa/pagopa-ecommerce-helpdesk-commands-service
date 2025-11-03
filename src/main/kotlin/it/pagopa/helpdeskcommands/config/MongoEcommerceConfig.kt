@@ -28,4 +28,12 @@ class MongoEcommerceConfig() {
     ): ReactiveMongoTemplate {
         return ReactiveMongoTemplate(mongoClient, database)
     }
+
+    @Bean(name = ["ecommerceHistoryReactiveMongoTemplate"])
+    fun ecommerceHistoryReactiveMongoTemplate(
+        @Qualifier("ecommerceReactiveMongoClient") mongoClient: MongoClient,
+        @Value("\${mongodb.ecommerce_history.database}") database: String
+    ): ReactiveMongoTemplate {
+        return ReactiveMongoTemplate(mongoClient, database)
+    }
 }

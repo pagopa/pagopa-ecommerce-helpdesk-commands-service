@@ -148,6 +148,8 @@ These are all environment variables needed by the application:
 | SECURITY_API_KEYS_SECURED_PATHS               | Comma-separated list of secured API paths                                                                                                                                       | string  |            |
 | SECURITY_API_KEYS_PRIMARY                     | Secured api primary key                                                                                                                                                         | string  |            |
 | SECURITY_API_KEYS_SECONDARY                   | Secured api secondary key                                                                                                                                                       | string  |            |
+| ECOMMERCE_DATABASE_NAME                       | Mongo ecommerce database name                                                                                                                                                   | string  |            |
+| ECOMMERCE_HISTORY_DATABASE_NAME               | Mongo ecommerce history database name                                                                                                                                           | string  |            |
 
 An example configuration of these environment variables is in the `.env.example` file.
 
