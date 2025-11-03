@@ -146,30 +146,6 @@ class TransactionEventService(
     }
 
     /**
-     * Retrieves a transaction view from both runtime and history repositories
-     *
-     * @param transactionId The transaction ID to search for
-     * @return Mono of Transaction, checking runtime repository first, then history
-     */
-    private fun getTransactionViewFromBothRepositories(transactionId: String): Mono<Transaction> {
-        logger.debug(
-            "Retrieving transaction view from both repositories for transaction: [{}]",
-            transactionId
-        )
-
-        return transactionsViewRepository
-            .findByTransactionId(transactionId)
-            .cast(Transaction::class.java)
-            .doOnSuccess { logger.debug("Found transaction in runtime view repository") }
-            .switchIfEmpty(
-                transactionsViewHistoryRepository
-                    .findByTransactionId(transactionId)
-                    .cast(Transaction::class.java)
-                    .doOnSuccess { logger.debug("Found transaction in history view repository") }
-            )
-    }
-
-    /**
      * Retrieves a transaction by its ID from both runtime and history repositories and reduces the
      * events to build the transaction object
      */
