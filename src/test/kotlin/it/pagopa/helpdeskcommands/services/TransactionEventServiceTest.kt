@@ -34,6 +34,8 @@ import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
+import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsEventStoreHistoryRepository
+import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsViewHistoryRepository
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.stream.Stream
@@ -105,14 +107,28 @@ class TransactionEventServiceTest {
     private lateinit var transactionsEventStoreRepository: TransactionsEventStoreRepository<Any>
 
     @Mock
+    private lateinit var transactionsEventStoreHistoryRepository:
+        TransactionsEventStoreHistoryRepository<Any>
+
+    @Mock
     private lateinit var transactionsRefundedEventStoreRepository:
         TransactionsEventStoreRepository<BaseTransactionRefundedData>
 
+    @Mock
+    private lateinit var transactionsRefundedEventStoreHistoryRepository:
+        TransactionsEventStoreHistoryRepository<BaseTransactionRefundedData>
+
     @Mock private lateinit var transactionsViewRepository: TransactionsViewRepository
+
+    @Mock private lateinit var transactionsViewHistoryRepository: TransactionsViewHistoryRepository
 
     @Mock
     private lateinit var userReceiptEventStoreRepository:
         TransactionsEventStoreRepository<TransactionUserReceiptData>
+
+    @Mock
+    private lateinit var userReceiptEventStoreHistoryRepository:
+        TransactionsEventStoreHistoryRepository<TransactionUserReceiptData>
 
     @Captor
     private lateinit var userReceiptEventCaptor:
@@ -130,7 +146,12 @@ class TransactionEventServiceTest {
                 transactionsEventStoreRepository = transactionsEventStoreRepository,
                 transactionsRefundedEventStoreRepository = transactionsRefundedEventStoreRepository,
                 transactionsViewRepository = transactionsViewRepository,
-                userReceiptEventStoreRepository = userReceiptEventStoreRepository
+                userReceiptEventStoreRepository = userReceiptEventStoreRepository,
+                transactionsEventStoreHistoryRepository = transactionsEventStoreHistoryRepository,
+                transactionsRefundedEventStoreHistoryRepository =
+                    transactionsRefundedEventStoreHistoryRepository,
+                transactionsViewHistoryRepository = transactionsViewHistoryRepository,
+                userReceiptEventStoreHistoryRepository = userReceiptEventStoreHistoryRepository
             )
     }
 
