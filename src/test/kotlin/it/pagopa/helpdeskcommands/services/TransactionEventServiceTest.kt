@@ -386,6 +386,10 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        doReturn(Flux.empty<TransactionUserReceiptRequestedEvent>())
+            .`when`(userReceiptEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         doAnswer { invocation ->
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
@@ -441,6 +445,10 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        doReturn(Flux.fromIterable(listOf<TransactionUserReceiptRequestedEvent>()))
+            .`when`(userReceiptEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         doAnswer { invocation ->
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
@@ -492,6 +500,10 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        doReturn(Flux.empty<TransactionUserReceiptRequestedEvent>())
+            .`when`(userReceiptEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         doReturn(
                 Mono.error<TransactionUserReceiptRequestedEvent>(RuntimeException("Database error"))
             )
@@ -529,6 +541,10 @@ class TransactionEventServiceTest {
 
         doReturn(Flux.fromIterable(events))
             .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doReturn(Flux.empty<TransactionUserReceiptRequestedEvent>())
+            .`when`(userReceiptEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
         doAnswer { invocation ->
@@ -591,6 +607,10 @@ class TransactionEventServiceTest {
             )
             .thenReturn(Flux.fromIterable(events) as Flux<BaseTransactionEvent<Any>>?)
 
+        doReturn(Flux.fromIterable(listOf<BaseTransactionEvent<Any>>()))
+            .`when`(transactionsEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         // Mock the reduction process
         val spyService = spy(transactionEventService)
         doReturn(Mono.just(mockTransaction))
@@ -610,6 +630,12 @@ class TransactionEventServiceTest {
         // Given
         whenever(
                 transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionIdString
+                )
+            )
+            .thenReturn(Flux.empty())
+        whenever(
+                transactionsEventStoreHistoryRepository.findByTransactionIdOrderByCreationDateAsc(
                     transactionIdString
                 )
             )
@@ -687,6 +713,13 @@ class TransactionEventServiceTest {
             .`when`(transactionsEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        whenever(
+                transactionsEventStoreHistoryRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionIdString
+                )
+            )
+            .thenReturn(Flux.empty())
+
         val transactionEventServiceSpy = spy(transactionEventService)
         doReturn(Mono.just(mockTransaction))
             .`when`(transactionEventServiceSpy)
@@ -697,9 +730,18 @@ class TransactionEventServiceTest {
             .`when`(transactionsRefundedEventStoreRepository)
             .save(any())
 
+        @Suppress("UNCHECKED_CAST")
+        doReturn(Mono.empty<TransactionEvent<BaseTransactionRefundedData>>())
+            .`when`(transactionsRefundedEventStoreHistoryRepository)
+            .save(any())
+
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
             .`when`(transactionsViewRepository)
+            .findByTransactionId(transactionIdString)
+
+        doReturn(Mono.empty<TransactionEvent<BaseTransactionRefundedData>>())
+            .`when`(transactionsViewHistoryRepository)
             .findByTransactionId(transactionIdString)
 
         doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
@@ -744,6 +786,10 @@ class TransactionEventServiceTest {
             .`when`(transactionsEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        doReturn(Flux.empty<TransactionActivatedEvent>())
+            .`when`(transactionsEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         val transactionEventServiceSpy = spy(transactionEventService)
         doReturn(Mono.just(mockTransaction))
             .`when`(transactionEventServiceSpy)
@@ -751,6 +797,10 @@ class TransactionEventServiceTest {
 
         doReturn(Mono.just(mockTransaction))
             .`when`(transactionsRefundedEventStoreRepository)
+            .save(any<TransactionEvent<BaseTransactionRefundedData>>())
+
+        doReturn(Mono.empty<TransactionActivatedEvent>())
+            .`when`(transactionsRefundedEventStoreHistoryRepository)
             .save(any<TransactionEvent<BaseTransactionRefundedData>>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
@@ -782,6 +832,10 @@ class TransactionEventServiceTest {
         // Given
         doReturn(Flux.empty<TransactionEvent<Any>>())
             .`when`(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doReturn(Flux.empty<TransactionEvent<Any>>())
+            .`when`(transactionsEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
         // When
@@ -831,6 +885,10 @@ class TransactionEventServiceTest {
             .`when`(transactionsEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
+        doReturn(Flux.empty<BaseTransactionEvent<Any>>())
+            .`when`(transactionsEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
         val mockTransaction = Mockito.mock(BaseTransaction::class.java)
 
         val transactionEventServiceSpy = spy(transactionEventService)
@@ -851,6 +909,9 @@ class TransactionEventServiceTest {
 
         // Verify repository calls
         verify(transactionsEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        verify(transactionsEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
     }
 
@@ -875,6 +936,10 @@ class TransactionEventServiceTest {
 
         doReturn(Flux.just(existingReceiptEvent))
             .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doReturn(Flux.fromIterable(listOf<TransactionUserReceiptRequestedEvent>()))
+            .`when`(userReceiptEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
         doReturn(Mono.just(existingReceiptEvent))
