@@ -365,7 +365,7 @@ class TransactionEventServiceTest {
     }
 
     @Test
-    fun `resendUserReceiptNotification should create and save a new event for transaction in NOTIFICATION_REQUESTED state`() {
+    fun `resendUserReceiptNotification should create and save a new event for transaction in NOTIFICATION_REQUESTED state - runtime`() {
         // Given
         val mockTransaction = Mockito.mock(BaseTransaction::class.java)
         val mockTransactionId = Mockito.mock(TransactionId::class.java)
@@ -424,7 +424,66 @@ class TransactionEventServiceTest {
     }
 
     @Test
-    fun `resendUserReceiptNotification should create and save a new event for transaction in EXPIRED state`() {
+    fun `resendUserReceiptNotification should create and save a new event for transaction in NOTIFICATION_REQUESTED state - history`() {
+        // Given
+        val mockTransaction = Mockito.mock(BaseTransaction::class.java)
+        val mockTransactionId = Mockito.mock(TransactionId::class.java)
+
+        doReturn(mockTransactionId).`when`(mockTransaction).transactionId
+        doReturn(transactionIdString).`when`(mockTransactionId).value()
+        doReturn(TransactionStatusDto.NOTIFICATION_REQUESTED).`when`(mockTransaction).status
+
+        val transactionEventServiceSpy = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionEventServiceSpy)
+            .getTransaction(transactionIdString)
+
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
+        val events = listOf(existingUserReceiptEvent)
+
+        doReturn(Flux.empty<TransactionUserReceiptRequestedEvent>())
+            .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doReturn(Flux.fromIterable(events))
+            .`when`(userReceiptEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doAnswer { invocation ->
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
+
+        val mockTx = Mockito.mock(Transaction::class.java)
+        doReturn(Mono.just(mockTx))
+            .`when`(transactionsViewRepository)
+            .findByTransactionId(transactionIdString)
+        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
+
+        // When
+        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionIdString, event.transactionId)
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
+                assertNotEquals(existingUserReceiptEvent.id, event.id)
+            }
+            .verifyComplete()
+
+        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        val savedEvent = userReceiptEventCaptor.value
+        assertEquals(transactionIdString, savedEvent.transactionId)
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should create and save a new event for transaction in EXPIRED state - runtime`() {
         // Given
         val mockTransaction = Mockito.mock(BaseTransaction::class.java)
         val mockTransactionId = Mockito.mock(TransactionId::class.java)
@@ -446,6 +505,65 @@ class TransactionEventServiceTest {
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
         doReturn(Flux.fromIterable(listOf<TransactionUserReceiptRequestedEvent>()))
+            .`when`(userReceiptEventStoreHistoryRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doAnswer { invocation ->
+                Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
+            }
+            .`when`(userReceiptEventStoreRepository)
+            .save(any())
+
+        val mockTx = Mockito.mock(Transaction::class.java)
+        doReturn(Mono.just(mockTx))
+            .`when`(transactionsViewRepository)
+            .findByTransactionId(transactionIdString)
+        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
+
+        // When
+        val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
+
+        // Then
+        StepVerifier.create(result)
+            .assertNext { event ->
+                assertNotNull(event)
+                assertEquals(transactionIdString, event.transactionId)
+                assertEquals(
+                    event.data.notificationTrigger,
+                    TransactionUserReceiptData.NotificationTrigger.MANUAL
+                )
+                assertNotEquals(existingUserReceiptEvent.id, event.id)
+            }
+            .verifyComplete()
+
+        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        val savedEvent = userReceiptEventCaptor.value
+        assertEquals(transactionIdString, savedEvent.transactionId)
+    }
+
+    @Test
+    fun `resendUserReceiptNotification should create and save a new event for transaction in EXPIRED state - history`() {
+        // Given
+        val mockTransaction = Mockito.mock(BaseTransaction::class.java)
+        val mockTransactionId = Mockito.mock(TransactionId::class.java)
+
+        doReturn(mockTransactionId).`when`(mockTransaction).transactionId
+        doReturn(transactionIdString).`when`(mockTransactionId).value()
+        doReturn(TransactionStatusDto.EXPIRED).`when`(mockTransaction).status
+
+        val transactionEventServiceSpy = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(transactionEventServiceSpy)
+            .getTransaction(transactionIdString)
+
+        val existingUserReceiptEvent = createUserReceiptRequestedEvent(ZonedDateTime.now())
+        val events = listOf(existingUserReceiptEvent)
+
+        doReturn(Flux.fromIterable(listOf<TransactionUserReceiptRequestedEvent>()))
+            .`when`(userReceiptEventStoreRepository)
+            .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+
+        doReturn(Flux.fromIterable(events))
             .`when`(userReceiptEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
@@ -543,7 +661,7 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
-        doReturn(Flux.empty<TransactionUserReceiptRequestedEvent>())
+        doReturn(Flux.fromIterable(events))
             .`when`(userReceiptEventStoreHistoryRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
 
@@ -594,7 +712,7 @@ class TransactionEventServiceTest {
     }
 
     @Test
-    fun `getTransaction should return transaction when events exist`() {
+    fun `getTransaction should return transaction when events exist in runtime database`() {
         val mockTransaction: BaseTransaction = Mockito.mock(BaseTransaction::class.java)
         val transactionEvent =
             TransactionActivatedEvent(transactionIdString, TransactionActivatedData())
@@ -607,9 +725,47 @@ class TransactionEventServiceTest {
             )
             .thenReturn(Flux.fromIterable(events) as Flux<BaseTransactionEvent<Any>>?)
 
-        doReturn(Flux.fromIterable(listOf<BaseTransactionEvent<Any>>()))
-            .`when`(transactionsEventStoreHistoryRepository)
+        `when`(
+                transactionsEventStoreHistoryRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionIdString
+                )
+            )
+            .thenReturn(Flux.fromIterable(listOf<BaseTransactionEvent<Any>>()))
+
+        // Mock the reduction process
+        val spyService = spy(transactionEventService)
+        doReturn(Mono.just(mockTransaction))
+            .`when`(spyService)
+            .reduceEvents(any<Flux<TransactionEvent<Any>>>())
+
+        val result = spyService.getTransaction(transactionIdString)
+
+        StepVerifier.create(result).expectNext(mockTransaction).verifyComplete()
+
+        verify(transactionsEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
+    }
+
+    @Test
+    fun `getTransaction should return transaction when events exist in history database`() {
+        val mockTransaction: BaseTransaction = Mockito.mock(BaseTransaction::class.java)
+        val transactionEvent =
+            TransactionActivatedEvent(transactionIdString, TransactionActivatedData())
+        val events = listOf(transactionEvent)
+
+        `when`(
+                transactionsEventStoreRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionIdString
+                )
+            )
+            .thenReturn(Flux.fromIterable(listOf<BaseTransactionEvent<Any>>()))
+
+        `when`(
+                transactionsEventStoreHistoryRepository.findByTransactionIdOrderByCreationDateAsc(
+                    transactionIdString
+                )
+            )
+            .thenReturn(Flux.fromIterable(events) as Flux<BaseTransactionEvent<Any>>)
 
         // Mock the reduction process
         val spyService = spy(transactionEventService)
