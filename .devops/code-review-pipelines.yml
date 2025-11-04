@@ -11,7 +11,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: main
+      ref: CHK-4580-helpdesk-commands-history-runtime-db
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
