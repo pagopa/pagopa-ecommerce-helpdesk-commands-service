@@ -152,10 +152,76 @@ stages:
             env:
               GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
           - script: |
-              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
-              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
-              timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
-            displayName: 'Health check helpdesk-commands-service'
+              echo "##[debug] ===== Starting Health Checks ====="
+
+              # Function to check health with detailed logging
+              check_service_health() {
+                local service_name=$1
+                local port=$2
+                local container_name=$3
+                local max_attempts=36  # 36 * 5 seconds = 3 minutes
+                local attempt=0
+
+                echo "##[debug] Checking $service_name on port $port..."
+
+                while [ $attempt -lt $max_attempts ]; do
+                  http_code=$(curl -s -o /dev/null -w '%{http_code}' localhost:$port/actuator/health/liveness)
+
+                  if [ "$http_code" == "200" ]; then
+                    echo "##[section] ✓ $service_name is healthy (HTTP $http_code)"
+                    return 0
+                  fi
+
+                  attempt=$((attempt + 1))
+                  echo "##[debug] Attempt $attempt/$max_attempts: $service_name returned HTTP $http_code"
+
+                  # Print container logs every 30 seconds (every 6 attempts)
+                  if [ $((attempt % 6)) -eq 0 ]; then
+                    echo "##[debug] ===== Container logs for $service_name (last 30 lines) ====="
+                    docker logs $container_name --tail 30 2>&1 || echo "Failed to get logs"
+                    echo "##[debug] ===== End of logs ====="
+                  fi
+
+                  sleep 5
+                done
+
+                echo "##[error] ✗ $service_name health check FAILED after $max_attempts attempts"
+                echo "##[error] ===== Full container logs for $service_name ====="
+                docker logs $container_name 2>&1
+                echo "##[error] ===== Container status ====="
+                docker inspect $container_name --format='{{.State.Status}}: {{.State.Error}}' 2>&1
+                return 1
+              }
+
+              # Check transactions-service (port 8080)
+              check_service_health "transactions-service" 8080 "pagopa-ecommerce-transactions-service"
+              TRANSACTIONS_STATUS=$?
+
+              # Check helpdesk-commands-service (port 8087)
+              check_service_health "helpdesk-commands-service" 8087 "pagopa-ecommerce-helpdesk-commands-service"
+              HELPDESK_STATUS=$?
+
+              # Check MongoDB
+              echo "##[debug] Checking MongoDB connectivity..."
+              timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "##[error] MongoDB failed to start properly" && exit 1)
+              MONGO_STATUS=$?
+
+              # Summary
+              echo "##[section] ===== Health Check Summary ====="
+              [ $TRANSACTIONS_STATUS -eq 0 ] && echo "✓ transactions-service (port 8080): HEALTHY" || echo "✗ transactions-service (port 8080): FAILED"
+              [ $HELPDESK_STATUS -eq 0 ] && echo "✓ helpdesk-commands-service (port 8087): HEALTHY" || echo "✗ helpdesk-commands-service (port 8087): FAILED"
+              [ $MONGO_STATUS -eq 0 ] && echo "✓ MongoDB: HEALTHY" || echo "✗ MongoDB: FAILED"
+
+              # Exit with error if any service failed
+              if [ $TRANSACTIONS_STATUS -ne 0 ] || [ $HELPDESK_STATUS -ne 0 ] || [ $MONGO_STATUS -ne 0 ]; then
+                echo "##[error] One or more services failed health checks"
+                echo "##[debug] ===== All container statuses ====="
+                docker compose ps
+                exit 1
+              fi
+
+              echo "##[section] ✓ All services are healthy!"
+            displayName: 'Health check with integrated logging (corrected ports)'
           - script: yarn global add newman
             displayName: 'newman installation'
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
