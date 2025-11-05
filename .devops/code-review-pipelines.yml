@@ -1,7 +1,10 @@
 variables:
   BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
   GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
-trigger: none
+trigger:
+ branches:
+  include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
@@ -11,7 +14,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: CHK-4580-helpdesk-commands-history-runtime-db
+      ref: main
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
