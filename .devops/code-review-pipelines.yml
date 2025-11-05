@@ -1,7 +1,10 @@
 variables:
   BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
   GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
-trigger: none
+trigger:
+ branches:
+  include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
