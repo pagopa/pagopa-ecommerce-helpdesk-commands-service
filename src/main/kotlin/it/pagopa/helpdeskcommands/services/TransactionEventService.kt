@@ -16,8 +16,8 @@ import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.repositories.TransactionsEventStoreRepository
-import it.pagopa.helpdeskcommands.repositories.TransactionsViewRepository
+import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
+import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
