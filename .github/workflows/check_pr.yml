@@ -31,24 +31,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           ignored_files: 'src/test/'
-
-  openapi_quality:
-    runs-on: ubuntu-latest
-    name: OpenAPI Quality Check
-    strategy:
-      matrix:
-        spec:
-          - version: v1
-            path: api-spec/v1/openapi.yaml
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Rate My OpenAPI - ${{ matrix.spec.version }}
-        uses: zuplo/rmoa-action@c4a74a8823496c6061cd6fb586d80db8c2fd7e34
-        with:
-          filepath: ${{ matrix.spec.path }}
-          apikey: ${{ secrets.RATEMYOPENAPI_API_KEY }} # TODO add to repo
-          minimum-score: 80
-          max-warnings: 30
-          max-errors: 5
