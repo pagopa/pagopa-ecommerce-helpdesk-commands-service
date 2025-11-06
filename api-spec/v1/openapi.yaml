@@ -3,6 +3,13 @@ info:
   version: 1.0.0
   title: Pagopa helpdeskCommands services for assistance api
   description: This microservice that expose helpdeskCommands services for assistance api.
+  contact:
+    name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
+    email: info@pagopa.it
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 servers:
   - url: https://${host}
 tags:
