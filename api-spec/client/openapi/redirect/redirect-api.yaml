@@ -22,6 +22,10 @@ servers:
     variables:
       host:
         description: The hostname of the API server
+        default: api.dev.platform.pagopa.it
+        enum:
+          - api.dev.platform.pagopa.it
+          - api.uat.platform.pagopa.it
 
 security:
   - PagopaApiKeyAuth: []
