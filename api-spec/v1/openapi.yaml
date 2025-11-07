@@ -75,7 +75,7 @@ paths:
     post:
       tags:
         - ecommerce
-      operationId: redirectRefundOperation
+      operationId: commandsRefundRedirectPost
       summary: Api's for refund redirect
       description: 'POST refund redirect'
       parameters:
