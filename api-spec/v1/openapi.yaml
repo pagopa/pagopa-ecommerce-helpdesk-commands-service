@@ -12,12 +12,24 @@ info:
     url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 servers:
   - url: https://${host}
+    variables:
+      host:
+        description: The hostname of the API server
+        default: api.platform.pagopa.it
+        enum:
+          - api.dev.platform.pagopa.it
+          - api.uat.platform.pagopa.it
+          - api.platform.pagopa.it
+
 tags:
   - name: helpdeskCommands
     description: Api's for performing money refund operations over failed transactions # this will be evolving over time
     externalDocs:
       url: https://pagopa.atlassian.net/wiki/spaces/I/pages/492339720/pagoPA+eCommerce+Design+Review #TODO this needs to be updated
       description: Technical specifications
+
+security:
+  - ApiKeyAuth: []
 
 paths:
   /commands/refund:
@@ -159,7 +171,6 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "There was an error processing the request"
-                instance: "/commands/transactions/{transactionId}/refund"
         '404':
           description: Transaction not found
           content:
@@ -171,7 +182,6 @@ paths:
                 title: "Not Found"
                 status: 404
                 detail: "Transaction not found"
-                instance: "/commands/transactions/{transactionId}/refund"
         '422':
           description: Transaction not in a refundable state
           content:
@@ -183,7 +193,6 @@ paths:
                 title: "Unprocessable Entity"
                 status: 422
                 detail: "Transaction not in a refundable state"
-                instance: "/commands/transactions/{transactionId}/refund"
         '500':
           description: Internal server error
           content:
@@ -195,7 +204,6 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "There was an internal server error"
-                instance: "/commands/transactions/{transactionId}/refund"
   /commands/transactions/{transactionId}/resend-email:
     post:
       tags:
@@ -236,7 +244,6 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "Invalid transaction ID format"
-                instance: "/commands/transactions/{transactionId}/resend-email"
         '404':
           description: Transaction not found
           content:
@@ -248,7 +255,6 @@ paths:
                 title: "Not Found"
                 status: 404
                 detail: "Transaction not found"
-                instance: "/commands/transactions/{transactionId}/resend-email"
         '500':
           description: Internal server error
           content:
@@ -260,7 +266,6 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "There was an internal server error"
-                instance: "/commands/transactions/{transactionId}/resend-email"
 components:
   schemas:
     AmountEuroCents:
@@ -274,7 +279,7 @@ components:
         refundOperationId:
           type: string
           description: The id of the refunded operation, if any
-          default: 0
+          default: "0"
     ProblemJson:
       type: object
       properties:

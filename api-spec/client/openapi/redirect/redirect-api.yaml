@@ -9,6 +9,11 @@ info:
       * `b2b - pagoPA side` are implemented and exposed by pagoPA to receive authorization outcome. For further information on connectivity, see [pagoPA connettivity](https://docs.pagopa.it/sanp/appendici/connettivita#nodo-dei-pagamenti-server).
   contact:
     name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
+    email: info@pagopa.it
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 tags:
   - name: b2b - PSP side
     description: Api's to initialize and refund a transaction
