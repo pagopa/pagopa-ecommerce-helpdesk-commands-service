@@ -40,18 +40,8 @@ paths:
       summary: Api's for performing money refunds operations over failed transactions
       description: 'POST with body payload - no resources created'
       parameters:
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       requestBody:
         $ref: '#/components/requestBodies/RefundTransactionRequest'
       responses:
@@ -89,18 +79,8 @@ paths:
       summary: Api's for refund redirect
       description: 'POST refund redirect'
       parameters:
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       requestBody:
         $ref: '#/components/requestBodies/RefundRedirectRequest'
       responses:
@@ -148,18 +128,8 @@ paths:
             type: string
           required: true
           description: The unique identifier of the transaction
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       responses:
         '202':
           description: TransactionRefundRequested message successfully queued to the dedicated service
@@ -221,18 +191,8 @@ paths:
             type: string
           required: true
           description: The unique identifier of the transaction
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       responses:
         '202':
           description: TransactionUserReceipt message successfully queued to the dedicated service
@@ -289,6 +249,22 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemJson'
+
+  parameters:
+    XUserId:
+      in: header
+      name: X-User-Id
+      required: true
+      description: User ID (populated by APIM policy)
+      schema:
+        type: string
+    XForwardedFor:
+      in: header
+      name: X-Forwarded-For
+      required: true
+      description: Client Source IP Address
+      schema:
+        type: string
 
   schemas:
     AmountEuroCents:
