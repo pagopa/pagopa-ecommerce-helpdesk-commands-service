@@ -15,7 +15,7 @@ permissions:
 jobs:
   openapi_quality:
     runs-on: ubuntu-latest
-    name: OpenAPI Quality Check
+    name: Rate My OpenAPI
     strategy:
       matrix:
         spec:
