@@ -22,7 +22,7 @@ servers:
           - api.platform.pagopa.it
 
 tags:
-  - name: helpdeskCommands
+  - name: ecommerce
     description: Api's for performing money refund operations over failed transactions # this will be evolving over time
     externalDocs:
       url: https://pagopa.atlassian.net/wiki/spaces/I/pages/492339720/pagoPA+eCommerce+Design+Review #TODO this needs to be updated
@@ -67,6 +67,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -267,6 +269,20 @@ paths:
                 status: 500
                 detail: "There was an internal server error"
 components:
+  responses:
+    UnauthorizedResponse:
+      description: Authentication credentials not provided or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemJson'
+    TooManyRequestsResponse:
+      description: Too many requests - rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemJson'
+
   schemas:
     AmountEuroCents:
       description: Amount for payments, in euro cents
