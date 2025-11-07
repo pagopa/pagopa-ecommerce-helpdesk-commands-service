@@ -96,6 +96,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -122,12 +124,7 @@ paths:
       summary: Request a refund for a transaction
       description: 'Sends a refund request to the dedicated service for processing'
       parameters:
-        - in: path
-          name: transactionId
-          schema:
-            type: string
-          required: true
-          description: The unique identifier of the transaction
+        - $ref: '#/components/parameters/TransactionId'
         - $ref: '#/components/parameters/XUserId'
         - $ref: '#/components/parameters/XForwardedFor'
       responses:
@@ -144,6 +141,8 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "There was an error processing the request"
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -185,12 +184,7 @@ paths:
       summary: Request to resend the transaction email notification
       description: 'Sends an email notification request to the dedicated service for processing'
       parameters:
-        - in: path
-          name: transactionId
-          schema:
-            type: string
-          required: true
-          description: The unique identifier of the transaction
+        - $ref: '#/components/parameters/TransactionId'
         - $ref: '#/components/parameters/XUserId'
         - $ref: '#/components/parameters/XForwardedFor'
       responses:
@@ -207,6 +201,8 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "Invalid transaction ID format"
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -243,12 +239,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ProblemJson'
-    TooManyRequestsResponse:
-      description: Too many requests - rate limit exceeded
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ProblemJson'
 
   parameters:
     XUserId:
@@ -265,6 +255,13 @@ components:
       description: Client Source IP Address
       schema:
         type: string
+    TransactionId:
+      in: path
+      name: transactionId
+      schema:
+        type: string
+      required: true
+      description: The unique identifier of the transaction
 
   schemas:
     AmountEuroCents:
