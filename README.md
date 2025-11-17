@@ -1,5 +1,8 @@
 # PagoPA Help desk Commands Service
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-ecommerce-helpdesk-commands-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-ecommerce-helpdesk-commands-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-ecommerce-helpdesk-commands-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-ecommerce-helpdesk-commands-service)
+
 ## Overview
 `pagopa-ecommerce-helpdesk-commands-service` is a Kotlin-based microservice designed to support manual operations, such as refunds, for transactions related to the pagoPA ecommerce platform. 
 This service leverages Kotlin's native compilation to achieve optimal performance and efficiency.
@@ -148,6 +151,8 @@ These are all environment variables needed by the application:
 | SECURITY_API_KEYS_SECURED_PATHS               | Comma-separated list of secured API paths                                                                                                                                       | string  |            |
 | SECURITY_API_KEYS_PRIMARY                     | Secured api primary key                                                                                                                                                         | string  |            |
 | SECURITY_API_KEYS_SECONDARY                   | Secured api secondary key                                                                                                                                                       | string  |            |
+| ECOMMERCE_DATABASE_NAME                       | Mongo ecommerce database name                                                                                                                                                   | string  |            |
+| ECOMMERCE_HISTORY_DATABASE_NAME               | Mongo ecommerce history database name                                                                                                                                           | string  |            |
 
 An example configuration of these environment variables is in the `.env.example` file.
 

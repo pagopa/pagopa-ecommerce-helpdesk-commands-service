@@ -18,7 +18,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopapcommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
-    tag: "0.27.3"
+    tag: "0.29.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -120,6 +120,8 @@ microservice-chart:
     MONGO_SERVER_SELECTION_TIMEOUT_MS: "2000"
     MONGO_WAITING_QUEUE_MS: "2000"
     MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
+    ECOMMERCE_DATABASE_NAME: "ecommerce"
+    ECOMMERCE_HISTORY_DATABASE_NAME: "ecommerce-history"
     SECURITY_API_KEYS_SECURED_PATHS: "/commands"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
