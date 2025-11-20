@@ -16,7 +16,7 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.29.0"
+version = "0.29.1"
 
 description = "pagopa-helpdeskcommands-service"
 
