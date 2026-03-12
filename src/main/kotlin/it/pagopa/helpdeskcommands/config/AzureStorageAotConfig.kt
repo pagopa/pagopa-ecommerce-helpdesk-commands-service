@@ -192,7 +192,8 @@ class AzureStorageRuntimeHints : RuntimeHintsRegistrar {
             )
 
             registerType(
-                it.pagopa.ecommerce.commons.documents.v2.TransactionClosureSyntheticEvent::class.java,
+                it.pagopa.ecommerce.commons.documents.v2.TransactionClosureSyntheticEvent::class
+                    .java,
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.DECLARED_FIELDS,

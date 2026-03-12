@@ -28,7 +28,7 @@ class TransactionEventResolverNativeConfig {
             TransactionClosedEvent::class.java to
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionClosedEvent",
             TransactionClosureSyntheticEvent::class.java to
-                    "it.pagopa.ecommerce.commons.documents.v2.TransactionClosureSyntheticEvent",
+                "it.pagopa.ecommerce.commons.documents.v2.TransactionClosureSyntheticEvent",
             TransactionClosureErrorEvent::class.java to
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionClosureErrorEvent",
             TransactionClosureFailedEvent::class.java to
