@@ -147,8 +147,9 @@ stages:
               sed -i "s/^ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=.*$/ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=$(BRANCH_NAME)/" .env
             displayName: 'Change helpdesk-commands branch name ecommerce-local .env'
           - script: |
-              docker compose up storage \
-              mongo \ 
+              docker compose up \
+              storage \
+              mongo \
               mongo-init \
               traefik \
               pagopa-ecommerce-helpdesk-commands-service \
