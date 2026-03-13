@@ -147,11 +147,17 @@ stages:
               sed -i "s/^ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=.*$/ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=$(BRANCH_NAME)/" .env
             displayName: 'Change helpdesk-commands branch name ecommerce-local .env'
           - script: |
-              docker compose up storage mongo -d
-              sleep 10
-              docker compose run --rm azurite-init
-              docker compose up mongo-init
-              docker compose up traefik pagopa-ecommerce-helpdesk-commands-service pagopa-ecommerce-transactions-service pagopa-ecommerce-event-dispatcher-service redis pagopa-npg-mock pagopa-notifications-service -d
+              docker compose up storage \
+              mongo \ 
+              mongo-init \
+              traefik \
+              pagopa-ecommerce-helpdesk-commands-service \
+              pagopa-ecommerce-transactions-service \
+              pagopa-ecommerce-event-dispatcher-service \
+              redis \
+              pagopa-npg-mock \
+              pagopa-notifications-service \
+              -d
             displayName: 'Run app with docker-compose'
             env:
               GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
