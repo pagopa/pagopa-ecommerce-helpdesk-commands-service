@@ -14,7 +14,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: main
+      ref: CHK-4732-fix-integration-tests
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
