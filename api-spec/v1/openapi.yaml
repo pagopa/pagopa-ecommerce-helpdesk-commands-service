@@ -3,14 +3,32 @@ info:
   version: 1.0.0
   title: Pagopa helpdeskCommands services for assistance api
   description: This microservice that expose helpdeskCommands services for assistance api.
+  contact:
+    name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 servers:
   - url: https://${host}
+    variables:
+      host:
+        description: The hostname of the API server
+        default: weuprod.ecommerce.internal.platform.pagopa.it
+        enum:
+          - weudev.ecommerce.internal.dev.platform.pagopa.it
+          - weuuat.ecommerce.internal.uat.platform.pagopa.it
+          - weuprod.ecommerce.internal.platform.pagopa.it
+
 tags:
-  - name: helpdeskCommands
+  - name: ecommerce
     description: Api's for performing money refund operations over failed transactions # this will be evolving over time
     externalDocs:
       url: https://pagopa.atlassian.net/wiki/spaces/I/pages/492339720/pagoPA+eCommerce+Design+Review #TODO this needs to be updated
       description: Technical specifications
+
+security:
+  - ApiKeyAuth: []
 
 paths:
   /commands/refund:
@@ -21,18 +39,8 @@ paths:
       summary: Api's for performing money refunds operations over failed transactions
       description: 'POST with body payload - no resources created'
       parameters:
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       requestBody:
         $ref: '#/components/requestBodies/RefundTransactionRequest'
       responses:
@@ -48,6 +56,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -64,21 +74,12 @@ paths:
     post:
       tags:
         - ecommerce
+      operationId: commandsRefundRedirectPost
       summary: Api's for refund redirect
       description: 'POST refund redirect'
       parameters:
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       requestBody:
         $ref: '#/components/requestBodies/RefundRedirectRequest'
       responses:
@@ -94,6 +95,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -120,24 +123,9 @@ paths:
       summary: Request a refund for a transaction
       description: 'Sends a refund request to the dedicated service for processing'
       parameters:
-        - in: path
-          name: transactionId
-          schema:
-            type: string
-          required: true
-          description: The unique identifier of the transaction
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/TransactionId'
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       responses:
         '202':
           description: TransactionRefundRequested message successfully queued to the dedicated service
@@ -152,7 +140,8 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "There was an error processing the request"
-                instance: "/commands/transactions/{transactionId}/refund"
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -164,7 +153,6 @@ paths:
                 title: "Not Found"
                 status: 404
                 detail: "Transaction not found"
-                instance: "/commands/transactions/{transactionId}/refund"
         '422':
           description: Transaction not in a refundable state
           content:
@@ -176,7 +164,6 @@ paths:
                 title: "Unprocessable Entity"
                 status: 422
                 detail: "Transaction not in a refundable state"
-                instance: "/commands/transactions/{transactionId}/refund"
         '500':
           description: Internal server error
           content:
@@ -188,7 +175,6 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "There was an internal server error"
-                instance: "/commands/transactions/{transactionId}/refund"
   /commands/transactions/{transactionId}/resend-email:
     post:
       tags:
@@ -197,24 +183,9 @@ paths:
       summary: Request to resend the transaction email notification
       description: 'Sends an email notification request to the dedicated service for processing'
       parameters:
-        - in: path
-          name: transactionId
-          schema:
-            type: string
-          required: true
-          description: The unique identifier of the transaction
-        - in: header
-          name: X-User-Id
-          required: true
-          description: User ID (populated by APIM policy)
-          schema:
-            type: string
-        - in: header
-          name: X-Forwarded-For
-          required: true
-          description: Client Source IP Address
-          schema:
-            type: string
+        - $ref: '#/components/parameters/TransactionId'
+        - $ref: '#/components/parameters/XUserId'
+        - $ref: '#/components/parameters/XForwardedFor'
       responses:
         '202':
           description: TransactionUserReceipt message successfully queued to the dedicated service
@@ -229,7 +200,8 @@ paths:
                 title: "Bad Request"
                 status: 400
                 detail: "Invalid transaction ID format"
-                instance: "/commands/transactions/{transactionId}/resend-email"
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
         '404':
           description: Transaction not found
           content:
@@ -241,7 +213,6 @@ paths:
                 title: "Not Found"
                 status: 404
                 detail: "Transaction not found"
-                instance: "/commands/transactions/{transactionId}/resend-email"
         '500':
           description: Internal server error
           content:
@@ -253,8 +224,44 @@ paths:
                 title: "Internal Server Error"
                 status: 500
                 detail: "There was an internal server error"
-                instance: "/commands/transactions/{transactionId}/resend-email"
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  responses:
+    UnauthorizedResponse:
+      description: Authentication credentials not provided or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemJson'
+
+  parameters:
+    XUserId:
+      in: header
+      name: X-User-Id
+      required: true
+      description: User ID (populated by APIM policy)
+      schema:
+        type: string
+    XForwardedFor:
+      in: header
+      name: X-Forwarded-For
+      required: true
+      description: Client Source IP Address
+      schema:
+        type: string
+    TransactionId:
+      in: path
+      name: transactionId
+      schema:
+        type: string
+      required: true
+      description: The unique identifier of the transaction
+
   schemas:
     AmountEuroCents:
       description: Amount for payments, in euro cents
@@ -267,7 +274,7 @@ components:
         refundOperationId:
           type: string
           description: The id of the refunded operation, if any
-          default: 0
+          default: "0"
     ProblemJson:
       type: object
       properties:

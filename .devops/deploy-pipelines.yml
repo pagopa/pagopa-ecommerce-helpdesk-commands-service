@@ -53,7 +53,7 @@ resources:
     - repository: pagopaCommons
       type: github
       name: pagopa/azure-pipeline-templates
-      ref: refs/tags/v2.10.1
+      ref: refs/tags/v6.14.0
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
@@ -69,6 +69,12 @@ stages:
       - job: Build_docker
         displayName: Build docker with Build.SourceVersion as TAG
         steps:
+          - task: Bash@3
+            displayName: "Write GitHub token file"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "$(GITHUB_RO_TOKEN)" > ./github_ro_token
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
               CONTAINER_REGISTRY_SERVICE_CONN: $(DEV_CONTAINER_REGISTRY_SERVICE_CONN)
@@ -76,6 +82,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+              DOCKER_BUILD_ARGS: --secret id=GITHUB_TOKEN,src=./github_ro_token
 
   - stage: 'Deploy_for_DEV'
     displayName: 'Deploy DEV'
@@ -142,6 +149,12 @@ stages:
       - job: "build"
         displayName: 'Build release candidate docker image'
         steps:
+          - task: Bash@3
+            displayName: "Write GitHub token file"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "$(GITHUB_RO_TOKEN)" > ./github_ro_token
           - template: templates/docker-release/template.yaml@pagopaCommons
             parameters:
               CONTAINER_REGISTRY_SERVICE_CONN: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
@@ -149,6 +162,7 @@ stages:
               DOCKER_IMAGE_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
               DOCKER_IMAGE_TAG: $(Build.SourceVersion)
               FORCE_REPLACE_DOCKER_IMAGE: ${{ parameters.FORCE_REPLACE_DOCKER_IMAGE }}
+              DOCKER_BUILD_ARGS: --secret id=GITHUB_TOKEN,src=./github_ro_token
           - template: azure-templates/chart-current-version.yml
 
   - stage: "Get_Release_Version"

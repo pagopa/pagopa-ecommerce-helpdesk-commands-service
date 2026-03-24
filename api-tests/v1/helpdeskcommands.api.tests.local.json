@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "681a024c-03e1-4838-a0c0-af5ba5ae53ed",
+		"_postman_id": "d35572c9-e49c-40bc-a1e2-e01e2eb6a059",
 		"name": "Ecommerce helpDesk-Commands-service LOCAL",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "36814090"
+		"_exporter_id": "23963988"
 	},
 	"item": [
 		{
@@ -27,16 +27,6 @@
 			"request": {
 				"method": "POST",
 				"header": [
-					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
-						"type": "text"
-					},
-					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
-						"type": "text"
-					},
 					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
@@ -92,16 +82,6 @@
 				"method": "POST",
 				"header": [
 					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
-						"type": "text"
-					},
-					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
-						"type": "text"
-					},
-					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
 						"type": "text"
@@ -155,16 +135,6 @@
 			"request": {
 				"method": "POST",
 				"header": [
-					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
-						"type": "text"
-					},
-					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
-						"type": "text"
-					},
 					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
@@ -221,16 +191,6 @@
 				"method": "POST",
 				"header": [
 					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
-						"type": "text"
-					},
-					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
-						"type": "text"
-					},
-					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
 						"type": "text"
@@ -285,16 +245,6 @@
 			"request": {
 				"method": "POST",
 				"header": [
-					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
-						"type": "text"
-					},
-					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
-						"type": "text"
-					},
 					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
@@ -351,15 +301,61 @@
 				"method": "POST",
 				"header": [
 					{
-						"key": "Ocp-Apim-Subscription-Key",
-						"value": "{{API_SUBSCRIPTION_KEY}}",
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
 						"type": "text"
 					},
 					{
-						"key": "deployment",
-						"value": "{{DEPLOYMENT}}",
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
 						"type": "text"
-					},
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{REDIRECT_TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized for missing x-api-key header",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
 					{
 						"key": "X-User-Id",
 						"value": "{{X_USER_ID}}",
@@ -393,6 +389,111 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Unauthorized for wrong api key value",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource does not exist\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "wrong-key",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "x-api-key",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{X_USER_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Forwarded-For",
+						"value": "{{X_FORWARDED_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"idTransaction\": \"{{REDIRECT_TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/commands/refund/redirect",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"commands",
+						"refund",
+						"redirect"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{SERVICE_API_KEY}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "x-api-key",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }

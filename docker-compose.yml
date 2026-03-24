@@ -1,17 +1,30 @@
-version: '3.8'
-
 services:
   pagopa-ecommerce-helpdesk-commands-service:
     container_name: pagopa-ecommerce-helpdesk-commands-service
     build:
       dockerfile: Dockerfile
       context: .
+      secrets:
+        - GITHUB_TOKEN
     env_file:
       - ./.env
     ports:
       - "8080:8080"
     networks:
       - pagopa-ecommerce-net
+    depends_on:
+      mongo-ecommerce:
+        condition: service_healthy
+      pagopa-npg-mock:
+        condition: service_started  
+      pagopa-psp-mock:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/liveness"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
   pagopa-npg-mock:
     build:
       context: .
@@ -26,6 +39,12 @@ services:
       - "3000:3000"
     networks:
       - pagopa-ecommerce-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/", "--timeout=5"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   pagopa-psp-mock:
     build:
       context: .
@@ -39,6 +58,12 @@ services:
       - "8096:3000"
     networks:
       - pagopa-ecommerce-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/", "--timeout=5"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   mongo-ecommerce:
     container_name: pagopa-helpdesk-mongo
     image: mongo@sha256:e2a89840984371bb7b5b207347cd3cf0ed77e1a496dfd14affc12b6b5e4eaea3
@@ -64,6 +89,10 @@ networks:
     driver: bridge
     driver_opts:
       com.docker.network.driver.mtu: 1450
+
+secrets:
+  GITHUB_TOKEN:
+    environment: GITHUB_TOKEN
 
 volumes:
   mongodb_data:

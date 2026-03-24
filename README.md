@@ -1,5 +1,8 @@
 # PagoPA Help desk Commands Service
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-ecommerce-helpdesk-commands-service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-ecommerce-helpdesk-commands-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-ecommerce-helpdesk-commands-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-ecommerce-helpdesk-commands-service)
+
 ## Overview
 `pagopa-ecommerce-helpdesk-commands-service` is a Kotlin-based microservice designed to support manual operations, such as refunds, for transactions related to the pagoPA ecommerce platform. 
 This service leverages Kotlin's native compilation to achieve optimal performance and efficiency.
@@ -9,39 +12,147 @@ This service leverages Kotlin's native compilation to achieve optimal performanc
 - Kotlin
 - Spring Boot (native)
 
+## Quick Start - Testing Local APIs
+
+Get the service running quickly to test the basic APIs:
+
+### Prerequisites
+- Java 21 (GraalVM recommended)
+- Gradle 8.2+
+- Docker Desktop
+- GitHub personal access token with `packages:read` permission
+
+### GitHub Token Setup
+
+To access the `pagopa-ecommerce-commons` library from GitHub Packages, you need to set up authentication:
+
+1. Create a GitHub personal access token with `packages:read` permission
+2. Set the token as an environment variable:
+
+```shell
+export GITHUB_TOKEN=your_github_token_with_packages_read_permission
+```
+
+### 4-Step Setup
+
+1. **Build the project:**
+   ```bash
+   ./gradlew build
+   ```
+
+2. **Start required services:**
+   ```bash
+   docker-compose up mongo-ecommerce pagopa-npg-mock pagopa-psp-mock -d
+   ```
+
+3. **Start the application:**
+   ```bash
+   export $(grep -v '^#' .env.local.spring | xargs) && gradle bootRun
+   ```
+
+4. **Test with Postman:**
+   - Import collection: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+   - Import environment: `api-tests/env/helpdeskcommands_local.env.json`
+   - Run the collection against `http://localhost:8080`
+
+### API Authentication
+
+All `/commands/*` endpoints require API key authentication using the `x-api-key` header. The valid API keys are configured in the environment variables:
+- `SECURITY_API_KEYS_PRIMARY=primary-key` (default)
+- `SECURITY_API_KEYS_SECONDARY=secondary-key` (alternative)
+
+### Quick API Test with cURL
+
+Test the health endpoint:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Test a refund operation (example transaction ID):
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/refund \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+Test a resend email operation:
+```bash
+curl -X POST http://localhost:8080/commands/transactions/ecf06892c9e04ae39626dfdfda631b94/resend-email \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+### Environment Files
+
+Choose the appropriate environment file based on your testing approach:
+
+- **`.env.example`**: Template with all variables for Docker Compose testing (container hostnames)
+- **`.env.local.spring`**: Ready-to-use for Spring Boot JVM testing (localhost services)
+- **`.env.dev`**: User-created from `.env.example` for dev environment (contains secrets, not in repo)
+
 ### Environment variables
 
 These are all environment variables needed by the application:
 
-| Variable name                     | Description                                                                                                                                                                     | type    | default |
-|-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|---------|
-| NPG_URI                           | NPG service URI                                                                                                                                                                 | string  |         |
-| NPG_READ_TIMEOUT                  | NPG service HTTP read timeout                                                                                                                                                   | integer |         |
-| NPG_CONNECTION_TIMEOUT            | NPG service HTTP connection timeout                                                                                                                                             | integer |         |
-| NPG_CARDS_PSP_KEYS                | Secret structure that holds psp - api keys association for authorization request                                                                                                | string  |         |
-| NPG_CARDS_PSP_LIST                | List of all psp ids that are expected to be found into the NPG_CARDS_PSP_KEYS configuration (used for configuration cross validation                                            | string  |         |
-| NPG_PAYPAL_PSP_KEYS               | Secret structure that holds psp - api keys association for authorization request used for APM PAYPAL payment method                                                             | string  |         |
-| NPG_PAYPAL_PSP_LIST               | List of all psp ids that are expected to be found into the NPG_PAYPAL_PSP_KEYS configuration (used for configuration cross validation)                                          | string  |         |
-| NPG_BANCOMATPAY_PSP_KEYS          | Secret structure that holds psp - api keys association for authorization request used for APM Bancomat pay payment method                                                       | string  |         |
-| NPG_BANCOMATPAY_PSP_LIST          | List of all psp ids that are expected to be found into the NPG_BANCOMATPAY_PSP_KEYS configuration (used for configuration cross validation)                                     | string  |         |
-| NPG_MYBANK_PSP_KEYS               | Secret structure that holds psp - api keys association for authorization request used for APM My bank payment method                                                            | string  |         |
-| NPG_MYBANK_PSP_LIST               | List of all psp ids that are expected to be found into the NPG_MYBANK_PSP_KEYS configuration (used for configuration cross validation)                                          | string  |         |
-| NPG_SATISPAY_PSP_KEYS             | Secret structure that holds psp - api keys association for authorization request used for APM Satispay payment method                                                           | string  |         |
-| NPG_SATISPAY_PSP_LIST             | List of all psp ids that are expected to be found into the NPG_SATISPAY_PSP_KEYS configuration (used for configuration cross validation)                                        | string  |         |
-| NPG_APPLEPAY_PSP_KEYS             | Secret structure that holds psp - api keys association for authorization request used for APM Apple pay payment method                                                          | string  |         |
-| NPG_APPLEPAY_PSP_LIST             | List of all psp ids that are expected to be found into the NPG_APPLEPAY_PSP_KEYS configuration (used for configuration cross validation)                                        | string  |         |
-| REDIRECT_PAYMENT_TYPE_CODES       | List of all redirect payment type codes that are expected to be present in other redirect configurations such as REDIRECT_URL_MAPPING (used for configuration cross validation) | string  |         |
-| REDIRECT_URL_MAPPING              | Key-value string map PSP to backend URI mapping that will be used for Redirect payments                                                                                         | string  |         |
-| NODE_FORWARDER_URL                | Node forwarder backend URL                                                                                                                                                      | string  |         |
-| NODE_FORWARDER_READ_TIMEOUT       | Node forwarder HTTP api call read timeout in milliseconds                                                                                                                       | integer |         |
-| NODE_FORWARDER_CONNECTION_TIMEOUT | Node forwarder HTTP api call connection timeout in milliseconds                                                                                                                 | integer |         |
-| NODE_FORWARDER_API_KEY            | Node forwarder api key                                                                                                                                                          | string  |         |
-| NPG_GOOGLE_PAY_PSP_KEYS                   | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |         |
-| NPG_GOOGLE_PAY_PSP_LIST                   | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |         |
-| AZURE_QUEUE_NATIVE_CLIENT_ENABLED         | Flag to choose if we have to use the azure SDK storage queue client or the Rest API client                                                                                      | string  |         |
-| ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING | Azure Storage connection string for transient storage queues                                                                                                                    | string  |         |
-| TRANSACTION_REFUND_QUEUE_NAME             | Name of the Azure Storage queue for transaction refund events                                                                                                                   | string  |         |
-| TRANSACTION_NOTIFICATIONS_QUEUE_NAME      | Name of the Azure Storage queue for transaction notification events                                                                                                             | string  |         |
+| Variable name                                 | Description                                                                                                                                                                     | type    | default    |
+|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|------------|
+| NPG_URI                                       | NPG service URI                                                                                                                                                                 | string  |            |
+| NPG_READ_TIMEOUT                              | NPG service HTTP read timeout                                                                                                                                                   | integer |            |
+| NPG_CONNECTION_TIMEOUT                        | NPG service HTTP connection timeout                                                                                                                                             | integer |            |
+| NPG_CARDS_PSP_KEYS                            | Secret structure that holds psp - api keys association for authorization request                                                                                                | string  |            |
+| NPG_CARDS_PSP_LIST                            | List of all psp ids that are expected to be found into the NPG_CARDS_PSP_KEYS configuration (used for configuration cross validation                                            | string  |            |
+| NPG_PAYPAL_PSP_KEYS                           | Secret structure that holds psp - api keys association for authorization request used for APM PAYPAL payment method                                                             | string  |            |
+| NPG_PAYPAL_PSP_LIST                           | List of all psp ids that are expected to be found into the NPG_PAYPAL_PSP_KEYS configuration (used for configuration cross validation)                                          | string  |            |
+| NPG_BANCOMATPAY_PSP_KEYS                      | Secret structure that holds psp - api keys association for authorization request used for APM Bancomat pay payment method                                                       | string  |            |
+| NPG_BANCOMATPAY_PSP_LIST                      | List of all psp ids that are expected to be found into the NPG_BANCOMATPAY_PSP_KEYS configuration (used for configuration cross validation)                                     | string  |            |
+| NPG_MYBANK_PSP_KEYS                           | Secret structure that holds psp - api keys association for authorization request used for APM My bank payment method                                                            | string  |            |
+| NPG_MYBANK_PSP_LIST                           | List of all psp ids that are expected to be found into the NPG_MYBANK_PSP_KEYS configuration (used for configuration cross validation)                                          | string  |            |
+| NPG_SATISPAY_PSP_KEYS                         | Secret structure that holds psp - api keys association for authorization request used for APM Satispay payment method                                                           | string  |            |
+| NPG_SATISPAY_PSP_LIST                         | List of all psp ids that are expected to be found into the NPG_SATISPAY_PSP_KEYS configuration (used for configuration cross validation)                                        | string  |            |
+| NPG_APPLEPAY_PSP_KEYS                         | Secret structure that holds psp - api keys association for authorization request used for APM Apple pay payment method                                                          | string  |            |
+| NPG_APPLEPAY_PSP_LIST                         | List of all psp ids that are expected to be found into the NPG_APPLEPAY_PSP_KEYS configuration (used for configuration cross validation)                                        | string  |            |
+| REDIRECT_PAYMENT_TYPE_CODES                   | List of all redirect payment type codes that are expected to be present in other redirect configurations such as REDIRECT_URL_MAPPING (used for configuration cross validation) | string  |            |
+| REDIRECT_URL_MAPPING                          | Key-value string map PSP to backend URI mapping that will be used for Redirect payments                                                                                         | string  |            |
+| NODE_FORWARDER_URL                            | Node forwarder backend URL                                                                                                                                                      | string  |            |
+| NODE_FORWARDER_READ_TIMEOUT                   | Node forwarder HTTP api call read timeout in milliseconds                                                                                                                       | integer |            |
+| NODE_FORWARDER_CONNECTION_TIMEOUT             | Node forwarder HTTP api call connection timeout in milliseconds                                                                                                                 | integer |            |
+| NODE_FORWARDER_API_KEY                        | Node forwarder api key                                                                                                                                                          | string  |            |
+| NPG_GOOGLE_PAY_PSP_KEYS                       | Secret structure that holds psp - api keys association for authorization request used for APM Google pay payment method                                                         | string  |            |
+| NPG_GOOGLE_PAY_PSP_LIST                       | List of all psp ids that are expected to be found into the NPG_GOOGLE_PAY_PSP_KEYS configuration (used for configuration cross validation)                                      | string  |            |
+| AZURE_QUEUE_NATIVE_CLIENT_ENABLED             | Flag to choose if we have to use the azure SDK storage queue client or the Rest API client                                                                                      | string  |            |
+| ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING | Azure Storage connection string for transient storage queues                                                                                                                    | string  |            |
+| TRANSACTION_REFUND_QUEUE_NAME                 | Name of the Azure Storage queue for transaction refund events                                                                                                                   | string  |            |
+| TRANSACTION_NOTIFICATIONS_QUEUE_NAME          | Name of the Azure Storage queue for transaction notification events                                                                                                             | string  |            |
+| NPG_TCP_KEEP_ALIVE_ENABLED                    | Enable TCP keep alive for NPG connections                                                                                                                                       | boolean | true       |
+| NPG_TCP_KEEP_ALIVE_IDLE                       | TCP keep alive idle time in seconds for NPG connections                                                                                                                         | integer | 300        |
+| NPG_TCP_KEEP_ALIVE_INTVL                      | TCP keep alive interval in seconds for NPG connections                                                                                                                          | integer | 60         |
+| NPG_TCP_KEEP_ALIVE_CNT                        | TCP keep alive count for NPG connections                                                                                                                                        | integer | 8          |
+| TRANSIENT_QUEUES_TTL_SECONDS                  | Time to live in seconds for transient queues                                                                                                                                    | integer | 7200       |
+| DEFAULT_LOGGING_LEVEL                         | Default logging level for the application                                                                                                                                       | string  | info       |
+| APP_LOGGING_LEVEL                             | Application specific logging level                                                                                                                                              | string  | debug      |
+| MONGO_HOST                                    | MongoDB host address                                                                                                                                                            | string  | mongodb    |
+| MONGO_PORT                                    | MongoDB port number                                                                                                                                                             | integer | 27017      |
+| MONGO_USERNAME                                | MongoDB username for authentication                                                                                                                                             | string  | admin      |
+| MONGO_PASSWORD                                | MongoDB password for authentication                                                                                                                                             | string  |            |
+| MONGO_SSL_ENABLED                             | Enable SSL for MongoDB connections                                                                                                                                              | boolean | false      |
+| MONGO_DB_NAME                                 | MongoDB database name                                                                                                                                                           | string  | eventstore |
+| MONGO_MIN_POOL_SIZE                           | Minimum connection pool size for MongoDB                                                                                                                                        | integer | 0          |
+| MONGO_MAX_POOL_SIZE                           | Maximum connection pool size for MongoDB                                                                                                                                        | integer | 20         |
+| MONGO_MAX_IDLE_TIMEOUT_MS                     | Maximum idle timeout in milliseconds for MongoDB connections                                                                                                                    | integer | 60000      |
+| MONGO_CONNECTION_TIMEOUT_MS                   | Connection timeout in milliseconds for MongoDB                                                                                                                                  | integer | 1000       |
+| MONGO_SOCKET_TIMEOUT_MS                       | Socket timeout in milliseconds for MongoDB                                                                                                                                      | integer | 10000      |
+| MONGO_SERVER_SELECTION_TIMEOUT_MS             | Server selection timeout in milliseconds for MongoDB                                                                                                                            | integer | 2000       |
+| MONGO_WAITING_QUEUE_MS                        | Waiting queue timeout in milliseconds for MongoDB                                                                                                                               | integer | 2000       |
+| MONGO_HEARTBEAT_FREQUENCY_MS                  | Heartbeat frequency in milliseconds for MongoDB                                                                                                                                 | integer | 5000       |
+| SECURITY_API_KEYS_SECURED_PATHS               | Comma-separated list of secured API paths                                                                                                                                       | string  |            |
+| SECURITY_API_KEYS_PRIMARY                     | Secured api primary key                                                                                                                                                         | string  |            |
+| SECURITY_API_KEYS_SECONDARY                   | Secured api secondary key                                                                                                                                                       | string  |            |
+| ECOMMERCE_DATABASE_NAME                       | Mongo ecommerce database name                                                                                                                                                   | string  |            |
+| ECOMMERCE_HISTORY_DATABASE_NAME               | Mongo ecommerce history database name                                                                                                                                           | string  |            |
 
 An example configuration of these environment variables is in the `.env.example` file.
 
@@ -72,31 +183,16 @@ After setting up the WSL environment, you can test the application by building i
 If you're experiencing issue with GraalVM not found like errors, be sure to use GraalVM for the project and try to enable automatic toolchain detection.
 Also, you can use [SDKMAN](https://sdkman.io/install) to provide a better JVM env "switching".
 
-### Install eCommerce commons library locally
+### eCommerce Commons Library
 
-There is an `installLibs` task in the Gradle build file that takes care of properly fetching and
-building `ecommerce-commons`. It does so by executing a shell script that performs a repository clone, checks out to the version set in the
-build file, and builds the library with Maven using Java 17.
-
-If you want to build the `ecommerce-commons` library, you can run the build command with `-PbuildCommons`:
-
-```Shell
-$ ./gradlew build -PbuildCommons
-```
-
-Alternatively, you can run the installation task directly:
-
-```Shell
-$ ./gradlew installLibs -PbuildCommons
-```
-
-#### Configuration Properties
-
+The service uses the `pagopa-ecommerce-commons` library which is now distributed via GitHub Packages. The library version is configured in `build.gradle.kts`.
 These two properties in `build.gradle.kts` control the `ecommerce-commons` version and git reference:
 
 ```kotlin
-val ecommerceCommonsVersion = "x.y.z" // ecommerce commons wanted pom version
-val ecommerceCommonsGitRef = ecommerceCommonsVersion // the branch/tag to be checked out
+object Deps {
+  const val ecommerceCommonsVersion = "3.0.2" // ecommerce commons wanted pom version
+  const val ecommerceCommonsGitRef = ecommerceCommonsVersion // the branch/tag to be checked out
+}
 ```
 
 `ecommerceCommonsGitRef` has by default the same value as `ecommerceCommonsVersion`, so the version tagged
@@ -105,35 +201,16 @@ with `"x.y.z"` will be checked out and installed locally.
 This value was left as a separate property because, during development phases, it can be changed to a feature branch,
 making the local build use a ref branch other than a tag for development purposes.
 
-#### Installation Process
+The library is automatically downloaded from GitHub Packages during the build process using the configured GitHub token.
 
-The installation is handled by `pagopa-ecommerce-commons-maven-install.sh` which:
+You also need one of:
+ - an azurite instance running locally
+ - use DEV values
 
-1. Clones the ecommerce-commons repository
-2. Checks out the specified version/branch
-3. Detects and uses Java 17 for building (required for commons compatibility)
-4. Runs `mvn install -DskipTests` to install the library to local Maven repository
-5. Cleans up temporary files
-
-#### Utility Tasks
-
-- **Print current commons version**: `./gradlew printCommonsVersion -q`
-- **Install commons only**: `./gradlew installLibs -PbuildCommons`
-
-#### Java Version Requirements
-
-- **eCommerce Commons**: Requires Java 17 for building
-- **Main Application**: Uses Java 21 for GraalVM native compilation
-
-The installation script automatically detects Java 17 from common locations or uses `JAVA_HOME_17` environment variable if set.
-
-#### Docker Build Integration
-
-The Docker build uses a multi-stage approach:
-1. **Commons stage**: Uses OpenJDK 17 to build and install ecommerce-commons
-2. **Main stage**: Uses GraalVM 21 to compile the application natively
-
-Running `docker compose up` automatically handles the commons installation without requiring manual intervention.
+According to the choice, please adjust accordingly:
+ - `ECOMMERCE_STORAGE_TRANSIENT_CONNECTION_STRING`
+ - `TRANSACTION_REFUND_QUEUE_NAME`
+ - `TRANSACTION_NOTIFICATIONS_QUEUE_NAME`
 
 #### Compile & Run
 To compile microservice to native executable you can use the following gradle task:
@@ -178,11 +255,42 @@ You can find more info at the following link: https://docs.docker.com/desktop/ws
 After setting up Docker, you can use the command:
 
 ```shell
-docker-compose up
+export GITHUB_TOKEN=your_github_token_with_packages_read_permission
+docker-compose up --build
 ```
 
 The docker-compose up command will build the image and start the containers.
 
+## Integration Testing
+
+This service supports two integration testing approaches:
+
+### Local Integration Testing (Docker Compose)
+Run integration tests using the local Docker Compose setup:
+
+1. Start the local environment:
+   ```shell
+   docker-compose up
+   ```
+
+2. Run tests using the Postman collections (see "Using Postman Collections" section below)
+
+### eCommerce-Local Integration Testing
+The service is integrated into the [pagopa-ecommerce-local](https://github.com/pagopa/pagopa-ecommerce-local) repository for comprehensive platform testing.
+
+**Pipeline Integration**: The CI/CD pipeline includes an `IntegrationTestEcommerceLocal` stage that:
+- Dynamically sets the service branch using `ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA` 
+- Runs tests in the full ecommerce environment
+
+**Polling Tests**: Integration tests include transaction state polling to verify:
+- Refund operations: Transaction state transitions through Azure Storage Queues and Event Dispatcher
+- Email resend operations: Notification request processing via queue-based messaging
+
+**Dependencies**: The service depends on:
+- `storage` (Azurite) - for Azure Storage Queue emulation
+- `mongo` - for transaction state persistence  
+- `pagopa-npg-mock`, `pagopa-psp-mock` - for payment gateway mocking
+- `pagopa-ecommerce-event-dispatcher-service` - for queue message processing
 
 #### Tips
 The main issue with native image is related to Java Reflection.
@@ -301,6 +409,95 @@ Finally, you can add new dependencies both to gradle.lockfile writing verificati
 
 For more information read the
 following [article](https://docs.gradle.org/8.1/userguide/dependency_verification.html#sec:checksum-verification)
+
+## Testing event-based APIs with DEV Environment
+
+This section provides instructions for testing the helpdesk commands event-based APIs using the dev environment with real Azure Storage queues and MongoDB.
+
+### Prerequisites
+
+- Java 21 (GraalVM recommended for native compilation)
+- Gradle
+- Access to dev environment (MongoDB and Azure Storage)
+
+### APIs Available
+
+1. **Request Transaction Refund** - `POST /commands/transactions/{transactionId}/refund`
+2. **Resend Transaction Email** - `POST /commands/transactions/{transactionId}/resend-email`
+
+Both APIs return HTTP 202 (Accepted) and send events to dev Azure Storage Queues for async processing.
+
+### Environment Setup
+
+1. **Configure environment variables** by creating `.env.dev`:
+```bash
+cp .env.example .env.dev
+```
+
+2. **Environment should include**:
+   - Dev MongoDB connection settings
+   - Dev Azure Storage connection string and queue names
+   - `AZURE_QUEUE_NATIVE_CLIENT_ENABLED=true` for native compilation
+
+### Running the Application
+
+```bash
+# Start the application with dev environment
+export $(grep -v '^#' .env.dev | xargs) && gradle bootRun
+
+# For native compilation (production-like testing)
+export $(grep -v '^#' .env.dev | xargs) && ./build/native/nativeCompile/pagopa-helpdesk-commands-service
+```
+
+### Testing with curl
+
+Use real transaction IDs from the dev database:
+
+**Request Transaction Refund:**
+```bash
+curl -X POST http://localhost:8080/commands/transactions/{REFUNDABLE_TRANSACTION_ID}/refund \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+**Resend Transaction Email:**
+```bash
+curl -X POST http://localhost:8080/commands/transactions/{NOTIFICATION_RESEND_TRANSACTION_ID}/resend-email \
+--header 'x-api-key: primary-key' \
+--header 'deployment: green' \
+--header 'X-User-Id: user-id' \
+--header 'X-Forwarded-For: 192.168.0.1'
+```
+
+**Expected Results:**
+- Both APIs should return **HTTP 202 Accepted**
+- Empty response body (async processing)
+- Logs should show successful message sending to dev Azure Storage queues
+
+### Using Postman Collections
+
+#### Local Environment Testing (CI/CD Compatible)
+1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.local.json`
+2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
+3. **Contains**: 6 APIs compatible with local Docker environment
+4. **Used by**: CI/CD integration tests
+
+#### Event-Based API Testing
+1. **Import collection**: `api-tests/v1/helpdeskcommands.api.tests.event-based.json`
+2. **Import environment**: `api-tests/env/helpdeskcommands_local.env.json`
+3. **Set variables**:
+   - `HOSTNAME`: `http://localhost:8080` (your local running app)
+   - `TRANSACTION_ID`: Use `REFUNDABLE_TRANSACTION_ID`/`NOTIFICATION_RESEND_TRANSACTION_ID` from `api-tests/env/helpdeskcommands_dev.env.json` or real transaction ID from dev database
+   - Authentication headers as required
+
+4. **Contains**: 4 event-based APIs (2 success + 2 error/not found scenarios)
+5. **Requirements**: Dev environment with real Azure Storage queues
+
+**Note**: Event-based APIs require dev environment connectivity and are NOT included in automated CI testing.
+They are included in automated testing after deploying to DEV and UAT environments (`api-tests/v1/helpdeskcommands.api.tests.dev.json`
+and `api-tests/v1/helpdeskcommands.api.tests.uat.json` are used in those cases).
 
 ## Contributors 👥
 

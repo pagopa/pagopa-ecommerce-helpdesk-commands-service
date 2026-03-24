@@ -1,5 +1,10 @@
 package it.pagopa.helpdeskcommands
 
+import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
+import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
+import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
+import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
+import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.generated.helpdeskcommands.model.RefundRedirectRequestDto
 import it.pagopa.generated.helpdeskcommands.model.RefundTransactionRequestDto
@@ -37,4 +42,31 @@ object HelpDeskCommandsTestUtils {
         title: String,
         description: String
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
+
+    /**
+     * Creates a mock TransactionRefundRequestedEvent for testing
+     *
+     * @return A mock TransactionRefundRequestedEvent instance
+     */
+    fun createMockRefundEvent(): TransactionRefundRequestedEvent {
+        val refundData =
+            TransactionRefundRequestedData(
+                null,
+                TransactionStatusDto.CLOSED,
+                TransactionRefundRequestedData.RefundTrigger.MANUAL
+            )
+
+        return TransactionRefundRequestedEvent(TRANSACTION_ID, refundData)
+    }
+
+    /**
+     * Creates a mock TransactionUserReceiptRequestedEvent for testing
+     *
+     * @return A mock TransactionUserReceiptRequestedEvent instance
+     */
+    fun createMockEmailEvent(): TransactionUserReceiptRequestedEvent {
+        val userReceiptData = TransactionUserReceiptData()
+
+        return TransactionUserReceiptRequestedEvent(TRANSACTION_ID, userReceiptData)
+    }
 }

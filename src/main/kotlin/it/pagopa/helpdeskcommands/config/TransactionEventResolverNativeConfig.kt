@@ -27,6 +27,8 @@ class TransactionEventResolverNativeConfig {
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionAuthorizationRequestedEvent",
             TransactionClosedEvent::class.java to
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionClosedEvent",
+            TransactionClosureSyntheticEvent::class.java to
+                "it.pagopa.ecommerce.commons.documents.v2.TransactionClosureSyntheticEvent",
             TransactionClosureErrorEvent::class.java to
                 "it.pagopa.ecommerce.commons.documents.v2.TransactionClosureErrorEvent",
             TransactionClosureFailedEvent::class.java to
@@ -74,10 +76,10 @@ class TransactionEventResolverNativeConfig {
 
             @Suppress("UNCHECKED_CAST")
             val classToPathMap =
-                classToPathField.get(null) as MutableMap<Class<out TransactionEvent<*>>, String>
+                classToPathField[null] as MutableMap<Class<out TransactionEvent<*>>, String>
             @Suppress("UNCHECKED_CAST")
             val pathToClassMap =
-                pathToClassField.get(null) as MutableMap<String, Class<out TransactionEvent<*>>>
+                pathToClassField[null] as MutableMap<String, Class<out TransactionEvent<*>>>
 
             classToPathMap.clear()
             pathToClassMap.clear()

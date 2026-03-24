@@ -1,14 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.spring") version "1.9.24"
+  kotlin("jvm") version "2.2.0"
+  kotlin("plugin.spring") version "2.2.0"
   id("java")
-  id("org.springframework.boot") version "3.3.2"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.6"
-  id("org.openapi.generator") version "6.3.0"
+  id("org.openapi.generator") version "7.8.0"
   id("org.graalvm.buildtools.native") version "0.10.2"
-  id("com.diffplug.spotless") version "6.18.0"
+  id("com.diffplug.spotless") version "6.25.0"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   id("org.sonarqube") version "4.2.0.3129"
   jacoco
@@ -16,7 +16,7 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.20.0"
+version = "0.30.1"
 
 description = "pagopa-helpdeskcommands-service"
 
@@ -33,16 +33,23 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories {
   mavenCentral()
-  mavenLocal()
+  maven {
+    name = "GitHubPackages"
+    url = uri("https://maven.pkg.github.com/pagopa/pagopa-ecommerce-commons")
+    credentials {
+      username = "token"
+      password = System.getenv("GITHUB_TOKEN")
+    }
+  }
 }
 
 val mockWebServerVersion = "4.12.0"
 val ecsLoggingVersion = "1.5.0"
 
 object Deps {
-  const val azureSpringCloudDepsVersion = "5.22.0"
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "1.37.2"
+  const val ecommerceCommonsVersion = "3.3.1"
+  const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
 dependencies {
@@ -231,29 +238,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
   modelNameSuffix.set("Dto")
 }
 
-tasks.register<Exec>("installLibs") {
-  description = "Installs the commons library for this project."
-  group = "commons"
-  val buildCommons = providers.gradleProperty("buildCommons")
-  onlyIf("To build commons library run gradle build -PbuildCommons") { buildCommons.isPresent }
-  commandLine("sh", "./pagopa-ecommerce-commons-maven-install.sh", Deps.ecommerceCommonsVersion)
-}
-
 tasks.withType<KotlinCompile> {
-  dependsOn(
-    "helpdeskcommands-v1",
-    "npg-api",
-    "node-forwarder-api-v1",
-    "redirect-api-v1",
-    "installLibs"
-  )
+  dependsOn("helpdeskcommands-v1", "npg-api", "node-forwarder-api-v1", "redirect-api-v1")
   // kotlinOptions.jvmTarget = "21"
-}
-
-tasks.register("printCommonsVersion") {
-  description = "Prints the referenced commons library version."
-  group = "commons"
-  doLast { print(Deps.ecommerceCommonsVersion) }
 }
 
 tasks.test {
@@ -294,6 +281,7 @@ graalvmNative {
       */
       buildArgs.add("--strict-image-heap")
       buildArgs.add("-H:+AddAllCharsets")
+      buildArgs.add("-J-Xmx6g")
     }
   }
 

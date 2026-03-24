@@ -1,10 +1,21 @@
 variables:
   BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
   GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
-trigger: none
+trigger:
+ branches:
+  include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: pagopaEcommerceLocal
+      type: github
+      name: pagopa/pagopa-ecommerce-local
+      ref: main
+      endpoint: 'io-azure-devops-github-ro'
 
 stages:
   - stage: BuildEndUnitTest
@@ -32,33 +43,30 @@ stages:
                 sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*
                 sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
                 sonar.junit.reportPaths=./build/test-results/test
-
+                
           - task: Gradle@3
-            displayName: 'Extract commons version'
+            displayName: 'Pre-fetch Gradle dependencies'
             inputs:
               gradleWrapperFile: 'gradlew'
-              tasks: 'printCommonsVersion -q'
+              tasks: 'dependencies'
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.17'
-            name: extractVersion
-
-          - script: |
-              COMMONS_VERSION=$(./gradlew -q printCommonsVersion)
-              chmod +x ./pagopa-ecommerce-commons-maven-install.sh
-              ./pagopa-ecommerce-commons-maven-install.sh $COMMONS_VERSION
-            displayName: 'Install ecommerce commons'
+              jdkVersionOption: '1.21'
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
 
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              tasks: 'build' # string. Required. Tasks. Default: build.
+              tasks: 'build --no-daemon' # string. Required. Tasks. Default: build.
               publishJUnitResults: true
               testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
               codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
               codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
               javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
-              jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
+              jdkVersionOption: '1.21' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
               sonarQubeRunAnalysis: true
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
 
           - task: SonarCloudPublish@3
             displayName: 'Publish SonarCloud results on build summary'
@@ -77,21 +85,36 @@ stages:
             displayName: 'Publish Code Coverage on Azure Devops'
 
   - stage: IntegrationTest
-    dependsOn: []
+    dependsOn: [ ]
     jobs:
       - job: make_integration_test
         steps:
-            - script: |
-                docker compose up mongo-ecommerce -d
-              displayName: 'Start MongoDB instance'
-
             - script: cp .env.example .env
               displayName: 'Setup env'
-            - script: docker compose up -d
-              displayName: 'Run app with docker-compose'
             - script: |
-                timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
-              displayName: 'Health check'
+                echo "##[debug] Starting MongoDB instance first"
+                docker compose up mongo-ecommerce -d
+                echo "##[debug] Waiting for MongoDB to be ready..."
+                timeout 120 bash -c 'while ! docker compose exec -T mongo-ecommerce mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
+              displayName: 'Start and verify MongoDB instance'
+
+            - script: |
+                echo "##[debug] Starting all services with docker-compose"
+                docker compose up -d
+                echo "##[debug] Services started, checking container status..."
+                docker compose ps
+              displayName: 'Run app with docker-compose'
+              env:
+                GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
+
+            - script: |
+                echo "##[debug] Checking application container logs before health check..."
+                docker logs pagopa-ecommerce-helpdesk-commands-service --tail 20
+                echo "##[debug] Starting health check for main application..."
+                echo "##[debug] Application should be available at localhost:8080/actuator/health/liveness"
+                timeout 240 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do echo "$(date): Waiting for application health check..."; sleep 10; done' || (echo "##[error] Health check failed after 4 minutes" && docker logs pagopa-ecommerce-helpdesk-commands-service --tail 50 && exit 1)
+                echo "##[debug] Health check successful!"
+              displayName: 'Health check with extended timeout and logging'
             - script: yarn global add newman
               displayName: 'newman installation'
             - script: newman run api-tests/v1/helpdeskcommands.api.tests.local.json --environment=api-tests/env/helpdeskcommands_local.env.json --reporters cli,junit --reporter-junit-export Results/refunds-api-TEST.xml
@@ -102,3 +125,65 @@ stages:
                 testResultsFormat: 'JUnit'
                 testResultsFiles: '**/*-TEST.xml'
                 searchFolder: '$(System.DefaultWorkingDirectory)'
+            - script: |
+                echo "##[debug] Printing logs for all running containers on failure:"
+                for container in $(docker ps -q); do
+                  name=$(docker inspect --format='{{.Name}}' $container | sed 's/^\/\(.*\)/\1/')
+                  echo "===== Logs for $name ====="
+                  docker logs $container --tail 50
+                  echo "===== End of logs for $name ====="
+                done
+              condition: failed()
+              displayName: 'Print Docker container logs on failure'
+
+  - stage: IntegrationTestEcommerceLocal
+    dependsOn: []
+    jobs:
+      - job: make_integration_test_ecommerce_local
+        steps:
+          - checkout: pagopaEcommerceLocal
+          - script: |
+              echo "##[debug] Change placeholder for helpdesk-commands-service set branch: $(BRANCH_NAME)"
+              sed -i "s/^ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=.*$/ECOMMERCE_HELPDESK_COMMANDS_COMMIT_SHA=$(BRANCH_NAME)/" .env
+            displayName: 'Change helpdesk-commands branch name ecommerce-local .env'
+          - script: |
+              docker compose up \
+              storage \
+              mongo \
+              mongo-init \
+              traefik \
+              pagopa-ecommerce-helpdesk-commands-service \
+              pagopa-ecommerce-transactions-service \
+              pagopa-ecommerce-event-dispatcher-service \
+              redis \
+              pagopa-npg-mock \
+              pagopa-notifications-service \
+              -d
+            displayName: 'Run app with docker-compose'
+            env:
+              GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
+          - script: |
+              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
+              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
+              timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
+            displayName: 'Health check helpdesk-commands-service'
+          - script: yarn global add newman
+            displayName: 'newman installation'
+          - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
+            displayName: 'Run helpdesk-commands API tests (ecommerce-local)'
+            continueOnError: false
+          - script: |
+              echo "Printing logs for all running containers:"
+              for container in $(docker ps -q); do
+                name=$(docker inspect --format='{{.Name}}' $container | sed 's/^\/\(.*\)/\1/')
+                echo "===== Logs for $name ====="
+                docker logs $container
+                echo "===== End of logs for $name ====="
+              done
+            condition: always()
+            displayName: 'Print Docker container logs'
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-TEST.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)'

@@ -221,4 +221,38 @@ class ExceptionHandlerTest {
         )
         assertEquals(HttpStatus.BAD_GATEWAY, response.statusCode)
     }
+
+    @Test
+    fun `Should handle TransactionNotFoundException`() {
+        val transactionId = TransactionId(TRANSACTION_ID)
+        val exception = TransactionNotFoundException(transactionId.value())
+        val response = exceptionHandler.handleTransactionNotFoundException(exception)
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.NOT_FOUND,
+                title = "Transaction not found",
+                description = TRANSACTION_ID
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+    }
+
+    @Test
+    fun `Should handle InvalidTransactionStatusException`() {
+        val transactionId = TransactionId(TRANSACTION_ID)
+        val exception = InvalidTransactionStatusException(transactionId.value())
+        val response = exceptionHandler.handleInvalidTransactionStatusException(exception)
+
+        assertEquals(
+            HelpDeskCommandsTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
+                title = "Invalid transaction status",
+                description = TRANSACTION_ID
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.statusCode)
+    }
 }
