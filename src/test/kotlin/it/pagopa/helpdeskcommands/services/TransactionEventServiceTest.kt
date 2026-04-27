@@ -1030,7 +1030,8 @@ class TransactionEventServiceTest {
                 TransactionAuthorizationRequestData.PaymentGateway.VPOS, // paymentGateway
                 "paymentMethodDescription123", // paymentMethodDescription
                 transactionData, // transactionGatewayAuthorizationRequestedData
-                null // idBundle (optional, can be null)
+                null, // idBundle (optional, can be null)
+                null // isContextualOnboard
             )
 
         // Create the event with the mocked data
