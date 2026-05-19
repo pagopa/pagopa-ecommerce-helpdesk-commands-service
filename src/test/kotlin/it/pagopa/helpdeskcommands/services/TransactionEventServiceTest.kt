@@ -921,7 +921,8 @@ class TransactionEventServiceTest {
             .verifyComplete()
 
         // Verify repository calls
-        verify(transactionsRefundedEventStoreRepository).insert(any<TransactionEvent<BaseTransactionRefundedData>>())
+        verify(transactionsRefundedEventStoreRepository)
+            .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
         verify(transactionsViewRepository).findByTransactionId(transactionIdString)
         verify(transactionsViewRepository).save(any())
     }
