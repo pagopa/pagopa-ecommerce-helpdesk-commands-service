@@ -248,7 +248,7 @@ class TransactionEventService(
         transactionsViewRepository: TransactionsViewRepository
     ): Mono<BaseTransaction?> {
         return transactionsEventStoreRepository
-            .save(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
+            .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
             .then(
                 transactionsViewRepository
                     .findByTransactionId(transaction.transactionId.value())
@@ -324,7 +324,7 @@ class TransactionEventService(
 
                         // Save the new event
                         userReceiptEventStoreRepository
-                            .save(newEvent)
+                            .insert(newEvent)
                             .then(
                                 transactionsViewRepository
                                     .findByTransactionId(transaction.transactionId.value())
