@@ -11,7 +11,8 @@ import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
-import it.pagopa.helpdeskcommands.utils.RedirectKeysConfiguration
+import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingConf
+import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingCriteria
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
 import java.util.*
@@ -25,7 +26,7 @@ import reactor.core.publisher.Mono
 class CommandsService(
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgApiKeyConfiguration: NpgApiKeyConfiguration,
-    @Autowired private val redirectKeysConfiguration: RedirectKeysConfiguration,
+    @Autowired private val redirectUrlMappingConf: RedirectUrlMappingConf,
     @Autowired
     private val nodeForwarderClient:
         NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto>
@@ -38,14 +39,30 @@ class CommandsService(
         touchpoint: String,
         pspTransactionId: String,
         paymentTypeCode: String,
-        pspId: String
+        pspId: String,
+        pspChannelCode: String?
     ): Mono<RefundRedirectResponseDto> {
-        return redirectKeysConfiguration
-            .getRedirectUrlForPsp(touchpoint, pspId, paymentTypeCode)
+        val matchingCriteria =
+            linkedMapOf(
+                    RedirectUrlMappingCriteria.TOUCHPOINT to touchpoint,
+                    RedirectUrlMappingCriteria.PSP_ID to pspId,
+                    RedirectUrlMappingCriteria.PAYMENT_TYPE_CODE to paymentTypeCode
+                )
+                .apply {
+                    pspChannelCode
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { put(RedirectUrlMappingCriteria.PSP_CHANNEL_ID, it) }
+                }
+
+        return redirectUrlMappingConf
+            .getRedirectUrlForCriteria(matchingCriteria)
             .fold(
                 { ex -> Mono.error(ex) },
-                { uri ->
-                    logger.info("Processing Redirect transaction refund. ")
+                { entry ->
+                    logger.info(
+                        "Processing Redirect transaction refund for pspChannelCode: [{}]",
+                        pspChannelCode
+                    )
                     nodeForwarderClient
                         .proxyRequest(
                             request =
@@ -53,7 +70,7 @@ class CommandsService(
                                     .action("refund")
                                     .idPSPTransaction(pspTransactionId)
                                     .idTransaction(transactionId.value()),
-                            proxyTo = uri,
+                            proxyTo = entry.url,
                             requestId = transactionId.value(),
                             responseClass = RedirectRefundResponseDto::class.java
                         )

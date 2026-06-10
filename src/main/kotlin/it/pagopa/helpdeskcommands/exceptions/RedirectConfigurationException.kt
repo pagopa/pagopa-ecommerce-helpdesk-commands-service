@@ -8,5 +8,14 @@ class RedirectConfigurationException : RuntimeException {
         configurationType: RedirectConfigurationType
     ) : super("Error parsing Redirect PSP $configurationType configuration, cause: $errorCause")
 
+    constructor(
+        errorCause: String,
+        configurationType: RedirectConfigurationType,
+        cause: Throwable
+    ) : super(
+        "Error parsing Redirect PSP $configurationType configuration, cause: $errorCause",
+        cause
+    )
+
     constructor(errorCause: String) : super(errorCause)
 }

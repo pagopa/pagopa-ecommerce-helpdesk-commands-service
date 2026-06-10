@@ -1,6 +1,7 @@
 package it.pagopa.helpdeskcommands.config
 
-import it.pagopa.helpdeskcommands.utils.RedirectKeysConfiguration
+import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingConf
+import java.net.URI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,32 +13,39 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class RedirectConfigurationBuilder {
     /**
-     * Create a {@code RedirectKeysConfiguration} that will contain to every handled PSP, the
-     * backend URI to be used to perform Redirect payment flow api call, then provides a method to
-     * search based on the touchpoint key - pspId - paymentTypeCode keys
+     * Create a {@code RedirectUrlMappingConf} that will contain every handled PSP backend URI for
+     * Redirect refund calls, then provides a method to search based on structured criteria.
      *
-     * @param paymentTypeCodes
-     * - set of all redirect payment type codes to be handled flow
+     * @param expectedMatchingCriteria
+     * - JSON list of criteria that must be covered by redirect URL configuration
      *
      * @param pspUrlMapping
-     * - configuration parameter that contains PSP to URI mapping
+     * - JSON list of PSP backend URI mappings
      *
      * @return a configuration map for every PSPs
      */
     @Bean
     fun redirectBeApiCallUriConf(
-        @Value("#{\${redirect.pspUrlMapping}}") pspUrlMapping: Map<String, String>,
-        @Value("\${redirect.paymentTypeCodes}") paymentTypeCodes: Set<String>
-    ): RedirectKeysConfiguration {
-        // URI.create throws IllegalArgumentException that will prevent module load for
-        // invalid PSP URI configuration
-        // the redirect url configuration map is in common and it's used to configure both
-        // redirections
-        // and redirections/refunds endpoints. here we want to configure refunds endpoint only since
-        // it's the only api call that will be performed by event dispatcher for redirections
-        // payment
-        // flow
-        val redirectUriMap = pspUrlMapping.mapValues { "${it.value}/refunds" }
-        return RedirectKeysConfiguration(redirectUriMap, paymentTypeCodes)
+        @Value("\${redirect.pspUrlMapping}") pspUrlMapping: String,
+        @Value("\${redirect.expectedMatchingCriteria}") expectedMatchingCriteria: String
+    ): RedirectUrlMappingConf {
+        return RedirectUrlMappingConf(pspUrlMapping, expectedMatchingCriteria, ::appendRefundsPath)
+    }
+
+    private fun appendRefundsPath(uri: URI): URI {
+        val currentPath = uri.path?.trimEnd('/') ?: ""
+        if (currentPath.endsWith("/refunds")) {
+            return uri
+        }
+
+        return URI(
+            uri.scheme,
+            uri.userInfo,
+            uri.host,
+            uri.port,
+            "$currentPath/refunds",
+            uri.query,
+            uri.fragment
+        )
     }
 }
