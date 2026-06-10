@@ -394,7 +394,7 @@ class TransactionEventServiceTest {
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -418,7 +418,7 @@ class TransactionEventServiceTest {
             }
             .verifyComplete()
 
-        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        verify(userReceiptEventStoreRepository).insert(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionIdString, savedEvent.transactionId)
     }
@@ -453,7 +453,7 @@ class TransactionEventServiceTest {
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -477,7 +477,7 @@ class TransactionEventServiceTest {
             }
             .verifyComplete()
 
-        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        verify(userReceiptEventStoreRepository).insert(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionIdString, savedEvent.transactionId)
     }
@@ -512,7 +512,7 @@ class TransactionEventServiceTest {
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -536,7 +536,7 @@ class TransactionEventServiceTest {
             }
             .verifyComplete()
 
-        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        verify(userReceiptEventStoreRepository).insert(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionIdString, savedEvent.transactionId)
     }
@@ -571,7 +571,7 @@ class TransactionEventServiceTest {
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -595,7 +595,7 @@ class TransactionEventServiceTest {
             }
             .verifyComplete()
 
-        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        verify(userReceiptEventStoreRepository).insert(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionIdString, savedEvent.transactionId)
     }
@@ -626,7 +626,7 @@ class TransactionEventServiceTest {
                 Mono.error<TransactionUserReceiptRequestedEvent>(RuntimeException("Database error"))
             )
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
@@ -634,7 +634,7 @@ class TransactionEventServiceTest {
         // Then
         StepVerifier.create(result).expectError(RuntimeException::class.java).verify()
 
-        verify(userReceiptEventStoreRepository).save(any())
+        verify(userReceiptEventStoreRepository).insert(any<TransactionUserReceiptRequestedEvent>())
     }
 
     @Test
@@ -669,7 +669,7 @@ class TransactionEventServiceTest {
                 Mono.just(invocation.getArgument(0) as TransactionUserReceiptRequestedEvent)
             }
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -694,7 +694,7 @@ class TransactionEventServiceTest {
             }
             .verifyComplete()
 
-        verify(userReceiptEventStoreRepository).save(capture(userReceiptEventCaptor))
+        verify(userReceiptEventStoreRepository).insert(capture(userReceiptEventCaptor))
         val savedEvent = userReceiptEventCaptor.value
         assertEquals(transactionIdString, savedEvent.transactionId)
     }
@@ -884,7 +884,7 @@ class TransactionEventServiceTest {
         @Suppress("UNCHECKED_CAST")
         doReturn(Mono.just(transactionEvent as TransactionEvent<BaseTransactionRefundedData>))
             .`when`(transactionsRefundedEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
 
         @Suppress("UNCHECKED_CAST")
         doReturn(Mono.empty<TransactionEvent<BaseTransactionRefundedData>>())
@@ -921,7 +921,8 @@ class TransactionEventServiceTest {
             .verifyComplete()
 
         // Verify repository calls
-        verify(transactionsRefundedEventStoreRepository).save(any())
+        verify(transactionsRefundedEventStoreRepository)
+            .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
         verify(transactionsViewRepository).findByTransactionId(transactionIdString)
         verify(transactionsViewRepository).save(any())
     }
@@ -953,7 +954,7 @@ class TransactionEventServiceTest {
 
         doReturn(Mono.just(mockTransaction))
             .`when`(transactionsRefundedEventStoreRepository)
-            .save(any<TransactionEvent<BaseTransactionRefundedData>>())
+            .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
 
         doReturn(Mono.empty<TransactionActivatedEvent>())
             .`when`(transactionsRefundedEventStoreHistoryRepository)
@@ -978,7 +979,7 @@ class TransactionEventServiceTest {
             .verifyComplete()
 
         verify(transactionsRefundedEventStoreRepository)
-            .save(any<TransactionEvent<BaseTransactionRefundedData>>())
+            .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
         verify(transactionsViewRepository).findByTransactionId(transactionIdString)
         verify(transactionsViewRepository).save(any())
     }
@@ -1101,7 +1102,7 @@ class TransactionEventServiceTest {
 
         doReturn(Mono.just(existingReceiptEvent))
             .`when`(userReceiptEventStoreRepository)
-            .save(any())
+            .insert(any<TransactionUserReceiptRequestedEvent>())
 
         val mockTx = Mockito.mock(Transaction::class.java)
         doReturn(Mono.just(mockTx))
@@ -1130,7 +1131,7 @@ class TransactionEventServiceTest {
         // Verify repository calls
         verify(userReceiptEventStoreRepository)
             .findByTransactionIdOrderByCreationDateAsc(transactionIdString)
-        verify(userReceiptEventStoreRepository).save(any())
+        verify(userReceiptEventStoreRepository).insert(any<TransactionUserReceiptRequestedEvent>())
     }
 
     @Test

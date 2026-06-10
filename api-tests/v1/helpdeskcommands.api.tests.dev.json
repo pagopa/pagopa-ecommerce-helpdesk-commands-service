@@ -74,13 +74,13 @@
 			"response": []
 		},
 		{
-			"name": "eCommerce helpDesk-Commands Refund Operation - Operation Already Refunded",
+			"name": "eCommerce helpDesk-Commands Refund Operation - Operation with invalid amount",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but target resource has already been refunded\", function () {",
+							"pm.test(\"eCommerce helpDesk-Commands Refund Operation but requested amount is invalid\", function () {",
 							"    pm.response.to.have.status(500);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.title).to.be.eq(\"Npg Invocation exception - Bad request\");",
@@ -117,7 +117,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID_NOT_EXISTS}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": 121000\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -251,7 +251,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{PSP_ID}}\"\r\n}",
+					"raw": "{\r\n    \"idTransaction\": \"{{TRANSACTION_ID}}\",\r\n    \"idPSPTransaction\": \"{{PSP_TRANSACTION_ID}}\",\r\n    \"touchpoint\": \"{{TOUCHPOINT}}\",\r\n    \"paymentTypeCode\": \"{{NOT_VALID_REDIRECT_PAYMENT_METHOD_NAME}}\",\r\n    \"pspId\": \"{{REDIRECT_PSP_ID}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
