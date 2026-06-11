@@ -33,19 +33,11 @@ class RedirectConfigurationBuilder {
     }
 
     private fun appendRefundsPath(uri: URI): URI {
-        val currentPath = uri.path?.trimEnd('/') ?: ""
+        val currentPath = uri.path.orEmpty().trimEnd('/')
         if (currentPath.endsWith("/refunds")) {
             return uri
         }
 
-        return URI(
-            uri.scheme,
-            uri.userInfo,
-            uri.host,
-            uri.port,
-            "$currentPath/refunds",
-            uri.query,
-            uri.fragment
-        )
+        return uri.resolve("$currentPath/refunds")
     }
 }

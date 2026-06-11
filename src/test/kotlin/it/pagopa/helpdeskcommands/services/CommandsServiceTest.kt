@@ -67,18 +67,36 @@ class CommandsServiceTest {
 
     private val redirectBeApiCallUriMap: Map<String, URI> =
         mapOf("pspId-RPIC" to URI.create("http://redirect/RPIC"))
-    private val redirectBeAoiCallUriSet: Set<String> = setOf("pspId-RPIC")
-    private val redirectKeysConfiguration: RedirectKeysConfiguration =
-        RedirectKeysConfiguration(
-            mapOf("pspId-RPIC" to "http://redirect/RPIC"),
-            redirectBeAoiCallUriSet
+    private val redirectUrlMappingConf: RedirectUrlMappingConf =
+        RedirectUrlMappingConf(
+            """
+            [
+              {
+                "url": "http://redirect/RPIC",
+                "matchingCriteria": {
+                  "PSP_ID": "pspId",
+                  "PAYMENT_TYPE_CODE": "RPIC"
+                }
+              }
+            ]
+            """
+                .trimIndent(),
+            """
+            [
+              {
+                "PSP_ID": "pspId",
+                "PAYMENT_TYPE_CODE": "RPIC"
+              }
+            ]
+            """
+                .trimIndent()
         )
 
     private val commandsService: CommandsService =
         CommandsService(
             npgClient = npgClient,
             npgApiKeyConfiguration = npgApiKeyConfiguration,
-            redirectKeysConfiguration = redirectKeysConfiguration,
+            redirectUrlMappingConf = redirectUrlMappingConf,
             nodeForwarderClient = nodeForwarderRedirectApiClient
         )
 
@@ -281,7 +299,7 @@ class CommandsServiceTest {
             CommandsService(
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
-                redirectKeysConfiguration = redirectKeysConfiguration,
+                redirectUrlMappingConf = redirectUrlMappingConf,
                 nodeForwarderClient = nodeForwarderRedirectApiClient
             )
         val operationId = "operationID"
@@ -331,7 +349,7 @@ class CommandsServiceTest {
             CommandsService(
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
-                redirectKeysConfiguration = redirectKeysConfiguration,
+                redirectUrlMappingConf = redirectUrlMappingConf,
                 nodeForwarderClient = nodeForwarderRedirectApiClient
             )
         val operationId = "operationID"
@@ -381,7 +399,7 @@ class CommandsServiceTest {
             CommandsService(
                 npgClient = npgClient,
                 npgApiKeyConfiguration = npgApiKeyConfiguration,
-                redirectKeysConfiguration = redirectKeysConfiguration,
+                redirectUrlMappingConf = redirectUrlMappingConf,
                 nodeForwarderClient = nodeForwarderRedirectApiClient
             )
         val operationId = "operationID"
@@ -415,6 +433,7 @@ class CommandsServiceTest {
         val pspTransactionId = "pspTransactionId"
         val paymentTypeCode = "RPIC"
         val pspId = "pspId"
+        val pspChannelCode = "pspChannelCode"
         val redirectRefundResponse =
             RefundRedirectResponseDto().idTransaction(transactionId).outcome(RefundOutcomeDto.OK)
         val redirectRefundResponseDto =
@@ -442,7 +461,8 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
+                    pspId = pspId,
+                    pspChannelCode = pspChannelCode
                 )
             )
             .expectNext(redirectRefundResponse)
@@ -465,6 +485,7 @@ class CommandsServiceTest {
         val transactionId = TRANSACTION_ID_STRING
         val pspTransactionId = "pspTransactionId"
         val paymentTypeCode = "MISSING"
+        val pspChannelCode = "pspChannelCode"
         // test
         StepVerifier.create(
                 commandsService.requestRedirectRefund(
@@ -472,15 +493,21 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = "pspId"
+                    pspId = "pspId",
+                    pspChannelCode = pspChannelCode
                 )
             )
             .expectErrorMatches {
                 assertTrue(it is RedirectConfigurationException)
-                assertEquals(
-                    "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Missing key for redirect return url with following search parameters: touchpoint: [${touchpoint}] pspId: [pspId] paymentTypeCode: [MISSING]",
-                    it.message
+                assertTrue(
+                    it.message?.startsWith(
+                        "Error parsing Redirect PSP BACKEND_URLS configuration, cause: No configuration found for the provided matching criteria:"
+                    ) == true
                 )
+                assertTrue(it.message?.contains("TOUCHPOINT=$touchpoint") == true)
+                assertTrue(it.message?.contains("PSP_ID=pspId") == true)
+                assertTrue(it.message?.contains("PAYMENT_TYPE_CODE=MISSING") == true)
+                assertTrue(it.message?.contains("PSP_CHANNEL_ID=$pspChannelCode") == true)
                 true
             }
             .verify()
@@ -499,6 +526,7 @@ class CommandsServiceTest {
         val pspTransactionId = "pspTransactionId"
         val paymentTypeCode = "RPIC"
         val pspId = "pspId"
+        val pspChannelCode = "pspChannelCode"
         val expectedRequest =
             RedirectRefundRequestDto()
                 .action("refund")
@@ -525,7 +553,8 @@ class CommandsServiceTest {
                     touchpoint = touchpoint,
                     pspTransactionId = pspTransactionId,
                     paymentTypeCode = paymentTypeCode,
-                    pspId = pspId
+                    pspId = pspId,
+                    pspChannelCode = pspChannelCode
                 )
             )
             .expectError(expectedErrorClass)
