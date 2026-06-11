@@ -3,8 +3,8 @@ package it.pagopa.helpdeskcommands.utils
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationType
@@ -25,18 +25,11 @@ class RedirectUrlMappingConf(
 
     init {
         try {
-            val parsedConfiguration =
-                objectMapper.readValue(
-                    urlConfigurationJsonValue,
-                    object : TypeReference<List<RedirectUrlMappingEntry>>() {}
-                )
+            val parsedConfiguration = parseUrlConfiguration(urlConfigurationJsonValue)
             urlConfiguration = parsedConfiguration.map { it.copy(url = urlTransformer(it.url)) }
 
             val expectedMatchingCriteria =
-                objectMapper.readValue(
-                    expectedMatchingCriteriaJsonValue,
-                    object : TypeReference<List<Map<RedirectUrlMappingCriteria, String>>>() {}
-                )
+                parseMatchingCriteriaList(expectedMatchingCriteriaJsonValue)
 
             expectedMatchingCriteria.forEach { matchingCriteria ->
                 getRedirectUrlForCriteria(matchingCriteria)
@@ -87,6 +80,47 @@ class RedirectUrlMappingConf(
         }
 
         return entries.first().right()
+    }
+
+    private fun parseUrlConfiguration(jsonValue: String): List<RedirectUrlMappingEntry> {
+        return parseArray(jsonValue).map { entry ->
+            RedirectUrlMappingEntry(
+                url = URI.create(requiredText(entry, "url")),
+                matchingCriteria = parseMatchingCriteria(requiredObject(entry, "matchingCriteria"))
+            )
+        }
+    }
+
+    private fun parseMatchingCriteriaList(
+        jsonValue: String
+    ): List<Map<RedirectUrlMappingCriteria, String>> {
+        return parseArray(jsonValue).map(::parseMatchingCriteria)
+    }
+
+    private fun parseArray(jsonValue: String): List<JsonNode> {
+        val root = objectMapper.readTree(jsonValue)
+        require(root.isArray) { "Expected json array" }
+        return root.toList()
+    }
+
+    private fun parseMatchingCriteria(node: JsonNode): Map<RedirectUrlMappingCriteria, String> {
+        require(node.isObject) { "Expected matching criteria object" }
+        return node.fields().asSequence().associate { (name, value) ->
+            require(value.isTextual) { "Expected string value for matching criteria $name" }
+            RedirectUrlMappingCriteria.valueOf(name) to value.asText()
+        }
+    }
+
+    private fun requiredObject(node: JsonNode, fieldName: String): JsonNode {
+        val field = node.get(fieldName)
+        require(field != null && field.isObject) { "Missing or invalid object field $fieldName" }
+        return field
+    }
+
+    private fun requiredText(node: JsonNode, fieldName: String): String {
+        val field = node.get(fieldName)
+        require(field != null && field.isTextual) { "Missing or invalid text field $fieldName" }
+        return field.asText()
     }
 
     companion object {
