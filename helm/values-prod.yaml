@@ -76,6 +76,7 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
+    ACTIVE_PROFILE: k8s
     DEFAULT_LOGGING_LEVEL: "info"
     APP_LOGGING_LEVEL: "info"
     WEB_LOGGING_LEVEL: "info"
