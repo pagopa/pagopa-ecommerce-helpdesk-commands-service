@@ -3,12 +3,13 @@ package it.pagopa.helpdeskcommands.utils
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationType
 import java.net.URI
+import java.util.TreeMap
 
 /**
  * Handles redirect backend URL configuration using structured matching criteria.
@@ -55,14 +56,26 @@ class RedirectUrlMappingConf(
     }
 
     fun getRedirectUrlForCriteria(
-        matchingCriteria: Map<RedirectUrlMappingCriteria, String>
+        searchCriteria: Map<RedirectUrlMappingCriteria, String>
     ): Either<RedirectConfigurationException, RedirectUrlMappingEntry> {
-        val normalizedCriteria = matchingCriteria.filterValues { it.isNotBlank() }
-        val entries =
-            urlConfiguration.filter { confEntry ->
-                normalizedCriteria.all { (criteria, value) ->
-                    confEntry.matchingCriteria.getOrDefault(criteria, value) == value
+        val normalizedCriteria = searchCriteria.filterValues { it.isNotBlank() }
+        val rankedConfMatches =
+            urlConfiguration
+                .filter { confEntry ->
+                    normalizedCriteria.all { (criteria, value) ->
+                        confEntry.matchingCriteria.getOrDefault(criteria, value) == value
+                    }
                 }
+                .groupByTo(TreeMap<Int, MutableList<RedirectUrlMappingEntry>>()) { confEntry ->
+                    normalizedCriteria.count { (criteria, value) ->
+                        confEntry.matchingCriteria[criteria] == value
+                    }
+                }
+        val entries =
+            if (rankedConfMatches.isEmpty()) {
+                emptyList()
+            } else {
+                rankedConfMatches[rankedConfMatches.lastKey()].orEmpty()
             }
 
         if (entries.size != 1) {
@@ -83,44 +96,19 @@ class RedirectUrlMappingConf(
     }
 
     private fun parseUrlConfiguration(jsonValue: String): List<RedirectUrlMappingEntry> {
-        return parseArray(jsonValue).map { entry ->
-            RedirectUrlMappingEntry(
-                url = URI.create(requiredText(entry, "url")),
-                matchingCriteria = parseMatchingCriteria(requiredObject(entry, "matchingCriteria"))
-            )
-        }
+        return objectMapper.readValue(
+            jsonValue,
+            object : TypeReference<List<RedirectUrlMappingEntry>>() {}
+        )
     }
 
     private fun parseMatchingCriteriaList(
         jsonValue: String
     ): List<Map<RedirectUrlMappingCriteria, String>> {
-        return parseArray(jsonValue).map(::parseMatchingCriteria)
-    }
-
-    private fun parseArray(jsonValue: String): List<JsonNode> {
-        val root = objectMapper.readTree(jsonValue)
-        require(root.isArray) { "Expected json array" }
-        return root.toList()
-    }
-
-    private fun parseMatchingCriteria(node: JsonNode): Map<RedirectUrlMappingCriteria, String> {
-        require(node.isObject) { "Expected matching criteria object" }
-        return node.fields().asSequence().associate { (name, value) ->
-            require(value.isTextual) { "Expected string value for matching criteria $name" }
-            RedirectUrlMappingCriteria.valueOf(name) to value.asText()
-        }
-    }
-
-    private fun requiredObject(node: JsonNode, fieldName: String): JsonNode {
-        val field = node.get(fieldName)
-        require(field != null && field.isObject) { "Missing or invalid object field $fieldName" }
-        return field
-    }
-
-    private fun requiredText(node: JsonNode, fieldName: String): String {
-        val field = node.get(fieldName)
-        require(field != null && field.isTextual) { "Missing or invalid text field $fieldName" }
-        return field.asText()
+        return objectMapper.readValue(
+            jsonValue,
+            object : TypeReference<List<Map<RedirectUrlMappingCriteria, String>>>() {}
+        )
     }
 
     companion object {

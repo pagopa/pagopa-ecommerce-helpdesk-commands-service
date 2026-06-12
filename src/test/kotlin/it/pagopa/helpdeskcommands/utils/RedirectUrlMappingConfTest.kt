@@ -72,6 +72,28 @@ class RedirectUrlMappingConfTest {
                 .trimIndent()
         )
 
+    private val overlappingConf =
+        """
+        [
+          {
+            "url": "http://localhost/psp1",
+            "matchingCriteria": {
+              "PAYMENT_TYPE_CODE": "paymentTypeCode",
+              "PSP_ID": "pspId"
+            }
+          },
+          {
+            "url": "http://localhost/psp2",
+            "matchingCriteria": {
+              "PAYMENT_TYPE_CODE": "paymentTypeCode",
+              "PSP_ID": "pspId",
+              "PSP_CHANNEL_ID": "channelId"
+            }
+          }
+        ]
+        """
+            .trimIndent()
+
     @Test
     fun `should fetch configuration matching provided criteria`() {
         val result =
@@ -206,6 +228,46 @@ class RedirectUrlMappingConfTest {
         assertEquals(
             URI("http://localhost:8096/redirections/refunds"),
             (result as Either.Right).value.url
+        )
+    }
+
+    @Test
+    fun `should return configuration with higher matching parameters count`() {
+        val conf = RedirectUrlMappingConf(overlappingConf, "[]")
+
+        val result =
+            conf.getRedirectUrlForCriteria(
+                mapOf(
+                    RedirectUrlMappingCriteria.PAYMENT_TYPE_CODE to "paymentTypeCode",
+                    RedirectUrlMappingCriteria.PSP_ID to "pspId",
+                    RedirectUrlMappingCriteria.PSP_CHANNEL_ID to "channelId"
+                )
+            )
+
+        assertTrue(result.isRight())
+        assertEquals(URI("http://localhost/psp2"), (result as Either.Right).value.url)
+    }
+
+    @Test
+    fun `should return error for configuration with same matching parameters count`() {
+        val conf = RedirectUrlMappingConf(overlappingConf, "[]")
+
+        val result =
+            conf.getRedirectUrlForCriteria(
+                mapOf(
+                    RedirectUrlMappingCriteria.PAYMENT_TYPE_CODE to "paymentTypeCode",
+                    RedirectUrlMappingCriteria.PSP_ID to "pspId"
+                )
+            )
+
+        assertTrue(result.isLeft())
+        assertTrue(
+            (result as Either.Left<RedirectConfigurationException>)
+                .value
+                .message
+                ?.startsWith(
+                    "Error parsing Redirect PSP BACKEND_URLS configuration, cause: Multiple configurations found"
+                ) == true
         )
     }
 }
