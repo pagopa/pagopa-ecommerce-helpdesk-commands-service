@@ -1,7 +1,9 @@
 package it.pagopa.helpdeskcommands.config
 
 import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingConf
+import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingEntry
 import java.net.URI
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,6 +27,7 @@ class RedirectConfigurationBuilder {
      * @return a configuration map for every PSPs
      */
     @Bean
+    @RegisterReflectionForBinding(RedirectUrlMappingEntry::class)
     fun redirectBeApiCallUriConf(
         @Value("\${redirect.pspUrlMapping}") pspUrlMapping: String,
         @Value("\${redirect.expectedMatchingCriteria}") expectedMatchingCriteria: String
