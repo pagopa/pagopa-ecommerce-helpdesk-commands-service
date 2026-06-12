@@ -25,33 +25,22 @@ class RedirectUrlMappingConf(
     private val urlConfiguration: List<RedirectUrlMappingEntry>
 
     init {
-        try {
-            val parsedConfiguration = parseUrlConfiguration(urlConfigurationJsonValue)
-            urlConfiguration = parsedConfiguration.map { it.copy(url = urlTransformer(it.url)) }
+        val parsedConfiguration = parseUrlConfiguration(urlConfigurationJsonValue)
+        urlConfiguration = parsedConfiguration.map { it.copy(url = urlTransformer(it.url)) }
 
-            val expectedMatchingCriteria =
-                parseMatchingCriteriaList(expectedMatchingCriteriaJsonValue)
+        val expectedMatchingCriteria = parseMatchingCriteriaList(expectedMatchingCriteriaJsonValue)
 
-            expectedMatchingCriteria.forEach { matchingCriteria ->
-                getRedirectUrlForCriteria(matchingCriteria)
-                    .fold(
-                        { error ->
-                            throw RedirectConfigurationException(
-                                "Redirect url configuration does not match expected criteria: ${error.message}",
-                                RedirectConfigurationType.BACKEND_URLS
-                            )
-                        },
-                        {}
-                    )
-            }
-        } catch (e: RedirectConfigurationException) {
-            throw e
-        } catch (e: Exception) {
-            throw RedirectConfigurationException(
-                "Invalid redirect url configuration: error parsing json values",
-                RedirectConfigurationType.BACKEND_URLS,
-                e
-            )
+        expectedMatchingCriteria.forEach { matchingCriteria ->
+            getRedirectUrlForCriteria(matchingCriteria)
+                .fold(
+                    { error ->
+                        throw RedirectConfigurationException(
+                            "Redirect url configuration does not match expected criteria: ${error.message}",
+                            RedirectConfigurationType.BACKEND_URLS
+                        )
+                    },
+                    {}
+                )
         }
     }
 
