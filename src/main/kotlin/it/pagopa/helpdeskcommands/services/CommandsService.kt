@@ -1,5 +1,7 @@
 package it.pagopa.helpdeskcommands.services
 
+import it.pagopa.ecommerce.commons.utils.RedirectUrlMappingConf
+import it.pagopa.ecommerce.commons.utils.bean.redirect.configuration.RedirectUrlMappingCriteria
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundResponseDto as RedirectRefundResponseDto
 import it.pagopa.generated.helpdeskcommands.model.RefundOutcomeDto
@@ -11,8 +13,6 @@ import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
-import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingConf
-import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingCriteria
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
 import java.util.*

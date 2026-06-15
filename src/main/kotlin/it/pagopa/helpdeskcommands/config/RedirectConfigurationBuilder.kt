@@ -1,7 +1,7 @@
 package it.pagopa.helpdeskcommands.config
 
-import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingConf
-import it.pagopa.helpdeskcommands.utils.RedirectUrlMappingEntry
+import it.pagopa.ecommerce.commons.utils.RedirectUrlMappingConf
+import it.pagopa.ecommerce.commons.utils.bean.redirect.configuration.RedirectUrlMappingEntry
 import java.net.URI
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.annotation.Value
@@ -32,10 +32,10 @@ class RedirectConfigurationBuilder {
         @Value("\${redirect.pspUrlMapping}") pspUrlMapping: String,
         @Value("\${redirect.expectedMatchingCriteria}") expectedMatchingCriteria: String
     ): RedirectUrlMappingConf {
-        return RedirectUrlMappingConf(pspUrlMapping, expectedMatchingCriteria, ::appendRefundsPath)
+        return RedirectUrlMappingConf(pspUrlMapping, expectedMatchingCriteria)
     }
 
-    private fun appendRefundsPath(uri: URI): URI {
+    fun appendRefundsPath(uri: URI): URI {
         val currentPath = uri.path.orEmpty().trimEnd('/')
         if (currentPath.endsWith("/refunds")) {
             return uri

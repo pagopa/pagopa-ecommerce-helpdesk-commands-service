@@ -1,10 +1,10 @@
 package it.pagopa.helpdeskcommands.exceptionhandler
 
+import it.pagopa.ecommerce.commons.exceptions.RedirectConfigurationException
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
-import it.pagopa.helpdeskcommands.exceptions.RedirectConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import jakarta.validation.ConstraintViolationException

@@ -1,5 +1,7 @@
 package it.pagopa.helpdeskcommands.exceptionhandler
 
+import it.pagopa.ecommerce.commons.exceptions.RedirectConfigurationException
+import it.pagopa.ecommerce.commons.exceptions.RedirectConfigurationType
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils
 import it.pagopa.helpdeskcommands.HelpDeskCommandsTestUtils.TRANSACTION_ID
 import it.pagopa.helpdeskcommands.exceptions.*
@@ -115,7 +117,8 @@ class ExceptionHandlerTest {
     fun `Should handle RedirectConfigurationException`() {
         val exception =
             RedirectConfigurationException(
-                "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]"
+                "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]",
+                RedirectConfigurationType.BACKEND_URLS
             )
         val response = exceptionHandler.handleRedirectConfigurationException(exception)
         assertEquals(
