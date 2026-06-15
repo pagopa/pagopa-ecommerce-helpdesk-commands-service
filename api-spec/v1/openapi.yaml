@@ -363,6 +363,9 @@ components:
         pspId:
           type: string
           description: The id of the psp
+        pspChannelCode:
+          description: Payment service provider channel code
+          type: string
       required:
         - idTransaction
         - idPSPTransaction

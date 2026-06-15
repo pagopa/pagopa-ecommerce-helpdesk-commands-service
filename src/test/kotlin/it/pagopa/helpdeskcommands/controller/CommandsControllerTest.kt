@@ -18,6 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.NullSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -88,7 +89,7 @@ class CommandsControllerTest {
             RefundRedirectResponseDto()
                 .idTransaction(HelpDeskCommandsTestUtils.TRANSACTION_ID)
                 .outcome(RefundOutcomeDto.OK)
-        given { commandsService.requestRedirectRefund(any(), any(), any(), any(), any()) }
+        given { commandsService.requestRedirectRefund(any(), any(), any(), any(), any(), any()) }
             .willReturn(refundRedirectResponseDto.toMono())
         webClient
             .post()
@@ -103,6 +104,16 @@ class CommandsControllerTest {
             .isOk
             .expectBody<RefundRedirectResponseDto>()
             .consumeWith { assertEquals(refundRedirectResponseDto, it.responseBody) }
+
+        verify(commandsService, times(1))
+            .requestRedirectRefund(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                eq(HelpDeskCommandsTestUtils.PSP_CHANNEL_CODE)
+            )
     }
 
     @Test

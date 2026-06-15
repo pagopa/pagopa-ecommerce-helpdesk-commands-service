@@ -29,10 +29,11 @@ class CommandsController(
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
             logger.info(
-                "Received refund redirect request for userId: [{}], transactionId: [{}}, idPSPTransaction: [{}], from IP: [{}]",
+                "Received refund redirect request for userId: [{}], transactionId: [{}], idPSPTransaction: [{}], pspChannelCode: [{}], from IP: [{}]",
                 xUserId,
                 requestDto.idTransaction,
                 requestDto.idPSPTransaction,
+                requestDto.pspChannelCode,
                 xForwardedFor
             )
             commandsService
@@ -41,7 +42,8 @@ class CommandsController(
                     touchpoint = requestDto.touchpoint,
                     pspTransactionId = requestDto.idPSPTransaction,
                     paymentTypeCode = requestDto.paymentTypeCode,
-                    pspId = requestDto.pspId
+                    pspId = requestDto.pspId,
+                    pspChannelCode = requestDto.pspChannelCode
                 )
                 .map {
                     ResponseEntity.ok(
