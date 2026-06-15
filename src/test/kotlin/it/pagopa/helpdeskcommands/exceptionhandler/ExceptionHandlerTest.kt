@@ -125,7 +125,7 @@ class ExceptionHandlerTest {
             HelpDeskCommandsTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Exception retrieving configuration type",
-                description = "Cannot retrieve redirect PSP configuration for type: [BACKEND_URLS]"
+                description = exception.message!!
             ),
             response.body
         )

@@ -15,6 +15,7 @@ import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import java.math.BigDecimal
+import java.net.URI
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,6 +34,15 @@ class CommandsService(
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    private fun appendRefundsPath(uri: URI): URI {
+        val currentPath = uri.path.orEmpty().trimEnd('/')
+        if (currentPath.endsWith("/refunds")) {
+            return uri
+        }
+
+        return uri.resolve("$currentPath/refunds")
+    }
 
     fun requestRedirectRefund(
         transactionId: TransactionId,
@@ -70,7 +80,7 @@ class CommandsService(
                                     .action("refund")
                                     .idPSPTransaction(pspTransactionId)
                                     .idTransaction(transactionId.value()),
-                            proxyTo = entry.url,
+                            proxyTo = appendRefundsPath(entry.url),
                             requestId = transactionId.value(),
                             responseClass = RedirectRefundResponseDto::class.java
                         )

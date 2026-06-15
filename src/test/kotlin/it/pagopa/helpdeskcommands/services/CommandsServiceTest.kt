@@ -68,7 +68,7 @@ class CommandsServiceTest {
         mock()
 
     private val redirectBeApiCallUriMap: Map<String, URI> =
-        mapOf("pspId-RPIC" to URI.create("http://redirect/RPIC"))
+        mapOf("pspId-RPIC" to URI.create("http://redirect/RPIC/refunds"))
     private val redirectUrlMappingConf: RedirectUrlMappingConf =
         RedirectUrlMappingConf(
             """
