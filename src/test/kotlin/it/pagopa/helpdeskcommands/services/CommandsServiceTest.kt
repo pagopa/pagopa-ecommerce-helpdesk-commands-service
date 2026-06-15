@@ -67,8 +67,6 @@ class CommandsServiceTest {
         NodeForwarderClient<RedirectRefundRequestDto, RedirectRefundResponseDto> =
         mock()
 
-    private val redirectBeApiCallUriMap: Map<String, URI> =
-        mapOf("pspId-RPIC" to URI.create("http://redirect/RPIC/refunds"))
     private val redirectUrlMappingConf: RedirectUrlMappingConf =
         RedirectUrlMappingConf(
             """
@@ -472,7 +470,7 @@ class CommandsServiceTest {
         verify(nodeForwarderRedirectApiClient, times(1))
             .proxyRequest(
                 expectedRequest,
-                redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
+                URI.create("http://redirect/RPIC/refunds"),
                 transactionId,
                 RedirectRefundResponseDto::class.java
             )
@@ -564,7 +562,7 @@ class CommandsServiceTest {
         verify(nodeForwarderRedirectApiClient, times(1))
             .proxyRequest(
                 expectedRequest,
-                redirectBeApiCallUriMap["pspId-$paymentTypeCode"]!!,
+                URI.create("http://redirect/RPIC/refunds"),
                 transactionId,
                 RedirectRefundResponseDto::class.java
             )
