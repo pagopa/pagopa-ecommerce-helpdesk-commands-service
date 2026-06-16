@@ -48,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.6.0"
+  const val ecommerceCommonsVersion = "3.6.0-PIDM-1763-grandTotal-Long-SNAPSHOT-a7f6848"
   const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
