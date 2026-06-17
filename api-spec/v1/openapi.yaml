@@ -266,8 +266,9 @@ components:
     AmountEuroCents:
       description: Amount for payments, in euro cents
       type: integer
+      format: int64
       minimum: 0
-      maximum: 99999999
+      maximum: 99999999999
     RefundTransactionResponse:
       type: object
       properties:
