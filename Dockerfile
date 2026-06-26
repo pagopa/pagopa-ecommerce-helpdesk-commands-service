@@ -16,6 +16,8 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
                 --strict-image-heap -H:+AddAllCharsets"
 
 FROM debian:stable-20240701-slim@sha256:f8bbfa052db81e5b8ac12e4a1d8310a85d1509d4d0d5579148059c0e8b717d4e AS runtime
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser:appgroup
 WORKDIR /app
 EXPOSE 8080
 COPY --from=builder /workspace/app/build/native/nativeCompile/pagopa-helpdesk-commands-service .
