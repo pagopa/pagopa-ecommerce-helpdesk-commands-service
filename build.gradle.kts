@@ -16,7 +16,7 @@ plugins {
 
 group = "it.pagopa.helpdeskcommands"
 
-version = "0.34.0"
+version = "0.34.1"
 
 description = "pagopa-helpdeskcommands-service"
 
@@ -48,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.5.0"
+  const val ecommerceCommonsVersion = "3.8.0"
   const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
