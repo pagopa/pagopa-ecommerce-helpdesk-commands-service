@@ -211,7 +211,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
 ) {
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/refs/heads/main/src/domains/shared-app/api/node_forwarder_api/v1/_openapi.json.tpl"
   )
   outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   library.set("webclient")
