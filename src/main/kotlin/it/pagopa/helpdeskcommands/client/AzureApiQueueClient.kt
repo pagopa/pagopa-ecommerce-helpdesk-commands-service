@@ -1,5 +1,6 @@
 package it.pagopa.helpdeskcommands.client
 
+import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import java.security.InvalidKeyException
 import java.security.NoSuchAlgorithmException
 import java.time.ZoneOffset
@@ -32,8 +33,6 @@ class AzureApiQueueClient {
         storageAccount: String,
         storageKey: String
     ): Mono<String> {
-        logger.info("Sending message via direct HTTP with Storage Account Key authentication")
-
         val xmlBody =
             "<?xml version='1.0' encoding='utf-8'?><QueueMessage><MessageText>$message</MessageText></QueueMessage>"
 
@@ -66,12 +65,21 @@ class AzureApiQueueClient {
                     .retrieve()
                     .bodyToMono(String::class.java)
             }
-            .doOnSuccess { _ -> logger.info("Direct HTTP message sent successfully") }
+            .doOnSuccess { _ ->
+                RequestTracingUtils.withContextDetailsMdc(
+                    mapOf(
+                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
+                            RequestTracingUtils.STORAGE_ACCOUNT_DEPENDENCY_KEY,
+                        "queue_name" to queueName
+                    )
+                ) {
+                    logger.info("Direct HTTP message sent successfully")
+                }
+            }
             .doOnError { error ->
-                logger.error(
-                    "Direct HTTP message send failed with Storage Account Key: ${error.message}",
-                    error
-                )
+                RequestTracingUtils.withErrorMdc(error) {
+                    logger.error("Direct HTTP message send failed")
+                }
             }
     }
 
@@ -122,15 +130,19 @@ class AzureApiQueueClient {
             .onErrorMap { e ->
                 when (e) {
                     is NoSuchAlgorithmException -> {
-                        logger.error("HMAC-SHA256 algorithm not available: ${e.message}")
+                        RequestTracingUtils.withErrorMdc(e) {
+                            logger.error("HMAC-SHA256 algorithm not available")
+                        }
                         IllegalStateException("HMAC-SHA256 not available", e)
                     }
                     is InvalidKeyException -> {
-                        logger.error("Invalid storage key: ${e.message}")
+                        RequestTracingUtils.withErrorMdc(e) { logger.error("Invalid storage key") }
                         IllegalArgumentException("Invalid storage account key", e)
                     }
                     else -> {
-                        logger.error("Authorization header generation failed: ${e.message}", e)
+                        RequestTracingUtils.withErrorMdc(e) {
+                            logger.error("Authorization header generation failed")
+                        }
                         IllegalStateException("Failed to generate authorization header", e)
                     }
                 }
@@ -162,7 +174,9 @@ class AzureApiQueueClient {
                 StorageCredentials(accountName, accountKey)
             }
             .onErrorMap { e ->
-                logger.error("Failed to parse connection string: ${e.message}")
+                RequestTracingUtils.withErrorMdc(e) {
+                    logger.error("Failed to parse connection string")
+                }
                 IllegalArgumentException("Invalid Azure Storage connection string", e)
             }
     }

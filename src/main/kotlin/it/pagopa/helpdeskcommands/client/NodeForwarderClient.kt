@@ -10,6 +10,7 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.nodeforwarder.v1.ApiClient
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
+import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import java.io.IOException
 import java.net.URI
@@ -136,13 +137,6 @@ class NodeForwarderClient<T, R> {
             port = 443
         }
         val path = proxyTo.path
-        logger.info(
-            "Sending request to node forwarder. hostName: [{}], port: [{}], path: [{}], requestId: [{}]",
-            hostName,
-            port,
-            path,
-            requestId
-        )
         return proxyApiClient
             .forwardWithHttpInfo(hostName, port, path, requestId, requestPayload)
             .flatMap { response ->
@@ -157,12 +151,30 @@ class NodeForwarderClient<T, R> {
                     Mono.error(exceptionToNodeForwarderClientException(e))
                 }
             }
+            .doOnSuccess {
+                RequestTracingUtils.withContextDetailsMdc(
+                    mapOf(
+                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to "node_forwarder",
+                        RequestTracingUtils.TracingEntry.PATH.key to path,
+                        "host_name" to hostName,
+                        "port" to port,
+                        "request_id" to requestId.toString()
+                    )
+                ) {
+                    logger.info("Sent request to node forwarder")
+                }
+            }
             .doOnError(WebClientResponseException::class.java) {
-                logger.error(
-                    "Error communicating with Node forwarder\nError response code: [{}], body: [{}]",
-                    it.statusCode,
-                    it.responseBodyAsString
-                )
+                RequestTracingUtils.withErrorMdc(
+                    it,
+                    mapOf(
+                        RequestTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
+                        RequestTracingUtils.TracingEntry.RESPONSE_BODY.key to
+                            it.responseBodyAsString
+                    )
+                ) {
+                    logger.error("Error communicating with Node forwarder")
+                }
             }
             .onErrorMap { error -> exceptionToNodeForwarderClientException(error) }
     }

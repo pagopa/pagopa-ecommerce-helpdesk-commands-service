@@ -7,6 +7,7 @@ import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
+import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,7 +34,7 @@ class ExceptionHandler {
     /** RestApiException exception handler */
     @ExceptionHandler(RestApiException::class)
     fun handleException(e: RestApiException): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception processing request", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception processing request") }
         return ResponseEntity.status(e.httpStatus)
             .body(
                 ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description)
@@ -60,7 +61,7 @@ class ExceptionHandler {
         e: Exception,
         exchange: ServerWebExchange?
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Input request is not valid", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Input request is not valid") }
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -75,7 +76,7 @@ class ExceptionHandler {
     fun handleNpgApikeyException(
         e: NpgApiKeyConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception retrieving apikey", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception retrieving apikey") }
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -90,7 +91,9 @@ class ExceptionHandler {
     fun handleRedirectConfigurationException(
         e: RedirectConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception retrieving redirect PSP configuration type", e)
+        RequestTracingUtils.withErrorMdc(e) {
+            logger.error("Exception retrieving redirect PSP configuration type")
+        }
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -104,7 +107,7 @@ class ExceptionHandler {
     fun handleTransactionNotFoundException(
         e: TransactionNotFoundException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Transaction not found", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Transaction not found") }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(
                 ProblemJsonDto()
@@ -118,7 +121,7 @@ class ExceptionHandler {
     fun handleInvalidTransactionStatusException(
         e: InvalidTransactionStatusException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Invalid transaction status", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Invalid transaction status") }
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(
                 ProblemJsonDto()
@@ -131,7 +134,7 @@ class ExceptionHandler {
     /** Handler for generic exception */
     @ExceptionHandler(Exception::class)
     fun handleGenericException(e: Exception): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception processing the request", e)
+        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception processing the request") }
         return ResponseEntity.internalServerError()
             .body(
                 ProblemJsonDto()

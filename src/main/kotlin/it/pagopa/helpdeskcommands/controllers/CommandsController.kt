@@ -2,6 +2,7 @@ package it.pagopa.helpdeskcommands.controllers
 
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
+import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.services.TransactionEventService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
@@ -28,14 +29,18 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
-            logger.info(
-                "Received refund redirect request for userId: [{}], transactionId: [{}], idPSPTransaction: [{}], pspChannelCode: [{}], from IP: [{}]",
-                xUserId,
-                requestDto.idTransaction,
-                requestDto.idPSPTransaction,
-                requestDto.pspChannelCode,
-                xForwardedFor
-            )
+            RequestTracingUtils.withContextDetailsMdc(
+                null,
+                mapOf(
+                    RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to requestDto.idTransaction,
+                    RequestTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
+                        requestDto.idPSPTransaction,
+                    RequestTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
+                        requestDto.pspChannelCode
+                )
+            ) {
+                logger.info("Received request to refund redirect")
+            }
             commandsService
                 .requestRedirectRefund(
                     transactionId = TransactionId(requestDto.idTransaction),
@@ -62,12 +67,12 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap {
-            logger.info(
-                "Refund transaction for userId: [{}], transactionId: [{}] from IP: [{}]",
-                xUserId,
-                it.transactionId,
-                xForwardedFor
-            )
+            RequestTracingUtils.withContextDetailsMdc(
+                null,
+                mapOf(RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to it.transactionId)
+            ) {
+                logger.info("Received request to refund operation")
+            }
             commandsService
                 .requestNpgRefund(
                     operationId = it.operationId,
@@ -109,23 +114,16 @@ class CommandsController(
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        logger.info(
-            "Refund request received for transaction [{}] from user [{}] with IP [{}]",
-            transactionId,
-            xUserId,
-            xForwardedFor
-        )
+        RequestTracingUtils.withContextDetailsMdc(
+            null,
+            mapOf(RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId)
+        ) {
+            logger.info("Received request to refund transaction")
+        }
 
         return transactionEventService.createRefundRequestEvent(transactionId).flatMap { event ->
             transactionEventService
                 .sendRefundRequestedEvent(event)
-                .doOnSuccess {
-                    logger.info(
-                        "Refund successfully requested for transaction [{}], event ID: [{}]",
-                        transactionId,
-                        event?.id
-                    )
-                }
                 .then(Mono.just(ResponseEntity.accepted().build()))
         }
     }
@@ -158,16 +156,6 @@ class CommandsController(
             ->
             transactionEventService
                 .sendNotificationRequestedEvent(event)
-                .doOnSuccess {
-                    logger.info(
-                        "Successfully resent user receipt notification for transaction ID: [{}], event ID: [{}]",
-                        transactionId,
-                        event?.id
-                    )
-                }
-                .doOnError { e ->
-                    logger.error("Failed to send notification message event: {}", e.message, e)
-                }
                 .then(Mono.just(ResponseEntity.accepted().build()))
         }
     }

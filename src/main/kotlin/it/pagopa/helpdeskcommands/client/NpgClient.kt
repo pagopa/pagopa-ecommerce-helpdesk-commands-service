@@ -5,11 +5,13 @@ import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
+import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import it.pagopa.helpdeskcommands.utils.PaymentConstants
 import java.io.IOException
 import java.math.BigDecimal
 import java.util.*
+import kotlin.collections.mapOf
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -58,12 +60,18 @@ class NpgClient(
                     .description(description)
             )
             .doOnError(WebClientResponseException::class.java) {
-                logger.error(
-                    "Error communicating with NPG-refund for correlationId [{}] - response: [{}]",
-                    correlationId,
-                    it.responseBodyAsString,
-                    it
-                )
+                RequestTracingUtils.withErrorMdc(
+                    it,
+                    mapOf(
+                        RequestTracingUtils.TracingEntry.CORRELATION_ID.key to
+                            correlationId.toString(),
+                        RequestTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
+                        RequestTracingUtils.TracingEntry.RESPONSE_BODY.key to
+                            it.responseBodyAsString
+                    )
+                ) {
+                    logger.error("Error communicating with NPG")
+                }
             }
             .onErrorMap { error -> exceptionToNpgResponseException(error) }
     }
@@ -73,7 +81,6 @@ class NpgClient(
             try {
                 var responseErrors = ErrorResponseUtils.parseResponseErrors(err, objectMapper)
                 if (responseErrors.isEmpty()) responseErrors = listOf(err.responseBodyAsString)
-                logger.error("Npg error codes: [{}]", responseErrors)
                 return mapNpgException(err.statusCode, responseErrors)
             } catch (ex: IOException) {
                 return NpgClientException(
