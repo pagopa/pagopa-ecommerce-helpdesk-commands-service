@@ -64,6 +64,7 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
+  implementation("io.micrometer:context-propagation")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
