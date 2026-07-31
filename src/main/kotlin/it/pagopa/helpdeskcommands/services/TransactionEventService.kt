@@ -62,41 +62,18 @@ class TransactionEventService(
 
     @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
-        val queueEvent = QueueEvent(event, null)
-        return refundQueueClient
-            .sendMessageWithResponse(
-                queueEvent,
-                Duration.ZERO,
-                Duration.ofSeconds(transientQueueTTLSeconds)
-            )
-            .doOnSuccess {
-                RequestTracingUtils.withContextDetailsMdc(
-                    mapOf(
-                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                            RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY
-                    ),
-                    mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to event.transactionId,
-                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to event.id.toString()
-                    )
-                ) {
-                    logger.info("Refund successfully requested")
-                }
-            }
-            .doOnError { e ->
-                RequestTracingUtils.withErrorMdc(e) {
-                    logger.error("Failed to send refund message event")
-                }
-            }
-            .then()
+        return sendMessageToQueue(refundQueueClient, QueueEvent(event, null))
     }
 
     @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendNotificationRequestedEvent(
         event: TransactionUserReceiptRequestedEvent
     ): Mono<Void> {
-        val queueEvent = QueueEvent(event, null)
-        return notificationQueueClient
+        return sendMessageToQueue(notificationQueueClient, QueueEvent(event, null))
+    }
+
+    private fun <T : BaseTransactionEvent<*>> sendMessageToQueue(queueClient: QueueAsyncClient, queueEvent: QueueEvent<T>): Mono<Void> {
+        return queueClient
             .sendMessageWithResponse(
                 queueEvent,
                 Duration.ZERO,
@@ -106,19 +83,20 @@ class TransactionEventService(
                 RequestTracingUtils.withContextDetailsMdc(
                     mapOf(
                         RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                            RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY
+                                RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY,
+                        "queue_name" to queueClient.queueName
                     ),
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to event.transactionId,
-                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to event.id.toString()
+                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to queueEvent.event.transactionId,
+                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to queueEvent.event.id.toString()
                     )
                 ) {
-                    logger.info("Notification message event sent successfully")
+                    logger.info("Message event sent successfully")
                 }
             }
             .doOnError { e ->
                 RequestTracingUtils.withErrorMdc(e) {
-                    logger.error("Failed to send notification message event")
+                    logger.error("Failed to send message event")
                 }
             }
             .then()
