@@ -72,7 +72,10 @@ class TransactionEventService(
         return sendMessageToQueue(notificationQueueClient, QueueEvent(event, null))
     }
 
-    private fun <T : BaseTransactionEvent<*>> sendMessageToQueue(queueClient: QueueAsyncClient, queueEvent: QueueEvent<T>): Mono<Void> {
+    private fun <T : BaseTransactionEvent<*>> sendMessageToQueue(
+        queueClient: QueueAsyncClient,
+        queueEvent: QueueEvent<T>
+    ): Mono<Void> {
         return queueClient
             .sendMessageWithResponse(
                 queueEvent,
@@ -83,21 +86,21 @@ class TransactionEventService(
                 RequestTracingUtils.withContextDetailsMdc(
                     mapOf(
                         RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                                RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY,
+                            RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY,
                         "queue_name" to queueClient.queueName
                     ),
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to queueEvent.event.transactionId,
-                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to queueEvent.event.id.toString()
+                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                            queueEvent.event.transactionId,
+                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
+                            queueEvent.event.id.toString()
                     )
                 ) {
                     logger.info("Message event sent successfully")
                 }
             }
             .doOnError { e ->
-                RequestTracingUtils.withErrorMdc(e) {
-                    logger.error("Failed to send message event")
-                }
+                RequestTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event") }
             }
             .then()
     }

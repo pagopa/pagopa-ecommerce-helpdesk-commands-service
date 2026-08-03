@@ -1,13 +1,13 @@
 package it.pagopa.helpdeskcommands.mdcutilities
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.MDC
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 
 class RequestTracingUtilsTest {
 
@@ -19,11 +19,18 @@ class RequestTracingUtilsTest {
 
     @Test
     fun `withErrorMdc should populate MDC with default values when error is null`() {
-        val result = RequestTracingUtils.withErrorMdc(error = null) {
-            assertEquals(RequestTracingUtils.TracingEntry.ERROR_TYPE.defaultValue, MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key))
-            assertEquals(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.defaultValue, MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key))
-            "block_result"
-        }
+        val result =
+            RequestTracingUtils.withErrorMdc(error = null) {
+                assertEquals(
+                    RequestTracingUtils.TracingEntry.ERROR_TYPE.defaultValue,
+                    MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key)
+                )
+                assertEquals(
+                    RequestTracingUtils.TracingEntry.ERROR_MESSAGE.defaultValue,
+                    MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key)
+                )
+                "block_result"
+            }
 
         assertEquals("block_result", result)
         assertNull(MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key))
@@ -36,8 +43,14 @@ class RequestTracingUtilsTest {
         val customAttributes = mapOf("custom.key" to "customValue", "another.key" to 123)
 
         RequestTracingUtils.withErrorMdc(error = exception, attributes = customAttributes) {
-            assertEquals(IllegalArgumentException::class.java.name, MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key))
-            assertEquals("Invalid input provided", MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key))
+            assertEquals(
+                IllegalArgumentException::class.java.name,
+                MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key)
+            )
+            assertEquals(
+                "Invalid input provided",
+                MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key)
+            )
             assertEquals("customValue", MDC.get("custom.key"))
             assertEquals("123", MDC.get("another.key"))
         }
@@ -51,17 +64,24 @@ class RequestTracingUtilsTest {
         val exception = NullPointerException()
 
         RequestTracingUtils.withErrorMdc(error = exception) {
-            assertEquals(NullPointerException::class.java.name, MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key))
-            assertEquals(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.defaultValue, MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key))
+            assertEquals(
+                NullPointerException::class.java.name,
+                MDC.get(RequestTracingUtils.TracingEntry.ERROR_TYPE.key)
+            )
+            assertEquals(
+                RequestTracingUtils.TracingEntry.ERROR_MESSAGE.defaultValue,
+                MDC.get(RequestTracingUtils.TracingEntry.ERROR_MESSAGE.key)
+            )
         }
     }
 
     @Test
     fun `withContextDetailsMdc should use empty JSON fallback when details is null`() {
-        val result = RequestTracingUtils.withContextDetailsMdc(details = null) {
-            assertEquals("{}", MDC.get(RequestTracingUtils.CTX_DETAILS_KEY))
-            "success"
-        }
+        val result =
+            RequestTracingUtils.withContextDetailsMdc(details = null) {
+                assertEquals("{}", MDC.get(RequestTracingUtils.CTX_DETAILS_KEY))
+                "success"
+            }
 
         assertEquals("success", result)
         assertNull(MDC.get(RequestTracingUtils.CTX_DETAILS_KEY))
@@ -69,10 +89,7 @@ class RequestTracingUtilsTest {
 
     @Test
     fun `withContextDetailsMdc should serialize map to JSON`() {
-        val detailsMap = mapOf(
-            "userId" to 123,
-            "action" to "LOGIN"
-        )
+        val detailsMap = mapOf("userId" to 123, "action" to "LOGIN")
 
         val expectedJson = ObjectMapper().writeValueAsString(detailsMap)
 
@@ -84,11 +101,8 @@ class RequestTracingUtilsTest {
     @Test
     fun `withContextDetailsMdc should fallback to empty JSON if serialization fails`() {
         class UnserializableObject {
-            @Suppress("unused")
-            val brokenField: String
-                get() = throw RuntimeException("Serialization error triggered")
+            val circularReference: UnserializableObject = this
         }
-
         val badDetails = mapOf("badObject" to UnserializableObject())
 
         RequestTracingUtils.withContextDetailsMdc(details = badDetails) {
