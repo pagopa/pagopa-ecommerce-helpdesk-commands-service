@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.nodeforwarder.v1.ApiClient
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import java.io.IOException
 import java.net.URI
@@ -152,10 +152,10 @@ class NodeForwarderClient<T, R> {
                 }
             }
             .doOnSuccess {
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     mapOf(
-                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to "node_forwarder",
-                        RequestTracingUtils.TracingEntry.PATH.key to path,
+                        LogTracingUtils.TracingEntry.DEPENDENCY.key to "node_forwarder",
+                        LogTracingUtils.TracingEntry.PATH.key to path,
                         "host_name" to hostName,
                         "port" to port,
                         "request_id" to requestId.toString()
@@ -165,12 +165,11 @@ class NodeForwarderClient<T, R> {
                 }
             }
             .doOnError(WebClientResponseException::class.java) {
-                RequestTracingUtils.withErrorMdc(
+                LogTracingUtils.withErrorMdc(
                     it,
                     mapOf(
-                        RequestTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
-                        RequestTracingUtils.TracingEntry.RESPONSE_BODY.key to
-                            it.responseBodyAsString
+                        LogTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
+                        LogTracingUtils.TracingEntry.RESPONSE_BODY.key to it.responseBodyAsString
                     )
                 ) {
                     logger.error("Error communicating with Node forwarder")

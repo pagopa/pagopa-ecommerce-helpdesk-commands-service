@@ -2,7 +2,7 @@ package it.pagopa.helpdeskcommands.config
 
 import it.pagopa.ecommerce.commons.documents.v2.*
 import it.pagopa.ecommerce.commons.documents.v2.serialization.TransactionEventTypeResolver
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -87,7 +87,7 @@ class TransactionEventResolverNativeConfig {
                 pathToClassMap[path] = eventClass
             }
         } catch (e: Exception) {
-            RequestTracingUtils.withErrorMdc(e) {
+            LogTracingUtils.withErrorMdc(e) {
                 logger.error("Failed to populate TransactionEventTypeResolver maps")
             }
             throw e

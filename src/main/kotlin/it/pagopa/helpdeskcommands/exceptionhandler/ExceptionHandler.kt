@@ -1,13 +1,13 @@
 package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.ecommerce.commons.exceptions.RedirectConfigurationException
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.NpgApiKeyConfigurationException
 import it.pagopa.helpdeskcommands.exceptions.RestApiException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,7 +34,7 @@ class ExceptionHandler {
     /** RestApiException exception handler */
     @ExceptionHandler(RestApiException::class)
     fun handleException(e: RestApiException): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception processing request") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Exception processing request") }
         return ResponseEntity.status(e.httpStatus)
             .body(
                 ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description)
@@ -61,7 +61,7 @@ class ExceptionHandler {
         e: Exception,
         exchange: ServerWebExchange?
     ): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Input request is not valid") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Input request is not valid") }
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -76,7 +76,7 @@ class ExceptionHandler {
     fun handleNpgApikeyException(
         e: NpgApiKeyConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception retrieving apikey") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Exception retrieving apikey") }
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -91,7 +91,7 @@ class ExceptionHandler {
     fun handleRedirectConfigurationException(
         e: RedirectConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) {
+        LogTracingUtils.withErrorMdc(e) {
             logger.error("Exception retrieving redirect PSP configuration type")
         }
         return ResponseEntity.badRequest()
@@ -107,7 +107,7 @@ class ExceptionHandler {
     fun handleTransactionNotFoundException(
         e: TransactionNotFoundException
     ): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Transaction not found") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Transaction not found") }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(
                 ProblemJsonDto()
@@ -121,7 +121,7 @@ class ExceptionHandler {
     fun handleInvalidTransactionStatusException(
         e: InvalidTransactionStatusException
     ): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Invalid transaction status") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Invalid transaction status") }
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(
                 ProblemJsonDto()
@@ -134,7 +134,7 @@ class ExceptionHandler {
     /** Handler for generic exception */
     @ExceptionHandler(Exception::class)
     fun handleGenericException(e: Exception): ResponseEntity<ProblemJsonDto> {
-        RequestTracingUtils.withErrorMdc(e) { logger.error("Exception processing the request") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Exception processing the request") }
         return ResponseEntity.internalServerError()
             .body(
                 ProblemJsonDto()

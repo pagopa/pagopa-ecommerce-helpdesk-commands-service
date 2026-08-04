@@ -1,6 +1,6 @@
 package it.pagopa.helpdeskcommands.controllers.filters
 
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -48,7 +48,9 @@ class ApiKeyFilter(
                     false
                 }
             if (!isAuthorized) {
-                RequestTracingUtils.withContextDetailsMdc(mapOf("path" to requestPath)) {
+                LogTracingUtils.withContextDetailsMdc(
+                    mapOf(LogTracingUtils.TracingEntry.PATH.key to requestPath)
+                ) {
                     logger.warn(
                         "Unauthorized request for path, missing or invalid input [\"x-api-key\"] header"
                     )
@@ -68,8 +70,11 @@ class ApiKeyFilter(
             } else {
                 ApiKeyType.UNKNOWN
             }
-        RequestTracingUtils.withContextDetailsMdc(
-            mapOf("path" to requestPath.toString(), "api_key.type" to matchedKeyType.name)
+        LogTracingUtils.withContextDetailsMdc(
+            mapOf(
+                LogTracingUtils.TracingEntry.PATH.key to requestPath.toString(),
+                "api_key_type" to matchedKeyType.name,
+            )
         ) {
             logger.info("Matched API key type for path")
         }

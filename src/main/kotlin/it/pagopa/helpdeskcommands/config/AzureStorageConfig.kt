@@ -15,13 +15,13 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.ecommerce.commons.queues.StrictJsonSerializerProvider
 import it.pagopa.ecommerce.commons.queues.TracingInfo
 import it.pagopa.ecommerce.commons.queues.mixin.serialization.v2.QueueEventMixInClassFieldDiscriminator
 import it.pagopa.helpdeskcommands.client.AzureApiQueueClient
 import it.pagopa.helpdeskcommands.config.properties.QueueConfig
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import java.io.InputStream
 import java.io.OutputStream
 import java.time.Duration
@@ -178,7 +178,7 @@ class AzureStorageConfig(
                             }
                             .map { _ -> createMockSendMessageResponse() }
                     } catch (e: Exception) {
-                        RequestTracingUtils.withErrorMdc(e) {
+                        LogTracingUtils.withErrorMdc(e) {
                             logger.error("Azure API queue client serialization error")
                         }
                         Mono.error(e)

@@ -1,11 +1,11 @@
 package it.pagopa.helpdeskcommands.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.RefundRequestDto
 import it.pagopa.generated.npg.model.RefundResponseDto
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.utils.ErrorResponseUtils
 import it.pagopa.helpdeskcommands.utils.PaymentConstants
 import java.io.IOException
@@ -60,14 +60,12 @@ class NpgClient(
                     .description(description)
             )
             .doOnError(WebClientResponseException::class.java) {
-                RequestTracingUtils.withErrorMdc(
+                LogTracingUtils.withErrorMdc(
                     it,
                     mapOf(
-                        RequestTracingUtils.TracingEntry.CORRELATION_ID.key to
-                            correlationId.toString(),
-                        RequestTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
-                        RequestTracingUtils.TracingEntry.RESPONSE_BODY.key to
-                            it.responseBodyAsString
+                        LogTracingUtils.TracingEntry.CORRELATION_ID.key to correlationId.toString(),
+                        LogTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
+                        LogTracingUtils.TracingEntry.RESPONSE_BODY.key to it.responseBodyAsString
                     )
                 ) {
                     logger.error("Error communicating with NPG")

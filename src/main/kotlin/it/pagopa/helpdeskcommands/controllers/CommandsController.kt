@@ -1,8 +1,8 @@
 package it.pagopa.helpdeskcommands.controllers
 
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.helpdeskcommands.api.CommandsApi
 import it.pagopa.generated.helpdeskcommands.model.*
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.services.CommandsService
 import it.pagopa.helpdeskcommands.services.TransactionEventService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
@@ -29,14 +29,13 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
-            RequestTracingUtils.withContextDetailsMdc(
+            LogTracingUtils.withContextDetailsMdc(
                 null,
                 mapOf(
-                    RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to requestDto.idTransaction,
-                    RequestTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
+                    LogTracingUtils.TracingEntry.TRANSACTION_ID.key to requestDto.idTransaction,
+                    LogTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
                         requestDto.idPSPTransaction,
-                    RequestTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
-                        requestDto.pspChannelCode
+                    LogTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to requestDto.pspChannelCode
                 )
             ) {
                 logger.info("Received request to refund redirect")
@@ -67,9 +66,9 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap {
-            RequestTracingUtils.withContextDetailsMdc(
+            LogTracingUtils.withContextDetailsMdc(
                 null,
-                mapOf(RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to it.transactionId)
+                mapOf(LogTracingUtils.TracingEntry.TRANSACTION_ID.key to it.transactionId)
             ) {
                 logger.info("Received request to refund operation")
             }
@@ -114,9 +113,9 @@ class CommandsController(
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        RequestTracingUtils.withContextDetailsMdc(
+        LogTracingUtils.withContextDetailsMdc(
             null,
-            mapOf(RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId)
+            mapOf(LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId)
         ) {
             logger.info("Received request to refund transaction")
         }

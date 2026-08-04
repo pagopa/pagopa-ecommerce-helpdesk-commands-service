@@ -1,5 +1,6 @@
 package it.pagopa.helpdeskcommands.services
 
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.utils.RedirectUrlMappingConf
 import it.pagopa.ecommerce.commons.utils.bean.redirect.configuration.RedirectUrlMappingCriteria
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
@@ -11,7 +12,6 @@ import it.pagopa.helpdeskcommands.client.NodeForwarderClient
 import it.pagopa.helpdeskcommands.client.NpgClient
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.utils.NpgApiKeyConfiguration
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
@@ -87,12 +87,12 @@ class CommandsService(
                                 .outcome(RefundOutcomeDto.valueOf(it.body.outcome.name))
                         }
                         .doOnNext { response ->
-                            RequestTracingUtils.withContextDetailsMdc(
+                            LogTracingUtils.withContextDetailsMdc(
                                 null,
                                 mapOf(
-                                    RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                    LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                         response.idTransaction,
-                                    RequestTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
+                                    LogTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
                                         pspChannelCode.toString()
                                 )
                             ) {
@@ -100,15 +100,15 @@ class CommandsService(
                             }
                         }
                         .doOnError(NodeForwarderClientException::class.java) { exception ->
-                            RequestTracingUtils.withErrorMdc(
+                            LogTracingUtils.withErrorMdc(
                                 exception,
                                 mapOf(
-                                    RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                    LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                         transactionId.value(),
-                                    RequestTracingUtils.TracingEntry.PSP_ID.key to pspId,
-                                    RequestTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
+                                    LogTracingUtils.TracingEntry.PSP_ID.key to pspId,
+                                    LogTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
                                         pspTransactionId,
-                                    RequestTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
+                                    LogTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to
                                         pspChannelCode.toString(),
                                     "payment.type.code" to paymentTypeCode
                                 )
@@ -144,31 +144,30 @@ class CommandsService(
                             "Refund request for transactionId ${transactionId.uuid} and operationId $operationId"
                     )
                     .doOnSuccess {
-                        RequestTracingUtils.withContextDetailsMdc(
+                        LogTracingUtils.withContextDetailsMdc(
                             mapOf(
-                                RequestTracingUtils.TracingEntry.DEPENDENCY.key to "NPG",
+                                LogTracingUtils.TracingEntry.DEPENDENCY.key to "NPG",
                                 "amount" to amount
                             ),
                             mapOf(
-                                RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                     transactionId.value(),
-                                RequestTracingUtils.TracingEntry.OPERATION_ID.key to operationId,
-                                RequestTracingUtils.TracingEntry.PSP_ID.key to pspId,
-                                RequestTracingUtils.TracingEntry.CORRELATION_ID.key to
-                                    correlationId,
-                                "payment_method" to paymentMethod,
+                                LogTracingUtils.TracingEntry.OPERATION_ID.key to operationId,
+                                LogTracingUtils.TracingEntry.PSP_ID.key to pspId,
+                                LogTracingUtils.TracingEntry.CORRELATION_ID.key to correlationId,
+                                "payment.method" to paymentMethod,
                             )
                         ) {
                             logger.info("NPG refund processed correctly")
                         }
                     }
                     .doOnError(NpgClientException::class.java) { exception: NpgClientException ->
-                        RequestTracingUtils.withErrorMdc(
+                        LogTracingUtils.withErrorMdc(
                             exception,
                             mapOf(
-                                RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                     transactionId.value(),
-                                RequestTracingUtils.TracingEntry.OPERATION_ID.key to operationId,
+                                LogTracingUtils.TracingEntry.OPERATION_ID.key to operationId,
                             )
                         ) {
                             logger.error("Error performing NPG refund")

@@ -14,10 +14,10 @@ import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
-import it.pagopa.helpdeskcommands.mdcutilities.RequestTracingUtils
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsEventStoreHistoryRepository
@@ -83,16 +83,15 @@ class TransactionEventService(
                 Duration.ofSeconds(transientQueueTTLSeconds)
             )
             .doOnSuccess {
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     mapOf(
-                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                            RequestTracingUtils.STORAGE_QUEUE_DEPENDENCY_KEY,
+                        LogTracingUtils.TracingEntry.DEPENDENCY.key to "eCommerce-storageQueue",
                         "queue_name" to queueClient.queueName
                     ),
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                             queueEvent.event.transactionId,
-                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
+                        LogTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
                             queueEvent.event.id.toString()
                     )
                 ) {
@@ -100,7 +99,7 @@ class TransactionEventService(
                 }
             }
             .doOnError { e ->
-                RequestTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event") }
+                LogTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event") }
             }
             .then()
     }
@@ -128,13 +127,13 @@ class TransactionEventService(
         return Flux.merge(runtimeEvents, historyEvents)
             .sort(compareBy { it.creationDate })
             .doOnNext {
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     mapOf(
-                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                            RequestTracingUtils.MONGO_DEPENDENCY_KEY
+                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
+                            LogTracingUtils.MONGO_DEPENDENCY_KEY
                     ),
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
+                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
                     )
                 ) {
                     logger.info("Retrieved events from repositories")
@@ -184,10 +183,10 @@ class TransactionEventService(
     fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent> {
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction is BaseTransactionWithRefundRequested) {
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     null,
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                             transaction.transactionId.value(),
                     )
                 ) {
@@ -276,15 +275,15 @@ class TransactionEventService(
                     }
             )
             .doOnSuccess {
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     mapOf(
-                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                            RequestTracingUtils.MONGO_DEPENDENCY_KEY
+                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
+                            LogTracingUtils.MONGO_DEPENDENCY_KEY
                     ),
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                             transaction.transactionId.value(),
-                        RequestTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
+                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
                             TransactionStatusDto.REFUND_REQUESTED
                     )
                 ) {
@@ -353,17 +352,17 @@ class TransactionEventService(
                                     }
                             )
                             .doOnSuccess {
-                                RequestTracingUtils.withContextDetailsMdc(
+                                LogTracingUtils.withContextDetailsMdc(
                                     mapOf(
-                                        RequestTracingUtils.TracingEntry.DEPENDENCY.key to
-                                            RequestTracingUtils.MONGO_DEPENDENCY_KEY
+                                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
+                                            LogTracingUtils.MONGO_DEPENDENCY_KEY
                                     ),
                                     mapOf(
-                                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                             transactionId,
-                                        RequestTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
+                                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
                                             TransactionStatusDto.NOTIFICATION_REQUESTED,
-                                        RequestTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
+                                        LogTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
                                             newEvent.id.toString()
                                     )
                                 ) {
@@ -371,10 +370,10 @@ class TransactionEventService(
                                 }
                             }
                             .doOnError { e ->
-                                RequestTracingUtils.withErrorMdc(
+                                LogTracingUtils.withErrorMdc(
                                     e,
                                     mapOf(
-                                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
+                                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
                                             transactionId,
                                     )
                                 ) {
@@ -383,11 +382,10 @@ class TransactionEventService(
                             }
                             .thenReturn(newEvent)
                     } else {
-                        RequestTracingUtils.withContextDetailsMdc(
+                        LogTracingUtils.withContextDetailsMdc(
                             null,
                             mapOf(
-                                RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                                    transactionId,
+                                LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
                             )
                         ) {
                             logger.error(
@@ -403,12 +401,11 @@ class TransactionEventService(
                 }
             } else {
                 // Transaction is not in the correct state
-                RequestTracingUtils.withContextDetailsMdc(
+                LogTracingUtils.withContextDetailsMdc(
                     null,
                     mapOf(
-                        RequestTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
-                        RequestTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
-                            transaction.status,
+                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
+                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to transaction.status,
                     )
                 ) {
                     logger.error("Transaction is not in a valid state for resending notification")
