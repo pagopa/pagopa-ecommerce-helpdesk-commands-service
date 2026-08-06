@@ -134,7 +134,7 @@ class ExceptionHandler {
     /** Handler for generic exception */
     @ExceptionHandler(Exception::class)
     fun handleGenericException(e: Exception): ResponseEntity<ProblemJsonDto> {
-        LogTracingUtils.withErrorMdc(e) { logger.error("Exception processing the request") }
+        LogTracingUtils.withErrorMdc(e) { logger.error("Exception processing the request", e) }
         return ResponseEntity.internalServerError()
             .body(
                 ProblemJsonDto()

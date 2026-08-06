@@ -76,7 +76,7 @@ class ApiKeyFilter(
                 "api_key_type" to matchedKeyType.name,
             )
         ) {
-            logger.info("Matched API key type for path")
+            logger.debug("Matched API key type for path")
         }
     }
 

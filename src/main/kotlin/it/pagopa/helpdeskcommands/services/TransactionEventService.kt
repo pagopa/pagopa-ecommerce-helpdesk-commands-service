@@ -99,7 +99,7 @@ class TransactionEventService(
                 }
             }
             .doOnError { e ->
-                LogTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event") }
+                LogTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event", e) }
             }
             .then()
     }
@@ -377,7 +377,7 @@ class TransactionEventService(
                                             transactionId,
                                     )
                                 ) {
-                                    logger.error("Error saving new user receipt event")
+                                    logger.error("Error saving new user receipt event", e)
                                 }
                             }
                             .thenReturn(newEvent)

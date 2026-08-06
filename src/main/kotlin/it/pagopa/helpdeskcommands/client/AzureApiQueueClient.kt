@@ -77,7 +77,7 @@ class AzureApiQueueClient {
             }
             .doOnError { error ->
                 LogTracingUtils.withErrorMdc(error) {
-                    logger.error("Direct HTTP message send failed")
+                    logger.error("Direct HTTP message send failed", error)
                 }
             }
     }
