@@ -83,23 +83,21 @@ class TransactionEventService(
                 Duration.ofSeconds(transientQueueTTLSeconds)
             )
             .doOnSuccess {
-                LogTracingUtils.withContextDetailsMdc(
-                    mapOf(
-                        LogTracingUtils.TracingEntry.DEPENDENCY.key to "eCommerce-storageQueue",
-                        "queue_name" to queueClient.queueName
-                    ),
-                    mapOf(
-                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                            queueEvent.event.transactionId,
-                        LogTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
-                            queueEvent.event.id.toString()
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .details(
+                        mapOf(
+                            "queue_name" to queueClient.queueName,
+                            "queue_event_id" to queueEvent.event.id.toString(),
+                        )
                     )
-                ) {
-                    logger.info("Message event sent successfully")
-                }
+                    .dependency("eCommerce-storageQueue")
+                    .logInfo(logger, "Message event sent successfully")
             }
             .doOnError { e ->
-                LogTracingUtils.withErrorMdc(e) { logger.error("Failed to send message event", e) }
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .logErrorWithStackTrace(logger, e, "Failed to send message event")
             }
             .then()
     }
@@ -127,17 +125,10 @@ class TransactionEventService(
         return Flux.merge(runtimeEvents, historyEvents)
             .sort(compareBy { it.creationDate })
             .doOnNext {
-                LogTracingUtils.withContextDetailsMdc(
-                    mapOf(
-                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
-                            LogTracingUtils.MONGO_DEPENDENCY_KEY
-                    ),
-                    mapOf(
-                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
-                    )
-                ) {
-                    logger.info("Retrieved events from repositories")
-                }
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logInfo(logger, "Retrieved event from repositories")
             }
     }
 
@@ -183,15 +174,9 @@ class TransactionEventService(
     fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent> {
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction is BaseTransactionWithRefundRequested) {
-                LogTracingUtils.withContextDetailsMdc(
-                    null,
-                    mapOf(
-                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                            transaction.transactionId.value(),
-                    )
-                ) {
-                    logger.warn("Transaction already has a refund requested")
-                }
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .logWarn(logger, "Transaction already has a refund requested")
             }
             createAndPersistRefundRequestEvent(transaction)
         }
@@ -275,20 +260,13 @@ class TransactionEventService(
                     }
             )
             .doOnSuccess {
-                LogTracingUtils.withContextDetailsMdc(
-                    mapOf(
-                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
-                            LogTracingUtils.MONGO_DEPENDENCY_KEY
-                    ),
-                    mapOf(
-                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                            transaction.transactionId.value(),
-                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
-                            TransactionStatusDto.REFUND_REQUESTED
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .details(
+                        mapOf("transaction_status" to TransactionStatusDto.REFUND_REQUESTED.value)
                     )
-                ) {
-                    logger.info("Updated transaction status")
-                }
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logInfo(logger, "Updated transaction status")
             }
             .thenReturn(transaction)
     }
@@ -352,46 +330,38 @@ class TransactionEventService(
                                     }
                             )
                             .doOnSuccess {
-                                LogTracingUtils.withContextDetailsMdc(
-                                    mapOf(
-                                        LogTracingUtils.TracingEntry.DEPENDENCY.key to
-                                            LogTracingUtils.MONGO_DEPENDENCY_KEY
-                                    ),
-                                    mapOf(
-                                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                                            transactionId,
-                                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to
-                                            TransactionStatusDto.NOTIFICATION_REQUESTED,
-                                        LogTracingUtils.TracingEntry.QUEUE_EVENT_ID.key to
-                                            newEvent.id.toString()
+                                LogTracingUtils.loggerTracingUtils()
+                                    .success()
+                                    .details(
+                                        mapOf(
+                                            "transaction_status" to
+                                                TransactionStatusDto.NOTIFICATION_REQUESTED.value,
+                                            "queue_event_id" to newEvent.id.toString()
+                                        )
                                     )
-                                ) {
-                                    logger.info("Successfully created new user receipt event")
-                                }
+                                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                                    .logInfo(logger, "Successfully created new user receipt event")
                             }
                             .doOnError { e ->
-                                LogTracingUtils.withErrorMdc(
-                                    e,
-                                    mapOf(
-                                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to
-                                            transactionId,
+                                LogTracingUtils.loggerTracingUtils()
+                                    .failure()
+                                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                                    .logErrorWithStackTrace(
+                                        logger,
+                                        e,
+                                        "Error saving new user receipt event"
                                     )
-                                ) {
-                                    logger.error("Error saving new user receipt event", e)
-                                }
                             }
                             .thenReturn(newEvent)
                     } else {
-                        LogTracingUtils.withContextDetailsMdc(
-                            null,
-                            mapOf(
-                                LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
+                        LogTracingUtils.loggerTracingUtils()
+                            .failure()
+                            .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                            .logError(
+                                logger,
+                                null,
+                                "No TransactionUserReceiptRequestedEvent found for transaction in runtime and history repositories"
                             )
-                        ) {
-                            logger.error(
-                                "No TransactionUserReceiptRequestedEvent found for transaction in runtime and history repositories",
-                            )
-                        }
                         Mono.error(
                             IllegalStateException(
                                 "No TransactionUserReceiptRequestedEvent found for transaction ID: $transactionId"
@@ -401,15 +371,20 @@ class TransactionEventService(
                 }
             } else {
                 // Transaction is not in the correct state
-                LogTracingUtils.withContextDetailsMdc(
-                    null,
-                    mapOf(
-                        LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId,
-                        LogTracingUtils.TracingEntry.TRANSACTION_STATUS.key to transaction.status,
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .details(
+                        mapOf(
+                            "transaction_status" to transaction.status.toString(),
+                        )
                     )
-                ) {
-                    logger.error("Transaction is not in a valid state for resending notification")
-                }
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logError(
+                        logger,
+                        null,
+                        "Transaction is not in a valid state for resending notification"
+                    )
+
                 Mono.error(
                     InvalidTransactionStatusException(
                         "Cannot resend user receipt notification for transaction in state: ${transaction.status}. Transaction must be one of ${admissibleStates.joinToString(",")}"

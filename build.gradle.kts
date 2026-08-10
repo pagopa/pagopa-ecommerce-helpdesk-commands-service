@@ -48,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.10.0-CHK-4872-OER-logging-SNAPSHOT-1230fbc"
+  const val ecommerceCommonsVersion = "3.10.1-CHK-4872-OER-logging-builder-SNAPSHOT-caa6655"
   const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
@@ -64,6 +64,7 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
+  implementation("io.micrometer:context-propagation")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")

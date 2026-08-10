@@ -60,16 +60,20 @@ class NpgClient(
                     .description(description)
             )
             .doOnError(WebClientResponseException::class.java) {
-                LogTracingUtils.withErrorMdc(
-                    it,
-                    mapOf(
-                        LogTracingUtils.TracingEntry.CORRELATION_ID.key to correlationId.toString(),
-                        LogTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
-                        LogTracingUtils.TracingEntry.RESPONSE_BODY.key to it.responseBodyAsString
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .attributes(
+                        mapOf(
+                            LogTracingUtils.AttributeKeys.CORRELATION_ID to correlationId.toString()
+                        )
                     )
-                ) {
-                    logger.error("Error communicating with NPG")
-                }
+                    .details(
+                        mapOf(
+                            "response_code" to it.statusCode.value().toString(),
+                            "response_body" to it.responseBodyAsString
+                        )
+                    )
+                    .logError(logger, it, "Error communicating with NPG")
             }
             .onErrorMap { error -> exceptionToNpgResponseException(error) }
     }

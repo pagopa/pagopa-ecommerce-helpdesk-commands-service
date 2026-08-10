@@ -178,9 +178,13 @@ class AzureStorageConfig(
                             }
                             .map { _ -> createMockSendMessageResponse() }
                     } catch (e: Exception) {
-                        LogTracingUtils.withErrorMdc(e) {
-                            logger.error("Azure API queue client serialization error", e)
-                        }
+                        LogTracingUtils.loggerTracingUtils()
+                            .failure()
+                            .logErrorWithStackTrace(
+                                logger,
+                                e,
+                                "Azure API queue client serialization error"
+                            )
                         Mono.error(e)
                     }
                 }

@@ -29,17 +29,6 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundRedirectResponseDto>> {
         return refundRedirectRequestDto.flatMap { requestDto ->
-            LogTracingUtils.withContextDetailsMdc(
-                null,
-                mapOf(
-                    LogTracingUtils.TracingEntry.TRANSACTION_ID.key to requestDto.idTransaction,
-                    LogTracingUtils.TracingEntry.PSP_TRANSACTION_ID.key to
-                        requestDto.idPSPTransaction,
-                    LogTracingUtils.TracingEntry.PSP_CHANNEL_CODE.key to requestDto.pspChannelCode
-                )
-            ) {
-                logger.info("Received request to refund redirect")
-            }
             commandsService
                 .requestRedirectRefund(
                     transactionId = TransactionId(requestDto.idTransaction),
@@ -49,6 +38,19 @@ class CommandsController(
                     pspId = requestDto.pspId,
                     pspChannelCode = requestDto.pspChannelCode
                 )
+                .contextWrite { context ->
+                    LogTracingUtils.enrichContextForEvent(
+                        mapOf(
+                            LogTracingUtils.AttributeKeys.EVENT_ACTION to
+                                "POST /commands/refund/redirect",
+                            LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to
+                                requestDto.idTransaction,
+                            LogTracingUtils.AttributeKeys.CTX_AUTHORIZATION_REQUEST_ID to
+                                requestDto.idPSPTransaction,
+                        ),
+                        context
+                    )
+                }
                 .map {
                     ResponseEntity.ok(
                         RefundRedirectResponseDto()
@@ -66,12 +68,6 @@ class CommandsController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<RefundTransactionResponseDto>> {
         return refundTransactionRequestDto.flatMap {
-            LogTracingUtils.withContextDetailsMdc(
-                null,
-                mapOf(LogTracingUtils.TracingEntry.TRANSACTION_ID.key to it.transactionId)
-            ) {
-                logger.info("Received request to refund operation")
-            }
             commandsService
                 .requestNpgRefund(
                     operationId = it.operationId,
@@ -81,6 +77,16 @@ class CommandsController(
                     pspId = it.pspId,
                     amount = it.amount.toBigDecimal()
                 )
+                .contextWrite { context ->
+                    LogTracingUtils.enrichContextForEvent(
+                        mapOf(
+                            LogTracingUtils.AttributeKeys.EVENT_ACTION to "POST /commands/refund",
+                            LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to it.transactionId,
+                            LogTracingUtils.AttributeKeys.CORRELATION_ID to it.correlationId,
+                        ),
+                        context
+                    )
+                }
                 .map {
                     ResponseEntity.ok(
                         RefundTransactionResponseDto().refundOperationId(it.operationId)
@@ -112,19 +118,23 @@ class CommandsController(
         if (transactionId.isNullOrBlank()) {
             return Mono.just(ResponseEntity.badRequest().build())
         }
-
-        LogTracingUtils.withContextDetailsMdc(
-            null,
-            mapOf(LogTracingUtils.TracingEntry.TRANSACTION_ID.key to transactionId)
-        ) {
-            logger.info("Received request to refund transaction")
-        }
-
-        return transactionEventService.createRefundRequestEvent(transactionId).flatMap { event ->
-            transactionEventService
-                .sendRefundRequestedEvent(event)
-                .then(Mono.just(ResponseEntity.accepted().build()))
-        }
+        return transactionEventService
+            .createRefundRequestEvent(transactionId)
+            .contextWrite { context ->
+                LogTracingUtils.enrichContextForEvent(
+                    mapOf(
+                        LogTracingUtils.AttributeKeys.EVENT_ACTION to
+                            "POST /commands/transactions/{transactionId}/refund",
+                        LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId
+                    ),
+                    context
+                )
+            }
+            .flatMap { event ->
+                transactionEventService
+                    .sendRefundRequestedEvent(event)
+                    .then(Mono.just(ResponseEntity.accepted().build()))
+            }
     }
 
     /**
@@ -151,11 +161,22 @@ class CommandsController(
             return Mono.just(ResponseEntity.badRequest().build())
         }
 
-        return transactionEventService.resendUserReceiptNotification(transactionId).flatMap { event
-            ->
-            transactionEventService
-                .sendNotificationRequestedEvent(event)
-                .then(Mono.just(ResponseEntity.accepted().build()))
-        }
+        return transactionEventService
+            .resendUserReceiptNotification(transactionId)
+            .contextWrite { context ->
+                LogTracingUtils.enrichContextForEvent(
+                    mapOf(
+                        LogTracingUtils.AttributeKeys.EVENT_ACTION to
+                            "POST /commands/transactions/{transactionId}/resend-email",
+                        LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId
+                    ),
+                    context
+                )
+            }
+            .flatMap { event ->
+                transactionEventService
+                    .sendNotificationRequestedEvent(event)
+                    .then(Mono.just(ResponseEntity.accepted().build()))
+            }
     }
 }

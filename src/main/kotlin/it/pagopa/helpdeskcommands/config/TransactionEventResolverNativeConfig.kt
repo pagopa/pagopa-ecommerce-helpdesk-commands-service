@@ -87,9 +87,9 @@ class TransactionEventResolverNativeConfig {
                 pathToClassMap[path] = eventClass
             }
         } catch (e: Exception) {
-            LogTracingUtils.withErrorMdc(e) {
-                logger.error("Failed to populate TransactionEventTypeResolver maps")
-            }
+            LogTracingUtils.loggerTracingUtils()
+                .failure()
+                .logError(logger, e, "Failed to populate TransactionEventTypeResolver maps")
             throw e
         }
     }

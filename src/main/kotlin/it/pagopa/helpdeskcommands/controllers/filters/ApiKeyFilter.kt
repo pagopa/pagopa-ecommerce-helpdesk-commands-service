@@ -48,13 +48,14 @@ class ApiKeyFilter(
                     false
                 }
             if (!isAuthorized) {
-                LogTracingUtils.withContextDetailsMdc(
-                    mapOf(LogTracingUtils.TracingEntry.PATH.key to requestPath)
-                ) {
-                    logger.warn(
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .details(mapOf("path" to requestPath))
+                    .logWarn(
+                        logger,
                         "Unauthorized request for path, missing or invalid input [\"x-api-key\"] header"
                     )
-                }
+
                 exchange.response.statusCode = HttpStatus.UNAUTHORIZED
                 return exchange.response.setComplete()
             }
@@ -70,14 +71,11 @@ class ApiKeyFilter(
             } else {
                 ApiKeyType.UNKNOWN
             }
-        LogTracingUtils.withContextDetailsMdc(
-            mapOf(
-                LogTracingUtils.TracingEntry.PATH.key to requestPath.toString(),
-                "api_key_type" to matchedKeyType.name,
-            )
-        ) {
-            logger.debug("Matched API key type for path")
-        }
+
+        LogTracingUtils.loggerTracingUtils()
+            .success()
+            .details(mapOf("path" to requestPath, "api_key_type" to matchedKeyType.name))
+            .logDebug(logger, "Matched API key type for path")
     }
 
     private fun getRequestApiKey(exchange: ServerWebExchange): String? {

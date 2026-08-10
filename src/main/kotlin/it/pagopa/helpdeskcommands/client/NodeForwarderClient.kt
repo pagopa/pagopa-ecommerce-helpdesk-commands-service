@@ -152,28 +152,30 @@ class NodeForwarderClient<T, R> {
                 }
             }
             .doOnSuccess {
-                LogTracingUtils.withContextDetailsMdc(
-                    mapOf(
-                        LogTracingUtils.TracingEntry.DEPENDENCY.key to "node_forwarder",
-                        LogTracingUtils.TracingEntry.PATH.key to path,
-                        "host_name" to hostName,
-                        "port" to port,
-                        "request_id" to requestId.toString()
+                LogTracingUtils.loggerTracingUtils()
+                    .dependency("node_forwarder")
+                    .details(
+                        mapOf(
+                            "path" to path,
+                            "host_name" to hostName,
+                            "port" to port.toString(),
+                            "request_id" to requestId.toString()
+                        )
                     )
-                ) {
-                    logger.info("Sent request to node forwarder")
-                }
+                    .success()
+                    .logInfo(logger, "Sent request to node forwarder")
             }
             .doOnError(WebClientResponseException::class.java) {
-                LogTracingUtils.withErrorMdc(
-                    it,
-                    mapOf(
-                        LogTracingUtils.TracingEntry.RESPONSE_CODE.key to it.statusCode.value(),
-                        LogTracingUtils.TracingEntry.RESPONSE_BODY.key to it.responseBodyAsString
+                LogTracingUtils.loggerTracingUtils()
+                    .dependency("node_forwarder")
+                    .details(
+                        mapOf(
+                            "response_code" to it.statusCode.value().toString(),
+                            "response_body" to it.responseBodyAsString
+                        )
                     )
-                ) {
-                    logger.error("Error communicating with Node forwarder")
-                }
+                    .failure()
+                    .logError(logger, it, "Error communicating with Node forwarder")
             }
             .onErrorMap { error -> exceptionToNodeForwarderClientException(error) }
     }
