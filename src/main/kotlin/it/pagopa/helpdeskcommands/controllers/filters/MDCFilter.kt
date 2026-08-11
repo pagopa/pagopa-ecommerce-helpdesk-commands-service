@@ -1,4 +1,4 @@
-package it.pagopa.helpdeskcommands.mdcutilities
+package it.pagopa.helpdeskcommands.controllers.filters
 
 import io.micrometer.context.ContextRegistry
 import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
@@ -16,7 +16,12 @@ class MDCFilter : WebFilter {
 
     companion object {
         const val HEADER_USER_ID = "X-User-Id"
-        const val HEADER_FORWARDED_FOR = "X-Forwarded-For"
+
+        /**
+         * Set of MDC keys considered "global" for the entire transaction lifecycle. Only the keys
+         * present in this set will be registered in Micrometer for automatic propagation across
+         * thread boundaries.
+         */
         val contextBound =
             setOf(
                 LogTracingUtils.AttributeKeys.CTX_USER_ID.key,
@@ -27,6 +32,13 @@ class MDCFilter : WebFilter {
             )
     }
 
+    /**
+     * Initializes the Micrometer context propagation registry.
+     *
+     * This method runs once at application startup. It filters the tracing keys to include only the
+     * `contextBound` ones, instructing the Spring Boot 3 infrastructure on how to read, write, and
+     * clear the MDC `ThreadLocal` values for these specific keys.
+     */
     @PostConstruct
     fun initMdcMicrometerRegistry() {
         LogTracingUtils.AttributeKeys.entries
@@ -44,12 +56,20 @@ class MDCFilter : WebFilter {
 
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         val headers = exchange.request.headers
+        val method = exchange.request.method
+        val path = exchange.request.path
 
         val userId =
             headers.getFirst(HEADER_USER_ID)
                 ?: LogTracingUtils.AttributeKeys.CTX_USER_ID.defaultValue
 
-        val mdcContext = Context.of(LogTracingUtils.AttributeKeys.CTX_USER_ID.key, userId)
+        val mdcContext =
+            Context.of(
+                LogTracingUtils.AttributeKeys.CTX_USER_ID.key,
+                userId,
+                LogTracingUtils.AttributeKeys.EVENT_ACTION.key,
+                "$method $path"
+            )
 
         return chain.filter(exchange).contextWrite(mdcContext)
     }

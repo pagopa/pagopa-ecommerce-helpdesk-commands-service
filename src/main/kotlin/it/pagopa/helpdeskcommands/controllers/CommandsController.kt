@@ -8,7 +8,6 @@ import it.pagopa.helpdeskcommands.services.TransactionEventService
 import it.pagopa.helpdeskcommands.utils.PaymentMethod
 import it.pagopa.helpdeskcommands.utils.TransactionId
 import jakarta.validation.constraints.NotNull
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +19,6 @@ class CommandsController(
     @Autowired private val commandsService: CommandsService,
     @Autowired private val transactionEventService: TransactionEventService
 ) : CommandsApi {
-    private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun commandsRefundRedirectPost(
         xUserId: String,
@@ -41,8 +39,6 @@ class CommandsController(
                 .contextWrite { context ->
                     LogTracingUtils.enrichContextForEvent(
                         mapOf(
-                            LogTracingUtils.AttributeKeys.EVENT_ACTION to
-                                "POST /commands/refund/redirect",
                             LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to
                                 requestDto.idTransaction,
                             LogTracingUtils.AttributeKeys.CTX_AUTHORIZATION_REQUEST_ID to
@@ -80,7 +76,6 @@ class CommandsController(
                 .contextWrite { context ->
                     LogTracingUtils.enrichContextForEvent(
                         mapOf(
-                            LogTracingUtils.AttributeKeys.EVENT_ACTION to "POST /commands/refund",
                             LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to it.transactionId,
                             LogTracingUtils.AttributeKeys.CORRELATION_ID to it.correlationId,
                         ),
@@ -122,11 +117,7 @@ class CommandsController(
             .createRefundRequestEvent(transactionId)
             .contextWrite { context ->
                 LogTracingUtils.enrichContextForEvent(
-                    mapOf(
-                        LogTracingUtils.AttributeKeys.EVENT_ACTION to
-                            "POST /commands/transactions/{transactionId}/refund",
-                        LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId
-                    ),
+                    mapOf(LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId),
                     context
                 )
             }
@@ -165,11 +156,7 @@ class CommandsController(
             .resendUserReceiptNotification(transactionId)
             .contextWrite { context ->
                 LogTracingUtils.enrichContextForEvent(
-                    mapOf(
-                        LogTracingUtils.AttributeKeys.EVENT_ACTION to
-                            "POST /commands/transactions/{transactionId}/resend-email",
-                        LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId
-                    ),
+                    mapOf(LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId),
                     context
                 )
             }
