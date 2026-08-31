@@ -71,11 +71,12 @@ class ApiKeyFilter(
             } else {
                 ApiKeyType.UNKNOWN
             }
-
-        LogTracingUtils.loggerTracingUtils()
-            .success()
-            .details(mapOf("path" to requestPath, "api_key_type" to matchedKeyType.name))
-            .logDebug(logger, "Matched API key type for path")
+        if (logger.isDebugEnabled) {
+            LogTracingUtils.loggerTracingUtils()
+                .success()
+                .details(mapOf("path" to requestPath, "api_key_type" to matchedKeyType.name))
+                .logDebug(logger, "Matched API key type for path")
+        }
     }
 
     private fun getRequestApiKey(exchange: ServerWebExchange): String? {

@@ -69,7 +69,7 @@ class AzureApiQueueClient {
                 LogTracingUtils.loggerTracingUtils()
                     .success()
                     .details(mapOf("queue_name" to queueName))
-                    .dependency("eCommerce-storageQueue")
+                    .dependency(LogTracingUtils.STORAGE_QUEUE_DEPENDENCY)
                     .logInfo(logger, "Direct HTTP message sent successfully")
             }
             .doOnError { error ->

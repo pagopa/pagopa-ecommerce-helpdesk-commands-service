@@ -115,16 +115,16 @@ class CommandsController(
         }
         return transactionEventService
             .createRefundRequestEvent(transactionId)
+            .flatMap { event ->
+                transactionEventService
+                    .sendRefundRequestedEvent(event)
+                    .thenReturn(ResponseEntity.accepted().build<Void>())
+            }
             .contextWrite { context ->
                 LogTracingUtils.enrichContextForEvent(
                     mapOf(LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId),
                     context
                 )
-            }
-            .flatMap { event ->
-                transactionEventService
-                    .sendRefundRequestedEvent(event)
-                    .then(Mono.just(ResponseEntity.accepted().build()))
             }
     }
 
@@ -154,16 +154,16 @@ class CommandsController(
 
         return transactionEventService
             .resendUserReceiptNotification(transactionId)
+            .flatMap { event ->
+                transactionEventService
+                    .sendNotificationRequestedEvent(event)
+                    .thenReturn(ResponseEntity.accepted().build<Void>())
+            }
             .contextWrite { context ->
                 LogTracingUtils.enrichContextForEvent(
                     mapOf(LogTracingUtils.AttributeKeys.CTX_TRANSACTION_ID to transactionId),
                     context
                 )
-            }
-            .flatMap { event ->
-                transactionEventService
-                    .sendNotificationRequestedEvent(event)
-                    .then(Mono.just(ResponseEntity.accepted().build()))
             }
     }
 }

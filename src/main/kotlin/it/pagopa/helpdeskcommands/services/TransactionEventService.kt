@@ -91,7 +91,7 @@ class TransactionEventService(
                             "queue_event_id" to queueEvent.event.id.toString(),
                         )
                     )
-                    .dependency("eCommerce-storageQueue")
+                    .dependency(LogTracingUtils.STORAGE_QUEUE_DEPENDENCY)
                     .logInfo(logger, "Message event sent successfully")
             }
             .doOnError { e ->
