@@ -82,7 +82,7 @@ microservice-chart:
     WEB_LOGGING_LEVEL: "info"
     ECS_SERVICE_NAME: "pagopa-ecommerce-helpdesk-commands-service"
     ECS_SERVICE_ENVIRONMENT: "dev"
-    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-ecommerce-helpdesk-service,deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-ecommerce-helpdesk-commands-service,deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_LOGS_EXPORTER: none
     OTEL_TRACES_SAMPLER: "always_on"
