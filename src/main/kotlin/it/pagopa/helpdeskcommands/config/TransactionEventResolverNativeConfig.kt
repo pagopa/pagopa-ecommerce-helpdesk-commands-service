@@ -2,6 +2,7 @@ package it.pagopa.helpdeskcommands.config
 
 import it.pagopa.ecommerce.commons.documents.v2.*
 import it.pagopa.ecommerce.commons.documents.v2.serialization.TransactionEventTypeResolver
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -62,10 +63,6 @@ class TransactionEventResolverNativeConfig {
     @PostConstruct
     fun populateTransactionEventMaps() {
         try {
-            logger.info(
-                "Populating TransactionEventTypeResolver static maps for native compilation"
-            )
-
             val classToPathField =
                 TransactionEventTypeResolver::class.java.getDeclaredField("CLASS_TO_PATH_MAP")
             val pathToClassField =
@@ -90,7 +87,9 @@ class TransactionEventResolverNativeConfig {
                 pathToClassMap[path] = eventClass
             }
         } catch (e: Exception) {
-            logger.error("Failed to populate TransactionEventTypeResolver maps: ${e.message}", e)
+            LogTracingUtils.loggerTracingUtils()
+                .failure()
+                .logError(logger, e, "Failed to populate TransactionEventTypeResolver maps")
             throw e
         }
     }

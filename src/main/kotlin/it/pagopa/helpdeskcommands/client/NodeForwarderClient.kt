@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.nodeforwarder.v1.ApiClient
 import it.pagopa.generated.nodeforwarder.v1.dto.ProxyApi
 import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
@@ -136,13 +137,6 @@ class NodeForwarderClient<T, R> {
             port = 443
         }
         val path = proxyTo.path
-        logger.info(
-            "Sending request to node forwarder. hostName: [{}], port: [{}], path: [{}], requestId: [{}]",
-            hostName,
-            port,
-            path,
-            requestId
-        )
         return proxyApiClient
             .forwardWithHttpInfo(hostName, port, path, requestId, requestPayload)
             .flatMap { response ->
@@ -157,12 +151,31 @@ class NodeForwarderClient<T, R> {
                     Mono.error(exceptionToNodeForwarderClientException(e))
                 }
             }
+            .doOnSuccess {
+                LogTracingUtils.loggerTracingUtils()
+                    .dependency("node_forwarder")
+                    .details(
+                        mapOf(
+                            "path" to path,
+                            "host_name" to hostName,
+                            "port" to port.toString(),
+                            "request_id" to requestId.toString()
+                        )
+                    )
+                    .success()
+                    .logInfo(logger, "Sent request to node forwarder")
+            }
             .doOnError(WebClientResponseException::class.java) {
-                logger.error(
-                    "Error communicating with Node forwarder\nError response code: [{}], body: [{}]",
-                    it.statusCode,
-                    it.responseBodyAsString
-                )
+                LogTracingUtils.loggerTracingUtils()
+                    .dependency("node_forwarder")
+                    .details(
+                        mapOf(
+                            "response_code" to it.statusCode.value().toString(),
+                            "response_body" to it.responseBodyAsString
+                        )
+                    )
+                    .failure()
+                    .logError(logger, it, "Error communicating with Node forwarder")
             }
             .onErrorMap { error -> exceptionToNodeForwarderClientException(error) }
     }

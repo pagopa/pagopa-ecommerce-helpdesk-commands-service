@@ -48,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.8.0"
+  const val ecommerceCommonsVersion = "3.11.0"
   const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
@@ -64,6 +64,7 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.4")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
   implementation("it.pagopa:pagopa-ecommerce-commons:${Deps.ecommerceCommonsVersion}")
+  implementation("io.micrometer:context-propagation")
 
   // ECS logback encoder
   implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
@@ -211,7 +212,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>(
 ) {
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/core/api/node_forwarder_api/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/refs/heads/main/src/domains/shared-app/api/node_forwarder_api/v1/_openapi.json.tpl"
   )
   outputDir.set(layout.buildDirectory.get().dir("generated").asFile.toString())
   library.set("webclient")

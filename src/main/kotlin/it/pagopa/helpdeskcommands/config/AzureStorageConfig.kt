@@ -15,6 +15,7 @@ import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionRefundRequestedEvent
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionUserReceiptRequestedEvent
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.ecommerce.commons.queues.StrictJsonSerializerProvider
 import it.pagopa.ecommerce.commons.queues.TracingInfo
@@ -129,7 +130,6 @@ class AzureStorageConfig(
         AssignableTypeFilter::class
     )
     fun jsonSerializerV2(): JsonSerializer {
-        logger.info("Creating JsonSerializer for Azure Storage Queue with custom V2 mixin")
         val provider =
             StrictJsonSerializerProvider()
                 .addMixIn(
@@ -151,7 +151,6 @@ class AzureStorageConfig(
         azureApiQueueClient: AzureApiQueueClient,
         queueConfig: QueueConfig
     ): QueueAsyncClient {
-        logger.info("Using client based on isNativeClientEnabled = {}", isNativeClientEnabled)
         return if (isNativeClientEnabled) {
             return object : QueueAsyncClient(azureQueueClient, jsonSerializer) {
                 override fun <T : BaseTransactionEvent<*>> sendMessageWithResponse(
@@ -179,7 +178,13 @@ class AzureStorageConfig(
                             }
                             .map { _ -> createMockSendMessageResponse() }
                     } catch (e: Exception) {
-                        logger.error("Azure API queue HTTP client error: {}", e.message)
+                        LogTracingUtils.loggerTracingUtils()
+                            .failure()
+                            .logErrorWithStackTrace(
+                                logger,
+                                e,
+                                "Azure API queue client serialization error"
+                            )
                         Mono.error(e)
                     }
                 }

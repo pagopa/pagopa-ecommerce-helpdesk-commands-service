@@ -14,6 +14,7 @@ import it.pagopa.ecommerce.commons.domain.v2.EmptyTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransaction
 import it.pagopa.ecommerce.commons.domain.v2.pojos.BaseTransactionWithRefundRequested
 import it.pagopa.ecommerce.commons.generated.server.model.TransactionStatusDto
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
@@ -61,38 +62,42 @@ class TransactionEventService(
 
     @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendRefundRequestedEvent(event: TransactionRefundRequestedEvent): Mono<Void> {
-        logger.info("Sending refund message event for transaction: {}", event.transactionId)
-
-        val queueEvent = QueueEvent(event, null)
-        return refundQueueClient
-            .sendMessageWithResponse(
-                queueEvent,
-                Duration.ZERO,
-                Duration.ofSeconds(transientQueueTTLSeconds)
-            )
-            .doOnSuccess { logger.info("Refund message event sent successfully") }
-            .doOnError { e ->
-                logger.error("Failed to send refund message event: {}", e.message, e)
-            }
-            .then()
+        return sendMessageToQueue(refundQueueClient, QueueEvent(event, null))
     }
 
     @Suppress("kotlin:S6508") // Interface contract requires Mono<Void>
     override fun sendNotificationRequestedEvent(
         event: TransactionUserReceiptRequestedEvent
     ): Mono<Void> {
-        logger.info("Sending notification message event for transaction: {}", event.transactionId)
+        return sendMessageToQueue(notificationQueueClient, QueueEvent(event, null))
+    }
 
-        val queueEvent = QueueEvent(event, null)
-        return notificationQueueClient
+    private fun <T : BaseTransactionEvent<*>> sendMessageToQueue(
+        queueClient: QueueAsyncClient,
+        queueEvent: QueueEvent<T>
+    ): Mono<Void> {
+        return queueClient
             .sendMessageWithResponse(
                 queueEvent,
                 Duration.ZERO,
                 Duration.ofSeconds(transientQueueTTLSeconds)
             )
-            .doOnSuccess { logger.info("Notification message event sent successfully") }
+            .doOnSuccess {
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .details(
+                        mapOf(
+                            "queue_name" to queueClient.queueName,
+                            "queue_event_id" to queueEvent.event.id.toString(),
+                        )
+                    )
+                    .dependency(LogTracingUtils.STORAGE_QUEUE_DEPENDENCY)
+                    .logInfo(logger, "Message event sent successfully")
+            }
             .doOnError { e ->
-                logger.error("Failed to send notification message event: {}", e.message, e)
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .logErrorWithStackTrace(logger, e, "Failed to send message event")
             }
             .then()
     }
@@ -105,11 +110,6 @@ class TransactionEventService(
      *   date
      */
     private fun getEventsFromBothRepositories(transactionId: String): Flux<TransactionEvent<Any>> {
-        logger.debug(
-            "Retrieving events from both repositories for transaction: [{}]",
-            transactionId
-        )
-
         val runtimeEvents =
             transactionsEventStoreRepository
                 .findByTransactionIdOrderByCreationDateAsc(transactionId)
@@ -122,7 +122,14 @@ class TransactionEventService(
                 .cast(TransactionEvent::class.java)
                 .map { it as TransactionEvent<Any> }
 
-        return Flux.merge(runtimeEvents, historyEvents).sort(compareBy { it.creationDate })
+        return Flux.merge(runtimeEvents, historyEvents)
+            .sort(compareBy { it.creationDate })
+            .doOnNext {
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logInfo(logger, "Retrieved event from repositories")
+            }
     }
 
     /**
@@ -150,8 +157,6 @@ class TransactionEventService(
      * events to build the transaction object
      */
     fun getTransaction(transactionId: String): Mono<BaseTransaction> {
-        logger.info("Retrieving transaction with ID: [{}] from both repositories", transactionId)
-
         val events = getEventsFromBothRepositories(transactionId)
 
         return reduceEvents(events)
@@ -167,15 +172,11 @@ class TransactionEventService(
      * @return Mono containing the TransactionRefundRequestedEvent or null if already requested
      */
     fun createRefundRequestEvent(transactionId: String): Mono<TransactionRefundRequestedEvent> {
-        logger.info("Creating refund request event for transaction with ID: [{}]", transactionId)
-
         return getTransaction(transactionId).flatMap { transaction ->
             if (transaction is BaseTransactionWithRefundRequested) {
-                // Transaction already has a refund requested
-                logger.warn(
-                    "Transaction [{}] already has a refund requested",
-                    transaction.transactionId.value()
-                )
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .logWarn(logger, "Transaction already has a refund requested")
             }
             createAndPersistRefundRequestEvent(transaction)
         }
@@ -259,9 +260,13 @@ class TransactionEventService(
                     }
             )
             .doOnSuccess {
-                logger.info(
-                    "Updated event for transaction with id ${transaction.transactionId.value()} to status refund"
-                )
+                LogTracingUtils.loggerTracingUtils()
+                    .success()
+                    .details(
+                        mapOf("transaction_status" to TransactionStatusDto.REFUND_REQUESTED.value)
+                    )
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logInfo(logger, "Updated transaction status")
             }
             .thenReturn(transaction)
     }
@@ -276,11 +281,6 @@ class TransactionEventService(
     fun resendUserReceiptNotification(
         transactionId: String
     ): Mono<TransactionUserReceiptRequestedEvent> {
-        logger.info(
-            "Attempting to resend user receipt notification for transaction ID: [{}]",
-            transactionId
-        )
-
         // Define the set of valid states for resending notifications
         val admissibleStates =
             listOf(
@@ -304,11 +304,6 @@ class TransactionEventService(
                             .maxByOrNull { it.creationDate }
 
                     if (latestRequestedEvent != null) {
-                        logger.info(
-                            "Found existing user receipt event for transaction ID: [{}], creating new event",
-                            transactionId
-                        )
-
                         val newEventData =
                             TransactionUserReceiptData(
                                 latestRequestedEvent.data.responseOutcome,
@@ -335,26 +330,38 @@ class TransactionEventService(
                                     }
                             )
                             .doOnSuccess {
-                                logger.info(
-                                    "Successfully created new user receipt event with ID [{}] for transaction ID: [{}]",
-                                    newEvent.id,
-                                    transactionId
-                                )
+                                LogTracingUtils.loggerTracingUtils()
+                                    .success()
+                                    .details(
+                                        mapOf(
+                                            "transaction_status" to
+                                                TransactionStatusDto.NOTIFICATION_REQUESTED.value,
+                                            "queue_event_id" to newEvent.id.toString()
+                                        )
+                                    )
+                                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                                    .logInfo(logger, "Successfully created new user receipt event")
                             }
                             .doOnError { e ->
-                                logger.error(
-                                    "Error saving new user receipt event for transaction ID: [{}]: {}",
-                                    transactionId,
-                                    e.message,
-                                    e
-                                )
+                                LogTracingUtils.loggerTracingUtils()
+                                    .failure()
+                                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                                    .logErrorWithStackTrace(
+                                        logger,
+                                        e,
+                                        "Error saving new user receipt event"
+                                    )
                             }
                             .thenReturn(newEvent)
                     } else {
-                        logger.error(
-                            "No TransactionUserReceiptRequestedEvent found for transaction ID: [{}] in runtime and history repositories",
-                            transactionId
-                        )
+                        LogTracingUtils.loggerTracingUtils()
+                            .failure()
+                            .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                            .logError(
+                                logger,
+                                null,
+                                "No TransactionUserReceiptRequestedEvent found for transaction in runtime and history repositories"
+                            )
                         Mono.error(
                             IllegalStateException(
                                 "No TransactionUserReceiptRequestedEvent found for transaction ID: $transactionId"
@@ -364,11 +371,20 @@ class TransactionEventService(
                 }
             } else {
                 // Transaction is not in the correct state
-                logger.error(
-                    "Transaction [{}] is not in a valid state for resending notification, current state: {}",
-                    transactionId,
-                    transaction.status
-                )
+                LogTracingUtils.loggerTracingUtils()
+                    .failure()
+                    .details(
+                        mapOf(
+                            "transaction_status" to transaction.status.toString(),
+                        )
+                    )
+                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
+                    .logError(
+                        logger,
+                        null,
+                        "Transaction is not in a valid state for resending notification"
+                    )
+
                 Mono.error(
                     InvalidTransactionStatusException(
                         "Cannot resend user receipt notification for transaction in state: ${transaction.status}. Transaction must be one of ${admissibleStates.joinToString(",")}"

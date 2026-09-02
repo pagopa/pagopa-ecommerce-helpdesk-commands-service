@@ -1,5 +1,6 @@
 package it.pagopa.helpdeskcommands.services
 
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.ecommerce.commons.utils.RedirectUrlMappingConf
 import it.pagopa.ecommerce.commons.utils.bean.redirect.configuration.RedirectUrlMappingCriteria
 import it.pagopa.generated.ecommerce.redirect.v1.dto.RefundRequestDto as RedirectRefundRequestDto
@@ -69,10 +70,6 @@ class CommandsService(
             .fold(
                 { ex -> Mono.error(ex) },
                 { entry ->
-                    logger.info(
-                        "Processing Redirect transaction refund for pspChannelCode: [{}]",
-                        pspChannelCode
-                    )
                     nodeForwarderClient
                         .proxyRequest(
                             request =
@@ -89,21 +86,27 @@ class CommandsService(
                                 .idTransaction(it.body.idTransaction)
                                 .outcome(RefundOutcomeDto.valueOf(it.body.outcome.name))
                         }
-                        .doOnNext { response ->
-                            logger.info(
-                                "Redirect refund processed correctly for transaction with id: [{}]",
-                                response.idTransaction
-                            )
+                        .doOnNext { _ ->
+                            LogTracingUtils.loggerTracingUtils()
+                                .details(mapOf("psp_channel_code" to pspChannelCode.toString()))
+                                .success()
+                                .logInfo(logger, "Redirect refund processed correctly")
                         }
                         .doOnError(NodeForwarderClientException::class.java) { exception ->
-                            logger.error(
-                                "Error performing Redirect refund operation for transaction with id: [{}], psp id: [{}], pspTransactionId: [{}], paymentTypeCode: [{}]",
-                                transactionId.value(),
-                                pspId,
-                                pspTransactionId,
-                                paymentTypeCode,
-                                exception
-                            )
+                            LogTracingUtils.loggerTracingUtils()
+                                .attributes(mapOf(LogTracingUtils.AttributeKeys.PSP_ID to pspId))
+                                .details(
+                                    mapOf(
+                                        "psp_channel_code" to pspChannelCode.toString(),
+                                        "payment_type_code" to paymentTypeCode
+                                    )
+                                )
+                                .failure()
+                                .logError(
+                                    logger,
+                                    exception,
+                                    "Error performing Redirect refund operation"
+                                )
                         }
                 }
             )
@@ -120,15 +123,6 @@ class CommandsService(
         return npgApiKeyConfiguration[paymentMethod, pspId].fold(
             { ex -> Mono.error(ex) },
             { apiKey ->
-                logger.info(
-                    "Performing NPG refund for transaction with id: [{}] and paymentMethod: [{}]. OperationId: [{}], amount: [{}], pspId: [{}], correlationId: [{}]",
-                    transactionId.value(),
-                    paymentMethod,
-                    operationId,
-                    amount,
-                    pspId,
-                    correlationId
-                )
                 npgClient
                     .refundPayment(
                         correlationId = UUID.fromString(correlationId),
@@ -139,13 +133,23 @@ class CommandsService(
                         description =
                             "Refund request for transactionId ${transactionId.uuid} and operationId $operationId"
                     )
+                    .doOnSuccess {
+                        LogTracingUtils.loggerTracingUtils()
+                            .attributes(mapOf(LogTracingUtils.AttributeKeys.PSP_ID to pspId))
+                            .details(
+                                mapOf(
+                                    "payment_method" to paymentMethod.toString(),
+                                    "amount" to amount.toString()
+                                )
+                            )
+                            .success()
+                            .logInfo(logger, "NPG refund processed correctly")
+                    }
                     .doOnError(NpgClientException::class.java) { exception: NpgClientException ->
-                        logger.error(
-                            "Exception performing NPG refund for transactionId: [{}] and operationId: [{}]",
-                            transactionId.value(),
-                            operationId,
-                            exception
-                        )
+                        LogTracingUtils.loggerTracingUtils()
+                            .details(mapOf("operation_id" to operationId))
+                            .failure()
+                            .logError(logger, exception, "Error performing NPG refund")
                     }
             }
         )

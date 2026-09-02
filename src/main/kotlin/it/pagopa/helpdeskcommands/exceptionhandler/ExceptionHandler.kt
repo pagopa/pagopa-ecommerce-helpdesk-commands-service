@@ -1,6 +1,7 @@
 package it.pagopa.helpdeskcommands.exceptionhandler
 
 import it.pagopa.ecommerce.commons.exceptions.RedirectConfigurationException
+import it.pagopa.ecommerce.commons.mdcutilities.LogTracingUtils
 import it.pagopa.generated.helpdeskcommands.model.ProblemJsonDto
 import it.pagopa.helpdeskcommands.exceptions.ApiError
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
@@ -33,7 +34,9 @@ class ExceptionHandler {
     /** RestApiException exception handler */
     @ExceptionHandler(RestApiException::class)
     fun handleException(e: RestApiException): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception processing request", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logError(logger, e, "Exception processing request")
         return ResponseEntity.status(e.httpStatus)
             .body(
                 ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description)
@@ -60,7 +63,9 @@ class ExceptionHandler {
         e: Exception,
         exchange: ServerWebExchange?
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Input request is not valid", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logError(logger, e, "Input request is not valid")
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -75,7 +80,9 @@ class ExceptionHandler {
     fun handleNpgApikeyException(
         e: NpgApiKeyConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception retrieving apikey", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logError(logger, e, "Exception retrieving apikey")
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -90,7 +97,9 @@ class ExceptionHandler {
     fun handleRedirectConfigurationException(
         e: RedirectConfigurationException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception retrieving redirect PSP configuration type", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logError(logger, e, "Exception retrieving redirect PSP configuration type")
         return ResponseEntity.badRequest()
             .body(
                 ProblemJsonDto()
@@ -104,7 +113,7 @@ class ExceptionHandler {
     fun handleTransactionNotFoundException(
         e: TransactionNotFoundException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Transaction not found", e)
+        LogTracingUtils.loggerTracingUtils().failure().logError(logger, e, "Transaction not found")
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(
                 ProblemJsonDto()
@@ -118,7 +127,9 @@ class ExceptionHandler {
     fun handleInvalidTransactionStatusException(
         e: InvalidTransactionStatusException
     ): ResponseEntity<ProblemJsonDto> {
-        logger.error("Invalid transaction status", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logError(logger, e, "Invalid transaction status")
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(
                 ProblemJsonDto()
@@ -131,7 +142,9 @@ class ExceptionHandler {
     /** Handler for generic exception */
     @ExceptionHandler(Exception::class)
     fun handleGenericException(e: Exception): ResponseEntity<ProblemJsonDto> {
-        logger.error("Exception processing the request", e)
+        LogTracingUtils.loggerTracingUtils()
+            .failure()
+            .logErrorWithStackTrace(logger, e, "Exception processing the request")
         return ResponseEntity.internalServerError()
             .body(
                 ProblemJsonDto()
