@@ -48,7 +48,7 @@ val ecsLoggingVersion = "1.5.0"
 
 object Deps {
   const val mongoReactiveVersion = "3.5.0"
-  const val ecommerceCommonsVersion = "3.11.0"
+  const val ecommerceCommonsVersion = "3.11.1"
   const val ecommerceCommonsGitRef = ecommerceCommonsVersion
 }
 
@@ -89,7 +89,7 @@ kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 kotlin { jvmToolchain(21) }
 
 // Dependency locking - lock all dependencies
-// dependencyLocking { lockAllConfigurations() }
+dependencyLocking { lockAllConfigurations() }
 
 tasks.create("applySemanticVersionPlugin") {
   dependsOn("prepareKotlinBuildScriptModel")
