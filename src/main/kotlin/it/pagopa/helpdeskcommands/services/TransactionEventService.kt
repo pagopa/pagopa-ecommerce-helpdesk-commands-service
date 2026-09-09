@@ -195,13 +195,9 @@ class TransactionEventService(
         val refundRequestedEvent = createRefundRequestedEvent(transaction, null)
 
         // Save the event and update view
-        return saveRefundRequestedEventAndUpdateTransactionView(
-                transaction,
-                refundRequestedEvent,
-                transactionsRefundedEventStoreRepository,
-                transactionsViewRepository
-            )
-            .map { refundRequestedEvent }
+        return transactionsRefundedEventStoreRepository
+            .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
+            .thenReturn(refundRequestedEvent)
     }
 
     /** Reduces a flux of transaction events into a transaction object */
@@ -241,7 +237,7 @@ class TransactionEventService(
         )
     }
 
-    private fun saveRefundRequestedEventAndUpdateTransactionView(
+    /*private fun saveRefundRequestedEventAndUpdateTransactionView(
         transaction: BaseTransaction,
         refundRequestedEvent: TransactionRefundRequestedEvent,
         transactionsEventStoreRepository:
@@ -269,7 +265,7 @@ class TransactionEventService(
                     .logInfo(logger, "Updated transaction status")
             }
             .thenReturn(transaction)
-    }
+    }*/
 
     /**
      * Resends a notification for a transaction that is already in USER_RECEIPT_REQUESTED state
@@ -320,15 +316,6 @@ class TransactionEventService(
                         // Save the new event
                         userReceiptEventStoreRepository
                             .insert(newEvent)
-                            .then(
-                                transactionsViewRepository
-                                    .findByTransactionId(transaction.transactionId.value())
-                                    .cast(Transaction::class.java)
-                                    .flatMap { tx ->
-                                        tx.status = TransactionStatusDto.NOTIFICATION_REQUESTED
-                                        transactionsViewRepository.save(tx)
-                                    }
-                            )
                             .doOnSuccess {
                                 LogTracingUtils.loggerTracingUtils()
                                     .success()
