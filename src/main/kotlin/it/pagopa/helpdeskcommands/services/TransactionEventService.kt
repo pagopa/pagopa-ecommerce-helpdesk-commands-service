@@ -237,36 +237,6 @@ class TransactionEventService(
         )
     }
 
-    /*private fun saveRefundRequestedEventAndUpdateTransactionView(
-        transaction: BaseTransaction,
-        refundRequestedEvent: TransactionRefundRequestedEvent,
-        transactionsEventStoreRepository:
-            TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-        transactionsViewRepository: TransactionsViewRepository
-    ): Mono<BaseTransaction?> {
-        return transactionsEventStoreRepository
-            .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
-            .then(
-                transactionsViewRepository
-                    .findByTransactionId(transaction.transactionId.value())
-                    .cast(Transaction::class.java)
-                    .flatMap { tx ->
-                        tx.status = TransactionStatusDto.REFUND_REQUESTED
-                        transactionsViewRepository.save(tx)
-                    }
-            )
-            .doOnSuccess {
-                LogTracingUtils.loggerTracingUtils()
-                    .success()
-                    .details(
-                        mapOf("transaction_status" to TransactionStatusDto.REFUND_REQUESTED.value)
-                    )
-                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
-                    .logInfo(logger, "Updated transaction status")
-            }
-            .thenReturn(transaction)
-    }*/
-
     /**
      * Resends a notification for a transaction that is already in USER_RECEIPT_REQUESTED state
      * Searches in both runtime and history repositories
