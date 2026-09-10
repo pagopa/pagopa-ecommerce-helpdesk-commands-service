@@ -19,9 +19,7 @@ import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
-import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsEventStoreHistoryRepository
-import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsViewHistoryRepository
 import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +40,6 @@ class TransactionEventService(
     @Autowired
     private val transactionsRefundedEventStoreRepository:
         TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-    @Autowired private val transactionsViewRepository: TransactionsViewRepository,
     @Autowired
     private val userReceiptEventStoreRepository:
         TransactionsEventStoreRepository<TransactionUserReceiptData>,
@@ -52,7 +49,6 @@ class TransactionEventService(
     @Autowired
     private val transactionsRefundedEventStoreHistoryRepository:
         TransactionsEventStoreHistoryRepository<BaseTransactionRefundedData>,
-    @Autowired private val transactionsViewHistoryRepository: TransactionsViewHistoryRepository,
     @Autowired
     private val userReceiptEventStoreHistoryRepository:
         TransactionsEventStoreHistoryRepository<TransactionUserReceiptData>
