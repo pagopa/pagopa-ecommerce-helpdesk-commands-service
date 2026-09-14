@@ -194,8 +194,8 @@ stages:
               
               echo "=== CDC FINAL LOGS ==="
               docker logs pagopa-ecommerce-cdc-service --tail 300
-              condition: always()
-              displayName: 'Print CDC logs'
+            condition: always()
+            displayName: 'Print CDC logs'
 
           - script: |
               echo "Printing logs for all running containers:"
