@@ -164,20 +164,6 @@ stages:
             env:
               GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
           - script: |
-              echo "=== CDC STATUS ==="
-              docker ps -a --filter "name=pagopa-ecommerce-cdc-service"
-
-              echo "=== CDC CONFIG ==="
-              docker exec pagopa-ecommerce-cdc-service \
-                printenv CDC_LOG_EVENTS_COLLECTION_NAME
-
-              docker exec pagopa-ecommerce-cdc-service \
-                printenv ECOMMERCE_TRANSACTION_VIEW_COLLECTION_NAME
-
-              echo "=== CDC LOGS ==="
-              docker logs pagopa-ecommerce-cdc-service
-            displayName: 'Verify CDC before integration test'
-          - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
               timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
@@ -187,25 +173,6 @@ stages:
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
             displayName: 'Run helpdesk-commands API tests (ecommerce-local)'
             continueOnError: false
-
-          - script: |
-              echo "=== CDC FINAL STATUS ==="
-              docker ps -a --filter "name=pagopa-ecommerce-cdc-service"
-
-              echo "=== CDC LOGS FOR TRANSACTION 25 ==="
-              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
-                grep -C 20 "00000000000000000000000000000025" || true
-
-              echo "=== CDC PROCESSING ERRORS ==="
-              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
-                grep -C 20 "Error processing event" || true
-
-              echo "=== CDC UPSERT ERRORS ==="
-              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
-                grep -C 20 "Failed to upsert transaction view" || true
-            condition: always()
-            displayName: 'Inspect CDC transaction'
-
           - script: |
               echo "Printing logs for all running containers:"
               for container in $(docker ps -q); do
