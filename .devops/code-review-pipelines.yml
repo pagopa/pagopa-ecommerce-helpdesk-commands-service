@@ -164,6 +164,20 @@ stages:
             env:
               GITHUB_TOKEN: $(GITHUB_RO_TOKEN)
           - script: |
+              echo "=== CDC STATUS ==="
+              docker ps -a --filter "name=pagopa-ecommerce-cdc-service"
+
+              echo "=== CDC CONFIG ==="
+              docker exec pagopa-ecommerce-cdc-service \
+                printenv CDC_LOG_EVENTS_COLLECTION_NAME
+
+              docker exec pagopa-ecommerce-cdc-service \
+                printenv ECOMMERCE_TRANSACTION_VIEW_COLLECTION_NAME
+
+              echo "=== CDC LOGS ==="
+              docker logs pagopa-ecommerce-cdc-service
+            displayName: 'Verify CDC before integration test'
+          - script: |
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8087/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
               timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || (echo "[error] transactions-service health check failed" && exit 1)
               timeout 120 bash -c 'while ! docker compose exec -T mongo mongosh --eval "db.runCommand(\"ping\")" --quiet; do echo "Waiting for MongoDB to be healthy..."; sleep 5; done' || (echo "MongoDB failed to start properly" && exit 1)
