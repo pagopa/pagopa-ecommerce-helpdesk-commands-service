@@ -191,11 +191,20 @@ stages:
           - script: |
               echo "=== CDC FINAL STATUS ==="
               docker ps -a --filter "name=pagopa-ecommerce-cdc-service"
-              
-              echo "=== CDC FINAL LOGS ==="
-              docker logs pagopa-ecommerce-cdc-service --tail 300
+
+              echo "=== CDC LOGS FOR TRANSACTION 25 ==="
+              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
+                grep -C 20 "00000000000000000000000000000025" || true
+
+              echo "=== CDC PROCESSING ERRORS ==="
+              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
+                grep -C 20 "Error processing event" || true
+
+              echo "=== CDC UPSERT ERRORS ==="
+              docker logs pagopa-ecommerce-cdc-service 2>&1 | \
+                grep -C 20 "Failed to upsert transaction view" || true
             condition: always()
-            displayName: 'Print CDC logs'
+            displayName: 'Inspect CDC transaction'
 
           - script: |
               echo "Printing logs for all running containers:"
