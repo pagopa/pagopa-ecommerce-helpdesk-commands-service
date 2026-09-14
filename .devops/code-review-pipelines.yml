@@ -14,7 +14,7 @@ resources:
     - repository: pagopaEcommerceLocal
       type: github
       name: pagopa/pagopa-ecommerce-local
-      ref: main
+      ref: PIDM-2410-correzione-collection-transaction-view-update
       endpoint: 'io-azure-devops-github-ro'
 
 stages:
