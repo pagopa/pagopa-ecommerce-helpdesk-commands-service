@@ -187,6 +187,16 @@ stages:
           - script: newman run api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_collection.json --environment=api-tests/helpdesk-commands-service/helpdesk-commands-service_tests.postman_environment.json --reporters cli,junit --reporter-junit-export Results/helpdesk-commands-ecommerce-local-api-TEST.xml
             displayName: 'Run helpdesk-commands API tests (ecommerce-local)'
             continueOnError: false
+
+          - script: |
+              echo "=== CDC FINAL STATUS ==="
+              docker ps -a --filter "name=pagopa-ecommerce-cdc-service"
+              
+              echo "=== CDC FINAL LOGS ==="
+              docker logs pagopa-ecommerce-cdc-service --tail 300
+              condition: always()
+              displayName: 'Print CDC logs'
+
           - script: |
               echo "Printing logs for all running containers:"
               for container in $(docker ps -q); do
