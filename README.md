@@ -505,4 +505,4 @@ Made with ❤️ by PagoPA S.p.A.
 
 ### Maintainers
 
-See `CODEOWNERS` file
+See `CODEOWNERS` file 
