@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.ecommerce.commons.client.QueueAsyncClient
 import it.pagopa.ecommerce.commons.documents.BaseTransactionEvent
 import it.pagopa.ecommerce.commons.documents.v2.BaseTransactionRefundedData
-import it.pagopa.ecommerce.commons.documents.v2.Transaction
 import it.pagopa.ecommerce.commons.documents.v2.TransactionActivatedData
 import it.pagopa.ecommerce.commons.documents.v2.TransactionActivatedEvent
 import it.pagopa.ecommerce.commons.documents.v2.TransactionAuthorizationRequestData
@@ -33,9 +32,7 @@ import it.pagopa.helpdeskcommands.exceptions.NodeForwarderClientException
 import it.pagopa.helpdeskcommands.exceptions.NpgClientException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
-import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsEventStoreHistoryRepository
-import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsViewHistoryRepository
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.stream.Stream
@@ -118,10 +115,6 @@ class TransactionEventServiceTest {
     private lateinit var transactionsRefundedEventStoreHistoryRepository:
         TransactionsEventStoreHistoryRepository<BaseTransactionRefundedData>
 
-    @Mock private lateinit var transactionsViewRepository: TransactionsViewRepository
-
-    @Mock private lateinit var transactionsViewHistoryRepository: TransactionsViewHistoryRepository
-
     @Mock
     private lateinit var userReceiptEventStoreRepository:
         TransactionsEventStoreRepository<TransactionUserReceiptData>
@@ -145,12 +138,10 @@ class TransactionEventServiceTest {
                 transientQueueTTLSeconds = transientQueueTTLSeconds,
                 transactionsEventStoreRepository = transactionsEventStoreRepository,
                 transactionsRefundedEventStoreRepository = transactionsRefundedEventStoreRepository,
-                transactionsViewRepository = transactionsViewRepository,
                 userReceiptEventStoreRepository = userReceiptEventStoreRepository,
                 transactionsEventStoreHistoryRepository = transactionsEventStoreHistoryRepository,
                 transactionsRefundedEventStoreHistoryRepository =
                     transactionsRefundedEventStoreHistoryRepository,
-                transactionsViewHistoryRepository = transactionsViewHistoryRepository,
                 userReceiptEventStoreHistoryRepository = userReceiptEventStoreHistoryRepository
             )
     }
@@ -396,12 +387,6 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
 
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
-
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
 
@@ -454,12 +439,6 @@ class TransactionEventServiceTest {
             }
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
-
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
 
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
@@ -514,12 +493,6 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
 
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
-
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
 
@@ -572,12 +545,6 @@ class TransactionEventServiceTest {
             }
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
-
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
 
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
@@ -670,12 +637,6 @@ class TransactionEventServiceTest {
             }
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
-
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
 
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
@@ -891,17 +852,6 @@ class TransactionEventServiceTest {
             .`when`(transactionsRefundedEventStoreHistoryRepository)
             .save(any())
 
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-
-        doReturn(Mono.empty<TransactionEvent<BaseTransactionRefundedData>>())
-            .`when`(transactionsViewHistoryRepository)
-            .findByTransactionId(transactionIdString)
-
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
-
         // When
         val result = transactionEventServiceSpy.createRefundRequestEvent(transactionIdString)
 
@@ -923,8 +873,6 @@ class TransactionEventServiceTest {
         // Verify repository calls
         verify(transactionsRefundedEventStoreRepository)
             .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
-        verify(transactionsViewRepository).findByTransactionId(transactionIdString)
-        verify(transactionsViewRepository).save(any())
     }
 
     @Test
@@ -960,13 +908,6 @@ class TransactionEventServiceTest {
             .`when`(transactionsRefundedEventStoreHistoryRepository)
             .save(any<TransactionEvent<BaseTransactionRefundedData>>())
 
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(mockTx)
-
         // When
         val result = transactionEventServiceSpy.createRefundRequestEvent(transactionIdString)
 
@@ -980,8 +921,6 @@ class TransactionEventServiceTest {
 
         verify(transactionsRefundedEventStoreRepository)
             .insert(any<TransactionEvent<BaseTransactionRefundedData>>())
-        verify(transactionsViewRepository).findByTransactionId(transactionIdString)
-        verify(transactionsViewRepository).save(any())
     }
 
     @Test
@@ -1104,12 +1043,6 @@ class TransactionEventServiceTest {
             .`when`(userReceiptEventStoreRepository)
             .insert(any<TransactionUserReceiptRequestedEvent>())
 
-        val mockTx = Mockito.mock(Transaction::class.java)
-        doReturn(Mono.just(mockTx))
-            .`when`(transactionsViewRepository)
-            .findByTransactionId(transactionIdString)
-        doReturn(Mono.just(mockTx)).`when`(transactionsViewRepository).save(any())
-
         // When
         val result = transactionEventServiceSpy.resendUserReceiptNotification(transactionIdString)
 
@@ -1159,7 +1092,6 @@ class TransactionEventServiceTest {
             .verify()
 
         verify(userReceiptEventStoreRepository, never()).save(any())
-        verify(transactionsViewRepository, never()).save(any())
     }
 
     @Test

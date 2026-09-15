@@ -155,6 +155,7 @@ stages:
               pagopa-ecommerce-helpdesk-commands-service \
               pagopa-ecommerce-transactions-service \
               pagopa-ecommerce-event-dispatcher-service \
+              pagopa-ecommerce-cdc-service \
               redis \
               pagopa-npg-mock \
               pagopa-notifications-service \

@@ -19,9 +19,7 @@ import it.pagopa.ecommerce.commons.queues.QueueEvent
 import it.pagopa.helpdeskcommands.exceptions.InvalidTransactionStatusException
 import it.pagopa.helpdeskcommands.exceptions.TransactionNotFoundException
 import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsEventStoreRepository
-import it.pagopa.helpdeskcommands.repositories.ecommerce.TransactionsViewRepository
 import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsEventStoreHistoryRepository
-import it.pagopa.helpdeskcommands.repositories.ecommercehistory.TransactionsViewHistoryRepository
 import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +40,6 @@ class TransactionEventService(
     @Autowired
     private val transactionsRefundedEventStoreRepository:
         TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-    @Autowired private val transactionsViewRepository: TransactionsViewRepository,
     @Autowired
     private val userReceiptEventStoreRepository:
         TransactionsEventStoreRepository<TransactionUserReceiptData>,
@@ -52,7 +49,6 @@ class TransactionEventService(
     @Autowired
     private val transactionsRefundedEventStoreHistoryRepository:
         TransactionsEventStoreHistoryRepository<BaseTransactionRefundedData>,
-    @Autowired private val transactionsViewHistoryRepository: TransactionsViewHistoryRepository,
     @Autowired
     private val userReceiptEventStoreHistoryRepository:
         TransactionsEventStoreHistoryRepository<TransactionUserReceiptData>
@@ -194,14 +190,11 @@ class TransactionEventService(
         // Create new refund request event
         val refundRequestedEvent = createRefundRequestedEvent(transaction, null)
 
-        // Save the event and update view
-        return saveRefundRequestedEventAndUpdateTransactionView(
-                transaction,
-                refundRequestedEvent,
-                transactionsRefundedEventStoreRepository,
-                transactionsViewRepository
-            )
-            .map { refundRequestedEvent }
+        // Store the refund-requested event in the event store.
+        // View updates are handled asynchronously by CDC-based projections.
+        return transactionsRefundedEventStoreRepository
+            .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
+            .thenReturn(refundRequestedEvent)
     }
 
     /** Reduces a flux of transaction events into a transaction object */
@@ -239,36 +232,6 @@ class TransactionEventService(
                 TransactionRefundRequestedData.RefundTrigger.MANUAL
             )
         )
-    }
-
-    private fun saveRefundRequestedEventAndUpdateTransactionView(
-        transaction: BaseTransaction,
-        refundRequestedEvent: TransactionRefundRequestedEvent,
-        transactionsEventStoreRepository:
-            TransactionsEventStoreRepository<BaseTransactionRefundedData>,
-        transactionsViewRepository: TransactionsViewRepository
-    ): Mono<BaseTransaction?> {
-        return transactionsEventStoreRepository
-            .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
-            .then(
-                transactionsViewRepository
-                    .findByTransactionId(transaction.transactionId.value())
-                    .cast(Transaction::class.java)
-                    .flatMap { tx ->
-                        tx.status = TransactionStatusDto.REFUND_REQUESTED
-                        transactionsViewRepository.save(tx)
-                    }
-            )
-            .doOnSuccess {
-                LogTracingUtils.loggerTracingUtils()
-                    .success()
-                    .details(
-                        mapOf("transaction_status" to TransactionStatusDto.REFUND_REQUESTED.value)
-                    )
-                    .dependency(LogTracingUtils.MONGO_DEPENDENCY)
-                    .logInfo(logger, "Updated transaction status")
-            }
-            .thenReturn(transaction)
     }
 
     /**
@@ -320,15 +283,6 @@ class TransactionEventService(
                         // Save the new event
                         userReceiptEventStoreRepository
                             .insert(newEvent)
-                            .then(
-                                transactionsViewRepository
-                                    .findByTransactionId(transaction.transactionId.value())
-                                    .cast(Transaction::class.java)
-                                    .flatMap { tx ->
-                                        tx.status = TransactionStatusDto.NOTIFICATION_REQUESTED
-                                        transactionsViewRepository.save(tx)
-                                    }
-                            )
                             .doOnSuccess {
                                 LogTracingUtils.loggerTracingUtils()
                                     .success()
