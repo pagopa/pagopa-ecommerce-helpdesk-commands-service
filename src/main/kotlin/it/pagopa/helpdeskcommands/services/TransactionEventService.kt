@@ -190,7 +190,8 @@ class TransactionEventService(
         // Create new refund request event
         val refundRequestedEvent = createRefundRequestedEvent(transaction, null)
 
-        // Save the event and update view
+        // Store the refund-requested event in the event store.
+        // View updates are handled asynchronously by CDC-based projections.
         return transactionsRefundedEventStoreRepository
             .insert(refundRequestedEvent as TransactionEvent<BaseTransactionRefundedData>)
             .thenReturn(refundRequestedEvent)
