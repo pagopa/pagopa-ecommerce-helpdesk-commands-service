@@ -50,7 +50,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"transactionId\": \"{{TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
+					"raw": "{\r\n    \"transactionId\": \"{{REFUNDABLE_TRANSACTION_ID}}\",\r\n    \"paymentMethodName\": \"{{PAYMENT_METHOD_NAME}}\",\r\n    \"correlationId\": \"{{CORRELATION_ID}}\",\r\n    \"operationId\": \"{{REFUNDABLE_OPERATION_ID}}\",\r\n    \"pspId\": \"{{PSP_ID}}\",\r\n    \"amount\": {{AMOUNT}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
