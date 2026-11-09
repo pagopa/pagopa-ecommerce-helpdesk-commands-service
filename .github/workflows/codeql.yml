@@ -13,7 +13,7 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "main", "codeql-extended-config"]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -85,7 +85,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./gradlew compileKotlin \
-          --write-locks \
           -Pkotlin.incremental=false \
           -Pkotlin.daemon.jvmargs="-Xmx3g" \
           -Dorg.gradle.jvmargs="-Xmx3g" \
