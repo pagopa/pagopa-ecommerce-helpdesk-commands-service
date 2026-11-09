@@ -13,7 +13,7 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "main" , "codeql-extended-config" ]
+    branches: [ "main", "codeql-extended-config" ]
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -56,6 +56,8 @@ jobs:
         # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
         - language: actions
           build-mode: none
+        - language: javascript-typescript
+          build-mode: none
     steps:
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -81,6 +83,7 @@ jobs:
     - if: matrix.build-mode == 'manual'
       run: |
         ./gradlew compileKotlin \
+          --write-locks \
           -Pkotlin.incremental=false \
           -Pkotlin.daemon.jvmargs="-Xmx3g" \
           -Dorg.gradle.jvmargs="-Xmx3g" \
