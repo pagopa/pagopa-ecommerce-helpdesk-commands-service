@@ -81,8 +81,11 @@ jobs:
       with:
         validate-wrappers: true
     - if: matrix.build-mode == 'manual'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./gradlew compileKotlin \
+          --write-locks \
           -Pkotlin.incremental=false \
           -Pkotlin.daemon.jvmargs="-Xmx3g" \
           -Dorg.gradle.jvmargs="-Xmx3g" \
