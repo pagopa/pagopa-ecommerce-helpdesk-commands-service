@@ -81,6 +81,8 @@ jobs:
       with:
         validate-wrappers: true
     - if: matrix.build-mode == 'manual'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./gradlew compileKotlin \
           --write-locks \
