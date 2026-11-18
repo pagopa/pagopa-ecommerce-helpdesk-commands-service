@@ -14,7 +14,7 @@ microservice-chart:
     image:
       repository: pagopaucommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
       tag: "latest"
-    envConfig: {}
+    envConfig: {JAVA_OPTS: "-XX:-UseBASE64Intrinsics"}
     envSecret: {}
   image:
     repository: pagopaucommonacr.azurecr.io/pagopaecommercehelpdeskcommandsservice
@@ -76,7 +76,7 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    JAVA_TOOL_OPTIONS: "-XX:-UseBASE64Intrinsics -XX:UseAVX=2"
+    JAVA_OPTS: "-XX:-UseBASE64Intrinsics"
     ACTIVE_PROFILE: k8s
     DEFAULT_LOGGING_LEVEL: "info"
     APP_LOGGING_LEVEL: "info"
